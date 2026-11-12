@@ -1,5 +1,5 @@
 /* Void — uso offline do app. Tela e código ficam guardados; o resto passa direto pela rede. */
-const CACHE = 'void-v2';
+const CACHE = 'void-v3';
 const ROOT = self.registration.scope;
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll([ROOT, ROOT + 'favicon.svg', ROOT + 'icon-192.png'])).then(() => self.skipWaiting()));
@@ -14,7 +14,7 @@ self.addEventListener('fetch', (e) => {
   // páginas: rede primeiro, cai para o guardado sem internet
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-cache' }) // sempre confere com o servidor (o cache do navegador dura 10 min)
         .then((r) => {
           const copy = r.clone();
           caches.open(CACHE).then((c) => c.put(ROOT, copy));
