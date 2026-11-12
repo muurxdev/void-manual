@@ -224,7 +224,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         {/* o que foi dito e a resposta, em níveis */}
         <div
           ref={textRef}
-          className="scroll-smooth-area flex min-h-0 max-h-[46%] shrink-0 flex-col px-6 pt-8"
+          className={"scroll-smooth-area flex min-h-0 shrink-0 flex-col px-6 pt-8 " + (mode === 'text' ? 'max-h-[30%]' : 'max-h-[46%]')}
           style={{ maskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)' }}
           aria-live="polite"
         >
@@ -299,7 +299,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         </div>
 
         {/* onda luminosa */}
-        <div className="relative min-h-[150px] flex-1">
+        <div className="relative min-h-[130px] flex-1">
           <canvas ref={waveSlot} className="absolute inset-0 h-full w-full" aria-hidden="true" />
         </div>
 

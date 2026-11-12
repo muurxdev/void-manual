@@ -53,6 +53,7 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
     if (!arc || !wave || !actx || !wctx) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     const size = { aw: 0, ah: 0, ww: 0, wh: 0 };
+    let redraw: (() => void) | null = null;
     const fit = () => {
       size.aw = arc.clientWidth;
       size.ah = arc.clientHeight;
@@ -64,6 +65,8 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
       wave.height = Math.round(size.wh * dpr);
       actx.setTransform(dpr, 0, 0, dpr, 0, 0);
       wctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // mudar o tamanho do canvas apaga o desenho: redesenha na hora, antes de pintar, para a onda nunca sumir
+      redraw?.();
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -86,8 +89,8 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
       { f: 1.2, p: 0.7, a: 0.6, w: 1 },
     ];
 
-    const draw = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
+    const frame = (now: number) => {
+      const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
       last = now;
       const s = live.current;
       const tf = FORMS[s.stage];
@@ -185,8 +188,12 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
         wctx.globalAlpha = 1;
       }
 
+    };
+    const draw = (now: number) => {
+      frame(now);
       raf = requestAnimationFrame(draw);
     };
+    redraw = () => frame(performance.now());
     raf = requestAnimationFrame(draw);
     const onVis = () => {
       cancelAnimationFrame(raf);
