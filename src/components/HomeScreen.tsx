@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, BookOpen, ChevronDown, LogOut, MessageSquare, Mic, User, Wrench } from 'lucide-react';
 import { useDockScroll } from './Dock';
 import { PullRefresh } from './PullRefresh';
-import { VoidParticles } from './VoidParticles';
 import type { Conversation, WorkshopProfile } from '../data/types';
 import { Dropdown, type MenuItem } from './ui';
 import { Greeting } from './Greeting';
@@ -23,7 +22,6 @@ interface HomeScreenProps {
   onSignOut: () => void;
   onViewAll: () => void;
   onAsk: (q: string) => void;
-  dark: boolean;
 }
 
 const MACHINES = ['Moto', 'Carro', 'Caminhão', 'Trator', 'Colheitadeira'];
@@ -93,7 +91,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
   onSignOut,
   onViewAll,
   onAsk,
-  dark,
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -105,6 +102,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
     return () => window.removeEventListener('void-scroll-top', up);
   }, []);
   const [menu, setMenu] = useState<'machine' | 'profile' | null>(null);
+  const [heroOk, setHeroOk] = useState(true);
   const [topic, setTopic] = useState('');
   const recent = conversations.filter((c) => c.messages.length > 0).slice(0, 3);
   const chips = topics.length ? topics : ['Torque e folgas', 'Códigos de falha', 'Elétrica', 'Motor'];
@@ -152,7 +150,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
   return (
     <div className="relative flex h-full flex-col bg-paper">
       <div ref={heroRef} className="hero-mesh pointer-events-none absolute inset-x-0 top-0 h-[clamp(250px,36vh,400px)] overflow-hidden" style={{ maskImage: 'linear-gradient(to bottom, #000 30%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, #000 30%, transparent 100%)', opacity: 'calc(1 - var(--p, 0))' }} aria-hidden="true">
-        <VoidParticles state="idle" pulse={0} dark={dark} centerY={0.5} sizeMul={1.55} className="absolute inset-0 h-full w-full" />
+        {heroOk && (
+          <img
+            src={`${import.meta.env.BASE_URL}hero-home.webp`}
+            alt=""
+            width={900}
+            height={1200}
+            fetchPriority="high"
+            decoding="async"
+            onError={() => setHeroOk(false)}
+            className="hero-img h-full w-full object-cover object-[50%_34%]"
+          />
+        )}
         <div className="hero-dim absolute inset-0 bg-black" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-paper" />
       </div>

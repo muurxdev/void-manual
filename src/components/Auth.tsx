@@ -3,7 +3,7 @@ import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import { signIn, signUp, resetPassword, passwordStrength, type Account } from '../data/auth';
 import { transition } from '../data/nav';
 import { DustField } from './DustField';
-import { VoidParticles } from './VoidParticles';
+import { VoidParticles, type Stage } from './VoidParticles';
 
 type View = 'welcome' | 'signin' | 'signup' | 'reset';
 
@@ -50,6 +50,7 @@ const Field: React.FC<{
   </label>
 );
 
+const STAGES: Stage[] = ['idle', 'search', 'speak']; // a animação muda junto com cada mensagem
 const SLIDES = [
   { t: 'Libere o conhecimento', t2: 'de qualquer máquina.', s: 'Seu manual vivo para moto, carro, trator e mais.' },
   { t: 'Pergunte, fale', t2: 'ou envie arquivos.', s: 'Texto, voz, PDF, planilha, foto e áudio: o Void lê e entende.' },
@@ -90,7 +91,7 @@ const Welcome: React.FC<{ dark: boolean; onStart: () => void; onSignin: () => vo
       }}
     >
       <div className="relative -mx-[clamp(20px,6vw,40px)] min-h-0 flex-1" style={{ minHeight: '44dvh' }}>
-        <VoidParticles state="idle" pulse={pulse} dark={dark} className="pointer-events-none absolute inset-0 h-full w-full" />
+        <VoidParticles state="idle" stage={STAGES[i]} pulse={pulse} dark={dark} className="pointer-events-none absolute inset-0 h-full w-full" />
       </div>
 
       <div className="pb-2 text-center" aria-live="polite">

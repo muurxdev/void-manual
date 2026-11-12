@@ -449,7 +449,6 @@ export function App() {
         {account && screen === 'home' && (
           <HomeScreen
             profile={profile}
-            dark={dark}
             conversations={conversations}
             libraryCount={allManuals.length + lib.items.length}
             topics={topics}

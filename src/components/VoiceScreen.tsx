@@ -31,13 +31,12 @@ interface VoiceScreenProps {
 }
 
 const LABEL: Record<VoiceState, string> = {
-  idle: 'Segure para falar ou toque para deixar ligado',
+  idle: '',
   listening: 'Ouvindo',
   thinking: '',
   speaking: 'Falando',
 };
 
-const TRY = ['Torque da CB 500F', 'Falha P0300', 'Folga da Lander 250'];
 const GL = 'border border-ink/15 bg-ink/10 text-ink backdrop-blur-xl';
 
 export const VoiceScreen: React.FC<VoiceScreenProps> = ({
@@ -214,7 +213,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
 
       <p
         className="absolute inset-x-0 z-10 flex h-5 items-center justify-center gap-1.5 text-[13px] text-ink/55"
-        style={{ top: 'calc(50% + min(22vw, 13vh) + 24px)' }}
+        style={{ top: 'calc(50% - min(22vw, 13vh) - 40px)' }}
         aria-live="polite"
       >
         {label}
@@ -227,59 +226,59 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         )}
       </p>
 
-      {/* o que foi dito e a resposta, palavra por palavra */}
+      {/* o que foi dito e a resposta: o texto cresce de baixo para cima, em níveis de importância */}
       <div
         ref={textRef}
-        className="scroll-smooth-area absolute inset-x-0 z-10 mx-auto w-full max-w-[640px] px-[clamp(22px,7vw,44px)] pb-3"
-        style={{ top: 'calc(50% + min(22vw, 13vh) + 54px)', bottom: 128, maskImage: 'linear-gradient(to bottom, transparent 0, #000 16px, #000 calc(100% - 16px), transparent)' }}
+        className="scroll-smooth-area absolute inset-x-0 z-10 mx-auto flex w-full max-w-[640px] flex-col px-[clamp(22px,7vw,44px)]"
+        style={{ top: '20%', bottom: 128, maskImage: 'linear-gradient(to bottom, transparent 0, #000 56px, #000 calc(100% - 12px), transparent)' }}
         aria-live="polite"
       >
-        {error ? (
-          <p className="anim-fade-in text-center text-[15px] text-ink/60">{error}</p>
-        ) : !userText && !replyText && status === 'idle' ? (
-          <div className="anim-fade-up flex flex-col items-center gap-1.5">
-            <p className="text-[12px] uppercase tracking-wider text-ink/45">Experimente perguntar</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {TRY.map((t) => (
-                <button key={t} onClick={() => onSendText(t)} className="glass press min-h-11 rounded-full px-4 text-[13px]">
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <>
-            {userText && (
-              <p className="text-center text-[clamp(20px,1.6vw+14px,28px)] font-semibold leading-[1.25] tracking-[-0.01em]">
-                <span className="text-ink">{words.slice(0, splitAt).join(' ')} </span>
-                <span className="text-ink/30">{words.slice(splitAt).join(' ')}</span>
-              </p>
-            )}
-            {replyText && (
-              <div className="anim-fade-up mt-5 rounded-[22px] border border-ink/10 bg-ink/[0.06] px-4 py-3.5 backdrop-blur-xl">
-                <p className="text-[15px] leading-relaxed text-ink/90">
-                  {replyText}
-                  {status === 'speaking' && <span className="ml-0.5 inline-block h-4 w-[2px] animate-blink bg-ink align-middle" />}
-                </p>
-                {status !== 'speaking' && canOpenChat && (
-                  <button onClick={onOpenChat} className="glass press mt-3 flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
-                    <MessageSquare className="h-4 w-4" /> Continuar no chat
-                  </button>
-                )}
-                {status !== 'speaking' && citations.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5 border-t border-ink/10 pt-2.5">
+        <div className="mt-auto pb-3">
+          {error ? (
+            <p className="anim-fade-in text-center text-[15px] text-ink/60">{error}</p>
+          ) : (
+            <>
+              {userText && (
+                <section className="anim-fade-up text-center">
+                  <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Você</h2>
+                  <p className="text-[clamp(20px,1.6vw+14px,26px)] font-semibold leading-[1.25] tracking-[-0.01em]">
+                    <span className="text-ink">{words.slice(0, splitAt).join(' ')} </span>
+                    <span className="text-ink/30">{words.slice(splitAt).join(' ')}</span>
+                  </p>
+                </section>
+              )}
+              {replyText && (
+                <section className="anim-fade-up mt-6 text-center">
+                  <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Void</h2>
+                  <p className="text-[17px] leading-relaxed text-ink/90">
+                    {replyText}
+                    {status === 'speaking' && <span className="ml-0.5 inline-block h-4 w-[2px] animate-blink bg-ink align-middle" />}
+                  </p>
+                </section>
+              )}
+              {replyText && status !== 'speaking' && citations.length > 0 && (
+                <section className="anim-fade-up mt-5 text-center">
+                  <h2 className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Fontes</h2>
+                  <div className="flex flex-wrap justify-center gap-1.5">
                     {citations.slice(0, 3).map((c, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-ink/10 px-2 py-1 text-[12px] text-ink/70">
+                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-ink/10 px-2.5 py-1 text-[12px] text-ink/70">
                         <FileText className="h-3 w-3" />
                         {c.title.length > 26 ? c.title.slice(0, 26) + '…' : c.title}
                       </span>
                     ))}
                   </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
+                </section>
+              )}
+              {replyText && status !== 'speaking' && canOpenChat && (
+                <div className="anim-fade-up mt-5 flex justify-center">
+                  <button onClick={onOpenChat} className="glass press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
+                    <MessageSquare className="h-4 w-4" /> Continuar no chat
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* controles: voz e texto trocam de lugar com animação */}
