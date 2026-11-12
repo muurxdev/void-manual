@@ -106,13 +106,13 @@ export const Dock: React.FC<DockProps> = ({ active, onHome, onNewChat, onVoice, 
       <div className="pointer-events-auto flex items-center gap-3">
         <div className="glass flex h-[56px] items-center rounded-full px-2">
           <button onClick={onHome} aria-label="Início" aria-current={active === 'home' ? 'page' : undefined} className={`${dockBtn} ${tone('home')}`}>
-            <House className={`h-[22px] w-[22px] ${active === 'home' ? 'fill-current' : ''}`} />
+            <House className="h-[22px] w-[22px]" strokeWidth={active === 'home' ? 2.4 : 1.8} />
           </button>
           <button onClick={onVoice} aria-label="Voz" className={`${dockBtn} text-ink/45`}>
-            <Mic className="h-[22px] w-[22px]" />
+            <Mic className="h-[22px] w-[22px]" strokeWidth={1.8} />
           </button>
           <button onClick={onSettings} aria-label="Configurações" aria-current={active === 'settings' ? 'page' : undefined} className={`${dockBtn} ${tone('settings')}`}>
-            <Settings className={`h-[22px] w-[22px] ${active === 'settings' ? 'fill-current' : ''}`} />
+            <Settings className="h-[22px] w-[22px]" strokeWidth={active === 'settings' ? 2.4 : 1.8} />
           </button>
         </div>
 

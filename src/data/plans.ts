@@ -90,7 +90,7 @@ export function checkFiles(plan: Plan, current: number, adding: number): { ok: b
   return { ok: adding <= room, max, room };
 }
 
-/** Muda para true quando o PagBank estiver ligado no servidor. Enquanto for false, "Pagar" entra na lista de espera. */
+/** Muda para true quando o Mercado Pago estiver ligado no servidor. Enquanto for false, "Pagar" entra na lista de espera. */
 export const PAYMENTS_LIVE = false;
 
 export const BILLING_MONTHS = 12;

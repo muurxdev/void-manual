@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 const [tokenFile, envFile = '../.env'] = process.argv.slice(2);
 const URL = 'https://kyawbscfuilchgqihyyl.supabase.co/functions/v1/setup-secrets';
-const NAMES = ['NVIDIA_API_KEY', 'NVIDIA_BASE_URL', 'RESEND_API_KEY', 'RESEND_FROM', 'GOOGLE_TTS_API_KEY', 'GROQ_API_KEY', 'PAGBANK_TOKEN', 'PAGBANK_WEBHOOK_SECRET'];
+const NAMES = ['NVIDIA_API_KEY', 'NVIDIA_BASE_URL', 'RESEND_API_KEY', 'RESEND_FROM', 'GOOGLE_TTS_API_KEY', 'GROQ_API_KEY', 'MERCADOPAGO_ACCESS_TOKEN', 'MERCADOPAGO_WEBHOOK_SECRET'];
 
 const token = readFileSync(tokenFile, 'utf8').trim();
 const env = readFileSync(envFile, 'utf8');

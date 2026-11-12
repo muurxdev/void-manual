@@ -33,7 +33,7 @@ const Cta: React.FC<{ onClick: () => void; children: React.ReactNode; note?: str
   </div>
 );
 
-/** Planos em 3 passos: escolher, pagar e confirmar. Cartão e Pix serão do PagBank; até lá, o pedido entra na lista de espera. */
+/** Planos em 3 passos: escolher, pagar e confirmar. Cartão e Pix serão do Mercado Pago; até lá, o pedido entra na lista de espera. */
 export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, waitlist, onJoin, onClose }) => {
   const fb = useFeedback();
   const paid = plans.filter((p) => p.price > 0 && p.id !== plan.id);
@@ -89,7 +89,7 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
         onClose={onClose}
         onBack={() => setStep('plans')}
         footer={
-          <Cta onClick={pay} note="Pagamento seguro pelo PagBank">
+          <Cta onClick={pay} note="Pagamento seguro pelo Mercado Pago">
             Pagar {money(total)} {method === 'pix' ? 'com Pix' : 'no cartão'}
           </Cta>
         }
@@ -129,7 +129,7 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
             {(
               [
                 { id: 'pix' as const, icon: <QrCode className="h-5 w-5" />, t: 'Pix', s: 'Aprovação na hora', tag: 'Mais rápido' },
-                { id: 'card' as const, icon: <CreditCard className="h-5 w-5" />, t: 'Cartão de crédito', s: 'Você finaliza no ambiente seguro do PagBank', tag: '' },
+                { id: 'card' as const, icon: <CreditCard className="h-5 w-5" />, t: 'Cartão de crédito', s: 'Você finaliza no ambiente seguro do Mercado Pago', tag: '' },
               ] as const
             ).map((m) => (
               <button

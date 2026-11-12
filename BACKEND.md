@@ -14,7 +14,7 @@ Projeto: `void-manual` (`kyawbscfuilchgqihyyl`, região São Paulo). URL: https:
 | Função `ask` | borda | exige login, conta a pergunta no plano e responde com IA (NVIDIA) |
 
 ## Segredos das funções (nunca no GitHub)
-`NVIDIA_API_KEY`, `NVIDIA_BASE_URL`, `RESEND_API_KEY`, `RESEND_FROM`. Depois: `GOOGLE_TTS_API_KEY`, `GROQ_API_KEY`, `PAGBANK_TOKEN`, `PAGBANK_WEBHOOK_SECRET`.
+`NVIDIA_API_KEY`, `NVIDIA_BASE_URL`, `RESEND_API_KEY`, `RESEND_FROM`. Depois: `GOOGLE_TTS_API_KEY`, `GROQ_API_KEY`, `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_WEBHOOK_SECRET`.
 
 Para enviar do `.env` do Void sem mostrar os valores:
 ```bash
