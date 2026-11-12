@@ -239,7 +239,9 @@ export function App() {
       const pool = ctx ? all.filter((x) => x.id === ctx.id) : all;
       const r = await askAI({ question: questionWithContext(content), manuals: pool.length ? pool : all, history: historyPairs(), mode });
       planCtl.applyServer(r.plan, r.left);
-      return { text: r.text, citations: r.citations, analysis: 'Resposta gerada com IA a partir dos manuais.' };
+      // na voz, tira marcas de fonte como [1] para não serem lidas em voz alta
+      const text = mode === 'voice' ? r.text.replace(/s*[d+]/g, '') : r.text;
+      return { text, citations: r.citations, analysis: 'Resposta gerada com IA a partir dos manuais.' };
     } catch (e) {
       if (e instanceof AiError && e.code === 'limite') {
         fb.toast('Você usou todas as perguntas de hoje no plano ' + planCtl.plan.name, 'info');
