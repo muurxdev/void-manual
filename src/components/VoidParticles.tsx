@@ -9,8 +9,10 @@ interface Props {
   className?: string;
 }
 
-// mesmo desenho da marca (V com porca sextavada), em coordenadas 0..64
-const LOGO = 'M4 6h16l12 29L44 6h16L40 58H24L4 6Zm28 22.5 7 4v8l-7 4-7-4v-8l7-4Zm0 5.2-2.6 1.5v3l2.6 1.5 2.6-1.5v-3L32 33.7Z';
+import { markBody } from './VoidMark';
+
+// mesmo desenho da marca (buraco negro), renderizado e amostrado em pontos
+const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="256" height="256">${markBody('s', '#000')}</svg>`;
 
 interface Pt {
   x: number;
@@ -20,15 +22,16 @@ interface Pt {
   r: number; // fase individual
 }
 
-function sampleLogo(step: number): Pt[] {
+async function sampleLogo(step: number): Promise<Pt[]> {
   const S = 256;
   const c = document.createElement('canvas');
   c.width = c.height = S;
   const g = c.getContext('2d', { willReadFrequently: true });
   if (!g) return [];
-  g.scale(S / 64, S / 64);
-  g.fillStyle = '#000';
-  g.fill(new Path2D(LOGO), 'evenodd');
+  const img = new Image();
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(LOGO_SVG);
+  await img.decode();
+  g.drawImage(img, 0, 0, S, S);
   const data = g.getImageData(0, 0, S, S).data;
   const pts: Pt[] = [];
   for (let y = 0; y < S; y += step) {
@@ -66,7 +69,10 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     const small = window.innerWidth < 640;
-    const pts = sampleLogo(3);
+    let pts: Pt[] = [];
+    void sampleLogo(2).then((p) => {
+      pts = p;
+    });
     // poeira solta em volta
     const dust: Pt[] = Array.from({ length: small ? 140 : 260 }, () => {
       const a = Math.random() * 6.28;
@@ -133,7 +139,7 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
       }
       const cx = w / 2;
       const cy = h / 2;
-      const scale = Math.min(w, h * 0.6) * 0.325 * (1 + Math.sin(t * 1.2) * 0.012 + s.beat * 0.06);
+      const scale = Math.min(w, h * 0.6) * 0.46 * (1 + Math.sin(t * 1.2) * 0.012 + s.beat * 0.06);
       const yaw = Math.sin(t * 0.45) * 0.5 + spin;
       const pitch = Math.sin(t * 0.33) * 0.12;
       const cyaw = Math.cos(yaw);

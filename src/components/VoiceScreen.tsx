@@ -214,7 +214,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
 
       <p
         className="absolute inset-x-0 z-10 flex h-5 items-center justify-center gap-1.5 text-[13px] text-ink/55"
-        style={{ top: 'calc(50% + min(27vw, 16.2vh) + 14px)' }}
+        style={{ top: 'calc(50% + min(22vw, 13vh) + 14px)' }}
         aria-live="polite"
       >
         {label}
@@ -231,7 +231,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       <div
         ref={textRef}
         className="scroll-smooth-area absolute inset-x-0 z-10 mx-auto w-full max-w-[640px] px-[clamp(22px,7vw,44px)] pb-3"
-        style={{ top: 'calc(50% + min(27vw, 16.2vh) + 44px)', bottom: 128, maskImage: 'linear-gradient(to bottom, transparent 0, #000 16px, #000 calc(100% - 16px), transparent)' }}
+        style={{ top: 'calc(50% + min(22vw, 13vh) + 44px)', bottom: 128, maskImage: 'linear-gradient(to bottom, transparent 0, #000 16px, #000 calc(100% - 16px), transparent)' }}
         aria-live="polite"
       >
         {error ? (
