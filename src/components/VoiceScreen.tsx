@@ -3,8 +3,7 @@ import { ArrowLeft, Keyboard, Mic, Square, ArrowUp, MessageSquare, FileText, X, 
 import { useFeedback } from './Feedback';
 import { Dropdown, type MenuItem } from './ui';
 import { type VoiceState } from '../data/types';
-import { stageOf } from './VoidParticles';
-import { VoidWave } from './VoidWave';
+import { VoidParticles, stageOf } from './VoidParticles';
 
 interface Cite {
   title: string;
@@ -71,7 +70,6 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   const fileRef = useRef<HTMLInputElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const waveSlot = useRef<HTMLCanvasElement>(null);
   const busy = status === 'thinking';
 
   // acompanha o texto que vai aparecendo
@@ -188,142 +186,118 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   ];
 
   const label = status === 'thinking' ? phase : error ? '' : LABEL[status];
-  const words = userText.split(' ').filter(Boolean);
   const rw = replyText.split(' ');
   const cut = status === 'speaking' ? Math.max(0, rw.length - 3) : rw.length;
   const replyHead = rw.slice(0, cut).join(' ') + (cut > 0 && cut < rw.length ? ' ' : '');
   const replyTail = rw.slice(cut).join(' ');
   const side = 'clamp(16px,5.6vw,40px)';
 
+  const orbH = mode === 'text' ? 'clamp(140px, 22dvh, 210px)' : 'clamp(220px, 38dvh, 360px)';
+  const emptyIdle = !userText && !replyText && history.length === 0 && !error;
+
   return (
-    <div className="relative flex h-full flex-col overflow-hidden text-ink" style={{ background: dark ? 'radial-gradient(120% 70% at 50% 100%, #17181c 0%, #08080a 55%, #000 100%)' : 'linear-gradient(180deg, #fafafa 0%, #f1f1f2 100%)' }}>
-      <VoidWave
-        state={status}
-        stage={stageOf(status, phase)}
-        pulse={pulse}
-        dark={dark}
-        arcClass="hidden"
-        waveRef={waveSlot}
-      />
-
-      {/* tela normal: cabeçalho, texto no alto, onda no meio, microfone embaixo */}
-      <section
-        className="absolute inset-0 z-10 mx-auto flex max-w-[640px] flex-col"
-        style={{ bottom: mode === 'voice' ? 0 : 116, transition: 'bottom 420ms var(--sheet-ease)' }}
-      >
-        <header className="safe-top grid grid-cols-[48px_1fr_48px] items-center" style={{ paddingInline: side }}>
-          <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
-            <ArrowLeft className="h-[18px] w-[18px]" />
+    <div className="relative flex h-full flex-col overflow-hidden text-ink" style={{ background: dark ? 'radial-gradient(120% 60% at 50% 22%, #17181c 0%, #08080a 55%, #000 100%)' : 'linear-gradient(180deg, #fafafa 0%, #f1f1f2 100%)' }}>
+      <header className="safe-top relative z-20 grid shrink-0 grid-cols-[48px_1fr_48px] items-center" style={{ paddingInline: side }}>
+        <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
+          <ArrowLeft className="h-[18px] w-[18px]" />
+        </button>
+        <h1 className="text-center text-[13px] font-medium tracking-[0.18em] text-ink/55">VOID VOICE</h1>
+        <div className="relative justify-self-end">
+          <button onClick={() => setMenu((m) => !m)} aria-label="Ações e informações" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass">
+            <MoreHorizontal className="h-[18px] w-[18px]" />
           </button>
-          <h1 className="glass mx-auto rounded-full px-5 py-2 text-[15px] font-medium">Void Voice</h1>
-          <div className="relative justify-self-end">
-            <button onClick={() => setMenu((m) => !m)} aria-label="Ações e informações" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass">
-              <MoreHorizontal className="h-[18px] w-[18px]" />
-            </button>
-            <Dropdown open={menu} onClose={() => setMenu(false)} items={menuItems} placement="bottom-end" />
-          </div>
-        </header>
+          <Dropdown open={menu} onClose={() => setMenu(false)} items={menuItems} placement="bottom-end" />
+        </div>
+      </header>
 
-        {/* o que foi dito e a resposta, em níveis */}
-        <div
-          ref={textRef}
-          className={"scroll-smooth-area flex min-h-0 shrink-0 flex-col px-6 pt-8 " + (mode === 'text' ? 'max-h-[30%]' : 'max-h-[54%]')}
-          style={{ maskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)' }}
-          aria-live="polite"
-        >
-          <div className="pb-2">
-            {error ? (
-              <p className="anim-fade-in text-[17px] leading-snug text-ink/60">{error}</p>
-            ) : !userText && !replyText && history.length === 0 ? (
-              <p className="text-[clamp(24px,2vw+14px,30px)] font-medium leading-tight tracking-[-0.02em] text-ink/35">
-                Pode falar.
-                <span className="text-ink"> Eu estou ouvindo.</span>
-              </p>
-            ) : (
-              <>
-                {history.length > 0 && (
-                  <div className="mb-5 space-y-3 opacity-80">
-                    {history.map((h, i) => (
-                      <div key={i}>
-                        <p className="text-[15px] leading-snug text-ink/45">{h.q}</p>
-                        <p className="mt-0.5 text-[14px] leading-snug text-ink/35">{h.a}</p>
-                      </div>
+      {/* o orbe: o buraco negro muda de forma a cada estágio */}
+      <div className={"relative z-0 " + (emptyIdle && mode === "voice" ? "min-h-0 flex-1" : "shrink-0")} style={emptyIdle && mode === "voice" ? undefined : { height: orbH }}>
+        <VoidParticles state={status} stage={stageOf(status, phase)} pulse={pulse} dark={dark} sizeMul={0.95} className="pointer-events-none absolute inset-0 h-full w-full" />
+      </div>
+
+      {/* estado, sempre visível */}
+      <div className="relative z-10 flex h-10 shrink-0 items-center justify-center" aria-live="polite">
+        {label && (
+          <span key={label} className="glass anim-fade-up flex items-center gap-2 rounded-full px-4 py-1.5 text-[15px] font-medium">
+            {label}
+            {(status === 'listening' || status === 'speaking' || status === 'thinking') && (
+              <span className="inline-flex gap-0.5" aria-hidden="true">
+                {[0, 1, 2].map((i) => (
+                  <span key={i} className="anim-orb h-1.5 w-1.5 rounded-full bg-ink/70" style={{ animationDelay: (i * 160) + 'ms' }} />
+                ))}
+              </span>
+            )}
+          </span>
+        )}
+      </div>
+
+      {/* conversa: texto grande, em níveis */}
+      <div
+        ref={textRef}
+        className={(emptyIdle && mode === "voice" ? "hidden " : "") + "scroll-smooth-area relative z-10 min-h-0 flex-1 px-[clamp(22px,7vw,40px)]"}
+        style={{ paddingBottom: mode === 'voice' ? 138 : 124, maskImage: 'linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 40px), transparent)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 40px), transparent)' }}
+        aria-live="polite"
+      >
+        <div className="mx-auto w-full max-w-[640px] pt-2 text-center">
+          {error ? (
+            <p className="anim-fade-in text-[17px] leading-snug text-ink/60">{error}</p>
+          ) : emptyIdle ? null : (
+            <>
+              {history.length > 0 && (
+                <div className="mb-6 space-y-3">
+                  {history.map((h, i) => (
+                    <div key={i} className="opacity-70">
+                      <p className="text-[15px] leading-snug text-ink/50">{h.q}</p>
+                      <p className="mt-0.5 text-[14px] leading-snug text-ink/35">{h.a}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {userText && (
+                <section className="anim-fade-up">
+                  <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.16em] text-ink/40">Você</h2>
+                  <p className="text-[clamp(19px,1.8vw+12px,25px)] font-medium leading-[1.25] tracking-[-0.01em] text-ink/55">{userText}</p>
+                </section>
+              )}
+              {replyText && (
+                <section className="anim-fade-up mt-6">
+                  <h2 className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.16em] text-ink/40">Void</h2>
+                  <p className="text-[clamp(24px,3vw+12px,32px)] font-medium leading-[1.18] tracking-[-0.02em]">
+                    {replyHead}
+                    <span className="text-ink/50">{replyTail}</span>
+                    {status === 'speaking' && <span className="ml-1 inline-block h-[0.9em] w-[3px] animate-blink bg-ink align-[-0.1em]" />}
+                  </p>
+                </section>
+              )}
+              {replyText && status !== 'speaking' && citations.length > 0 && (
+                <section className="anim-fade-up mt-5">
+                  <h2 className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.16em] text-ink/40">Fontes</h2>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {citations.slice(0, 3).map((c, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-ink/10 px-2.5 py-1 text-[12px] text-ink/70">
+                        <FileText className="h-3 w-3" />
+                        {c.title.length > 26 ? c.title.slice(0, 26) + '…' : c.title}
+                      </span>
                     ))}
                   </div>
-                )}
-                {userText && (
-                  <section className="anim-fade-up">
-                    <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Você</h2>
-                    <p className="text-[clamp(22px,1.8vw+13px,28px)] font-medium leading-[1.2] tracking-[-0.015em]">
-                      <span className="text-ink/40">{words.slice(0, Math.max(0, words.length - 2)).join(' ')} </span>
-                      <span className="text-ink">{words.slice(Math.max(0, words.length - 2)).join(' ')}</span>
-                    </p>
-                  </section>
-                )}
-                {replyText && (
-                  <section className="anim-fade-up mt-5">
-                    <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Void</h2>
-                    <p className="text-[clamp(18px,1.2vw+13px,22px)] leading-snug tracking-[-0.01em]">
-                      <span className="text-ink/60">{replyHead}</span>
-                      <span className="font-semibold text-ink">{replyTail}</span>
-                      {status === 'speaking' && <span className="ml-0.5 inline-block h-4 w-[2px] animate-blink bg-ink align-middle" />}
-                    </p>
-                  </section>
-                )}
-                {replyText && status !== 'speaking' && citations.length > 0 && (
-                  <section className="anim-fade-up mt-4">
-                    <h2 className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Fontes</h2>
-                    <div className="flex flex-wrap gap-1.5">
-                      {citations.slice(0, 3).map((c, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 rounded-full bg-ink/10 px-2.5 py-1 text-[12px] text-ink/70">
-                          <FileText className="h-3 w-3" />
-                          {c.title.length > 26 ? c.title.slice(0, 26) + '…' : c.title}
-                        </span>
-                      ))}
-                    </div>
-                  </section>
-                )}
-                {(replyText || history.length > 0) && status !== 'speaking' && status !== 'thinking' && (
-                  <div className="anim-fade-up mt-5 flex flex-wrap gap-2">
-                    <button onClick={onMic} className="glass-ink press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
-                      <Mic className="h-4 w-4" /> Continuar falando
-                    </button>
-                    {canOpenChat && (
-                      <button onClick={onOpenChat} className="glass press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
-                        <MessageSquare className="h-4 w-4" /> Abrir no chat
-                      </button>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* onda luminosa */}
-        <div className="relative flex min-h-[130px] flex-1 items-center">
-          <canvas ref={waveSlot} className="h-[240px] w-full shrink-0" aria-hidden="true" />
-        </div>
-
-        {/* estado, sempre visível */}
-        <div className="flex h-10 items-center justify-center" aria-live="polite">
-          {label && (
-            <span key={label} className="anim-fade-up flex items-center gap-2 rounded-full px-4 py-1.5 text-[15px] font-medium text-ink">
-              {label}
-              {(status === 'listening' || status === 'speaking' || status === 'thinking') && (
-                <span className="inline-flex gap-0.5" aria-hidden="true">
-                  {[0, 1, 2].map((i) => (
-                    <span key={i} className="anim-orb h-1.5 w-1.5 rounded-full bg-ink/70" style={{ animationDelay: (i * 160) + 'ms' }} />
-                  ))}
-                </span>
+                </section>
               )}
-            </span>
+              {(replyText || history.length > 0) && status !== 'speaking' && status !== 'thinking' && (
+                <div className="anim-fade-up mt-5 flex flex-wrap justify-center gap-2">
+                  <button onClick={onMic} className="glass-ink press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
+                    <Mic className="h-4 w-4" /> Continuar falando
+                  </button>
+                  {canOpenChat && (
+                    <button onClick={onOpenChat} className="glass press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
+                      <MessageSquare className="h-4 w-4" /> Abrir no chat
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
-
-        {/* espaço reservado para os botões, que ficam acima de tudo */}
-        <div className={"shrink-0 transition-all duration-300 " + (mode === 'voice' ? 'h-[122px]' : 'h-0')} />
-      </section>
+      </div>
 
       {/* botões de baixo: ficam acima de qualquer camada para sempre receber o toque */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center pb-[max(env(safe-area-inset-bottom),22px)]">
