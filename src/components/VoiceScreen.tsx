@@ -299,8 +299,8 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         </div>
 
         {/* onda luminosa */}
-        <div className="relative min-h-[130px] flex-1">
-          <canvas ref={waveSlot} className="absolute inset-0 h-full w-full" aria-hidden="true" />
+        <div className="relative flex min-h-[130px] flex-1 items-center">
+          <canvas ref={waveSlot} className="h-[200px] w-full shrink-0" aria-hidden="true" />
         </div>
 
         {/* espaço reservado para os botões, que ficam acima de tudo */}

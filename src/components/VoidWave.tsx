@@ -18,9 +18,9 @@ interface Props {
 const FORMS: Record<Stage, { amp: number; speed: number; lines: number; scan: number; arc: number }> = {
   idle: { amp: 0.36, speed: 0.85, lines: 5, scan: 0, arc: 0.5 },
   listen: { amp: 0.45, speed: 1.1, lines: 5, scan: 0, arc: 0.65 },
-  read: { amp: 0.3, speed: 0.9, lines: 4, scan: 1, arc: 0.65 },
+  read: { amp: 0.3, speed: 1.2, lines: 4, scan: 0, arc: 0.65 },
   search: { amp: 0.42, speed: 1.9, lines: 6, scan: 0, arc: 0.75 },
-  diagnose: { amp: 0.07, speed: 2.4, lines: 2, scan: 0, arc: 1 },
+  diagnose: { amp: 0.22, speed: 2.6, lines: 3, scan: 0, arc: 1 },
   speak: { amp: 0.55, speed: 1.0, lines: 5, scan: 0, arc: 0.8 },
 };
 
@@ -55,6 +55,7 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
     const size = { aw: 0, ah: 0, ww: 0, wh: 0 };
     let redraw: (() => void) | null = null;
     const fit = () => {
+      if (wave.clientWidth === size.ww && wave.clientHeight === size.wh && arc.clientWidth === size.aw && arc.clientHeight === size.ah) return;
       size.aw = arc.clientWidth;
       size.ah = arc.clientHeight;
       size.ww = wave.clientWidth;
@@ -150,7 +151,7 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
         wctx.clearRect(0, 0, w, h);
         wctx.globalAlpha = ap;
         const cy = h / 2;
-        const amp = (form.amp * (0.78 + 0.22 * Math.sin(t * 0.7)) + (s.stage === 'speak' || s.stage === 'listen' ? level * 0.28 : 0)) * h * 0.5; // parado, ela continua viva
+        const amp = (form.amp * (0.78 + 0.22 * Math.sin(t * 0.7)) + (s.stage === 'speak' || s.stage === 'listen' ? level * 0.28 : 0)) * h * 0.72; // parado, ela continua viva
         const n = Math.round(form.lines);
         for (let li = 0; li < LINES.length; li++) {
           const L = LINES[li];
@@ -173,17 +174,6 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
           wctx.stroke();
         }
         wctx.shadowBlur = 0;
-        // varredura de luz (lendo a pergunta)
-        if (form.scan > 0.03) {
-          const sx = ((Math.sin(t * 1.6) + 1) / 2) * w;
-          const sg = wctx.createLinearGradient(sx - w * 0.18, 0, sx + w * 0.18, 0);
-          const c2 = dk ? '255,255,255' : '17,17,17';
-          sg.addColorStop(0, 'rgba(' + c2 + ',0)');
-          sg.addColorStop(0.5, 'rgba(' + c2 + ',' + 0.35 * form.scan + ')');
-          sg.addColorStop(1, 'rgba(' + c2 + ',0)');
-          wctx.fillStyle = sg;
-          wctx.fillRect(0, cy - h * 0.3, w, h * 0.6);
-        }
         void n;
         wctx.globalAlpha = 1;
       }
