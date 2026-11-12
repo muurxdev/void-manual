@@ -3,7 +3,8 @@ import { ArrowLeft, Keyboard, Mic, Square, ArrowUp, MessageSquare, FileText, X, 
 import { useFeedback } from './Feedback';
 import { Dropdown, type MenuItem } from './ui';
 import { type VoiceState } from './Particles';
-import { VoidParticles, stageOf } from './VoidParticles';
+import { stageOf } from './VoidParticles';
+import { VoidBubble } from './VoidBubble';
 
 interface Cite {
   title: string;
@@ -185,10 +186,14 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   const label = status === 'thinking' ? phase : error ? '' : LABEL[status];
   const words = userText.split(' ').filter(Boolean);
   const splitAt = status === 'listening' ? Math.max(0, words.length - 4) : words.length;
+  const rw = replyText.split(' ');
+  const cut = status === 'speaking' ? Math.max(0, rw.length - 3) : rw.length;
+  const replyHead = rw.slice(0, cut).join(' ') + (cut > 0 && cut < rw.length ? ' ' : '');
+  const replyTail = rw.slice(cut).join(' ');
   const side = 'clamp(16px,5.6vw,40px)';
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden text-ink" style={{ background: dark ? 'radial-gradient(120% 70% at 50% 28%, #161616 0%, #070707 62%, #000 100%)' : 'radial-gradient(120% 70% at 50% 28%, #ffffff 0%, #f6f6f6 62%, #ececec 100%)' }}>
+    <div className="relative flex h-full flex-col overflow-hidden text-ink" style={{ background: dark ? 'radial-gradient(110% 60% at 50% 30%, #15121f 0%, #07060b 60%, #000 100%)' : 'linear-gradient(180deg, #fde9f2 0%, #efe9ff 42%, #f7f9ff 72%, #ffffff 100%)' }}>
       <header className="safe-top relative z-20 grid grid-cols-[48px_1fr_48px] items-center" style={{ paddingInline: side }}>
         <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
           <ArrowLeft className="h-[18px] w-[18px]" />
@@ -209,9 +214,9 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       </header>
 
       {/* a marca vira uma nuvem de pontos viva, no meio da tela */}
-      <VoidParticles centerY={0.4} state={status} stage={stageOf(status, phase)} pulse={pulse} dark={dark} className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
+      <VoidBubble centerY={0.4} state={status} stage={stageOf(status, phase)} pulse={pulse} dark={dark} className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
 
-      <div className="pointer-events-none absolute inset-x-0 z-10 flex justify-center" style={{ top: 'calc(40% + min(22vw, 13vh) + 6px)' }} aria-live="polite">
+      <div className="pointer-events-none absolute inset-x-0 z-10 flex justify-center" style={{ top: 'calc(40% + min(28vw, 20vh) + 6px)' }} aria-live="polite">
         {label && (
           <span key={label} className="glass anim-fade-up flex items-center gap-2 rounded-full px-5 py-2 text-[16px] font-medium text-ink">
             {label}
@@ -230,7 +235,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       <div
         ref={textRef}
         className="scroll-smooth-area absolute inset-x-0 z-10 mx-auto flex w-full max-w-[640px] flex-col px-[clamp(22px,7vw,44px)]"
-        style={{ top: 'calc(40% + min(22vw, 13vh) + 58px)', bottom: 128, maskImage: 'linear-gradient(to bottom, transparent 0, #000 56px, #000 calc(100% - 12px), transparent)' }}
+        style={{ top: 'calc(40% + min(28vw, 20vh) + 58px)', bottom: 128, maskImage: 'linear-gradient(to bottom, transparent 0, #000 56px, #000 calc(100% - 12px), transparent)' }}
         aria-live="polite"
       >
         <div className="mt-auto pb-3">
@@ -250,8 +255,8 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
               {replyText && (
                 <section className="anim-fade-up mt-6 text-center">
                   <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Void</h2>
-                  <p className="text-[17px] leading-relaxed text-ink/90">
-                    {replyText}
+                  <p className="text-[clamp(20px,1.4vw+14px,24px)] font-medium leading-snug tracking-[-0.01em] text-ink">
+                    {replyHead}<span className="bg-gradient-to-r from-[#ff7ab8] to-[#8a6bff] bg-clip-text text-transparent">{replyTail}</span>
                     {status === 'speaking' && <span className="ml-0.5 inline-block h-4 w-[2px] animate-blink bg-ink align-middle" />}
                   </p>
                 </section>
