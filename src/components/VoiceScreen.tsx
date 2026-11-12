@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Keyboard, Mic, Square, ArrowUp, MessageSquare, FileText, X, Plus, BookOpen, Image as ImageIcon, MoreHorizontal, Info } from 'lucide-react';
 import { useFeedback } from './Feedback';
 import { Dropdown, type MenuItem } from './ui';
-import { type VoiceState } from './Particles';
+import { type VoiceState } from '../data/types';
 import { stageOf } from './VoidParticles';
 import { VoidWave } from './VoidWave';
 

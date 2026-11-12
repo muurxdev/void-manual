@@ -25,7 +25,7 @@ const Radio: React.FC<{ on: boolean }> = ({ on }) => (
 
 /** Faixa fixa embaixo: o dado (preço) vai dentro do botão, uma ação só. */
 const Cta: React.FC<{ onClick: () => void; children: React.ReactNode; note?: string; disabled?: boolean }> = ({ onClick, children, note, disabled }) => (
-  <div className="sticky bottom-[104px] z-10 -mx-1 mt-6 px-1">
+  <div>
     <button onClick={onClick} disabled={disabled} className="glass-ink press h-[56px] w-full rounded-full text-[16px] font-medium disabled:opacity-50">
       {children}
     </button>
@@ -66,7 +66,7 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
   /* ---------- 3. confirmação ---------- */
   if (step === 'done') {
     return (
-      <ScreenPanel title="Pronto" onClose={onClose}>
+      <ScreenPanel title="Pronto" onClose={onClose} footer={<Cta onClick={onClose}>Voltar ao Void</Cta>}>
         <div className="flex flex-col items-center py-10 text-center">
           <span className="glass-ink anim-pop flex h-20 w-20 items-center justify-center rounded-full">
             <Check className="h-9 w-9 stroke-[3]" />
@@ -76,7 +76,6 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
             {PAYMENTS_LIVE ? 'Seu plano ' + chosen.name + ' já está valendo.' : 'Assim que o pagamento abrir, avisamos você para ativar o plano ' + chosen.name + '.'}
           </p>
         </div>
-        <Cta onClick={onClose}>Voltar ao Void</Cta>
       </ScreenPanel>
     );
   }
@@ -84,7 +83,17 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
   /* ---------- 2. pagamento ---------- */
   if (step === 'pay') {
     return (
-      <ScreenPanel title="Pagamento" subtitle="Passo 2 de 3" onClose={onClose} onBack={() => setStep('plans')}>
+      <ScreenPanel
+        title="Pagamento"
+        subtitle="Passo 2 de 3"
+        onClose={onClose}
+        onBack={() => setStep('plans')}
+        footer={
+          <Cta onClick={pay} note="Pagamento seguro pelo PagBank">
+            Pagar {money(total)} {method === 'pix' ? 'com Pix' : 'no cartão'}
+          </Cta>
+        }
+      >
         <div className="mb-5 flex gap-1.5" aria-hidden="true">
           {[0, 1, 2].map((n) => (
             <span key={n} className={'h-1 flex-1 rounded-full ' + (n <= 1 ? 'bg-ink' : 'bg-ink/10')} />
@@ -134,7 +143,7 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2 text-[15px] font-medium">
                     {m.t}
-                    {m.tag && <span className="rounded-full bg-fill px-2 py-0.5 text-[11px] font-medium text-sub">{m.tag}</span>}
+                    {m.tag && <span className="rounded-full bg-fill px-2 py-0.5 text-[12px] font-medium text-sub">{m.tag}</span>}
                   </span>
                   <span className="block text-[12.5px] text-sub">{m.s}</span>
                 </span>
@@ -148,16 +157,22 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
           {annual ? 'Renova uma vez por ano.' : 'Renova todo mês.'} Cancele quando quiser em Configurações. Seus dados de pagamento não passam pelo Void.
         </p>
 
-        <Cta onClick={pay} note="Pagamento seguro pelo PagBank">
-          Pagar {money(total)} {method === 'pix' ? 'com Pix' : 'no cartão'}
-        </Cta>
       </ScreenPanel>
     );
   }
 
   /* ---------- 1. escolher ---------- */
   return (
-    <ScreenPanel title="Planos" subtitle="Escolha como usar o Void" onClose={onClose}>
+    <ScreenPanel
+      title="Planos"
+      subtitle="Escolha como usar o Void"
+      onClose={onClose}
+      footer={
+        <Cta onClick={() => setStep('pay')} note="Cancele quando quiser">
+          Continuar com o {chosen.name} · {money(monthlyPrice(chosen, annual))}/mês
+        </Cta>
+      }
+    >
       <section className="card p-4">
         <div className="flex items-center justify-between gap-3">
           <p className="text-[13px] text-sub">Seu plano agora</p>
@@ -218,8 +233,8 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="text-[18px] font-medium">{p.name}</span>
-                    {p.highlight && <span className="rounded-full bg-ink px-2.5 py-0.5 text-[11px] font-medium text-paper">Mais escolhido</span>}
-                    {inList && <span className="rounded-full bg-fill px-2.5 py-0.5 text-[11px] font-medium text-sub">Na lista</span>}
+                    {p.highlight && <span className="rounded-full bg-ink px-2.5 py-0.5 text-[12px] font-medium text-paper">Mais escolhido</span>}
+                    {inList && <span className="rounded-full bg-fill px-2.5 py-0.5 text-[12px] font-medium text-sub">Na lista</span>}
                   </span>
                   <span className="block text-[13px] text-sub">{p.tagline}</span>
                 </span>
@@ -241,9 +256,6 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
         })}
       </div>
 
-      <Cta onClick={() => setStep('pay')} note="Cancele quando quiser">
-        Continuar com o {chosen.name} · {money(monthlyPrice(chosen, annual))}/mês
-      </Cta>
     </ScreenPanel>
   );
 };

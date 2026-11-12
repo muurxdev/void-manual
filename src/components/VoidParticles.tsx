@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import type { VoiceState } from './Particles';
+import type { VoiceState } from '../data/types';
 
 /** Estágios da animação: a marca muda de forma conforme o Void ouve, lê, procura, diagnostica e responde. */
 export type Stage = 'idle' | 'listen' | 'read' | 'search' | 'diagnose' | 'speak';

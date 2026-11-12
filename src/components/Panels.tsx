@@ -8,6 +8,8 @@ interface PanelBase {
   showBack?: boolean;
   /** o que a seta faz; por padrão fecha a tela */
   onBack?: () => void;
+  /** ação principal fixa embaixo; a lista rola inteira acima dela, sem ficar escondida */
+  footer?: React.ReactNode;
   title: string;
   subtitle?: string;
   onClose: () => void;
@@ -20,7 +22,7 @@ interface PanelBase {
  * sai da esquerda para a direita. Também fecha arrastando da borda
  * esquerda para a direita (como nos apps do celular).
  * ========================================================== */
-export const ScreenPanel: React.FC<PanelBase> = ({ title, subtitle, onClose, headerExtra, children, showBack = true, onBack }) => {
+export const ScreenPanel: React.FC<PanelBase> = ({ title, subtitle, onClose, headerExtra, children, showBack = true, onBack, footer }) => {
   const root = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const shade = useRef<HTMLDivElement>(null);
@@ -145,12 +147,17 @@ export const ScreenPanel: React.FC<PanelBase> = ({ title, subtitle, onClose, hea
         </div>
         <PullRefresh target={body} />
         <div ref={body} className="scroll-smooth-area min-h-0 flex-1">
-          <div className="mx-auto w-full max-w-[760px] px-[22px] pb-[max(env(safe-area-inset-bottom),28px)] [padding-bottom:170px]">
+          <div className={'mx-auto w-full max-w-[760px] px-[22px] ' + (footer ? 'pb-6' : '[padding-bottom:104px]')}>
             <h1 className="mt-3 text-[clamp(28px,4vw+14px,38px)] font-medium leading-tight tracking-[-0.02em]">{title}</h1>
             {subtitle && <p className="mt-1 text-[14px] text-sub">{subtitle}</p>}
             <div className="mt-5">{children}</div>
           </div>
         </div>
+        {footer && (
+          <div className="shrink-0 pb-[calc(env(safe-area-inset-bottom)+84px)] pt-3" style={{ background: 'linear-gradient(to top, rgb(var(--paper)) 72%, rgb(var(--paper) / 0))' }}>
+            <div className="mx-auto w-full max-w-[760px] px-[22px]">{footer}</div>
+          </div>
+        )}
       </div>
     </>
   );

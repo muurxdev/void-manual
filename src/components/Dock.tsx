@@ -34,7 +34,7 @@ export function useDockScroll(ref: RefObject<HTMLElement | null>) {
   }, [ref]);
 }
 
-const dockBtn = 'press relative flex h-12 w-[54px] items-center justify-center rounded-full transition-colors';
+const dockBtn = 'press relative flex h-11 w-[52px] items-center justify-center rounded-full transition-colors';
 
 interface DockProps {
   active: 'home' | 'settings' | '';
@@ -84,10 +84,10 @@ export const Dock: React.FC<DockProps> = ({ active, onHome, onNewChat, onVoice, 
     return () => window.removeEventListener('void-dock', on);
   }, []);
   const ICON = {
-    chat: <MessageSquarePlus className="h-[26px] w-[26px]" />,
-    voz: <Mic className="h-[26px] w-[26px]" />,
-    arq: <UploadCloud className="h-[26px] w-[26px]" />,
-    lib: <BookOpen className="h-[26px] w-[26px]" />,
+    chat: <MessageSquarePlus className="h-[24px] w-[24px]" />,
+    voz: <Mic className="h-[24px] w-[24px]" />,
+    arq: <UploadCloud className="h-[24px] w-[24px]" />,
+    lib: <BookOpen className="h-[24px] w-[24px]" />,
   } as const;
   const items: MenuItem[] = [
     { key: 'chat', label: 'Nova conversa', hint: 'Escreva uma pergunta', icon: <MessageSquarePlus className="h-4 w-4" />, selected: quickActive === 'chat', onSelect: onNewChat },
@@ -100,19 +100,19 @@ export const Dock: React.FC<DockProps> = ({ active, onHome, onNewChat, onVoice, 
     <nav
       ref={nav}
       style={{ transform: hidden || kb ? 'translate3d(0, 160%, 0)' : 'none', transition: 'transform 600ms var(--spring-soft)' }}
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[45] flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+56px)]"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-[45] flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+14px)]"
       aria-label="Principal"
     >
       <div className="pointer-events-auto flex items-center gap-3">
-        <div className="glass flex h-[64px] items-center rounded-full px-3">
+        <div className="glass flex h-[56px] items-center rounded-full px-2">
           <button onClick={onHome} aria-label="Início" aria-current={active === 'home' ? 'page' : undefined} className={`${dockBtn} ${tone('home')}`}>
-            <House className={`h-[24px] w-[24px] ${active === 'home' ? 'fill-current' : ''}`} />
+            <House className={`h-[22px] w-[22px] ${active === 'home' ? 'fill-current' : ''}`} />
           </button>
           <button onClick={onVoice} aria-label="Voz" className={`${dockBtn} text-ink/45`}>
-            <Mic className="h-[24px] w-[24px]" />
+            <Mic className="h-[22px] w-[22px]" />
           </button>
           <button onClick={onSettings} aria-label="Configurações" aria-current={active === 'settings' ? 'page' : undefined} className={`${dockBtn} ${tone('settings')}`}>
-            <Settings className={`h-[24px] w-[24px] ${active === 'settings' ? 'fill-current' : ''}`} />
+            <Settings className={`h-[22px] w-[22px] ${active === 'settings' ? 'fill-current' : ''}`} />
           </button>
         </div>
 
@@ -123,13 +123,13 @@ export const Dock: React.FC<DockProps> = ({ active, onHome, onNewChat, onVoice, 
             aria-label="Ações rápidas"
             aria-haspopup="menu"
             aria-expanded={quick}
-            className="glass-ink press flex h-[64px] w-[64px] items-center justify-center rounded-full"
+            className="glass-ink press flex h-[56px] w-[56px] items-center justify-center rounded-full"
           >
             <span key={quickActive || 'plus'} className="anim-pop flex items-center justify-center">
               {quickActive ? (
                 ICON[quickActive]
               ) : (
-                <Plus className="h-[26px] w-[26px] stroke-[2.4] transition-transform duration-500" style={{ transform: quick ? 'rotate(135deg)' : 'none', transitionTimingFunction: 'var(--spring)' }} />
+                <Plus className="h-[24px] w-[24px] stroke-[2.4] transition-transform duration-500" style={{ transform: quick ? 'rotate(135deg)' : 'none', transitionTimingFunction: 'var(--spring)' }} />
               )}
             </span>
           </button>

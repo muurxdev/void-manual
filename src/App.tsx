@@ -6,7 +6,7 @@ import { Dock } from './components/Dock';
 import { useFeedback } from './components/Feedback';
 import { AuthFlow } from './components/Auth';
 import { GlassDefs } from './components/Glass';
-import type { VoiceState } from './components/Particles';
+import type { VoiceState } from './data/types';
 import { useTheme, detectLens } from './data/theme';
 import { loadPrefs, speakText, type SpeakHandle } from './data/tts';
 import { voiceSummary } from './data/voiceText';

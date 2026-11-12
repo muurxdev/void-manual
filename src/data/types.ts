@@ -63,3 +63,6 @@ export interface WorkshopProfile {
   apiUrl: string;
   photo?: string;
 }
+
+/** Estado da conversa por voz. */
+export type VoiceState = 'idle' | 'listening' | 'thinking' | 'speaking';

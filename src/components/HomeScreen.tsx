@@ -158,7 +158,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
       </div>
 
       <PullRefresh target={scroller} />
-      <div ref={scroller} className="scroll-smooth-area safe-top relative flex-1 pb-40">
+      <div ref={scroller} className="scroll-smooth-area safe-top relative flex-1 pb-28">
         <div className="mx-auto w-full max-w-[1040px] px-[clamp(16px,5.6vw,40px)]">
           <header className="relative z-20 flex items-center justify-between">
             <div className="relative">

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import type { VoiceState } from './Particles';
+import type { VoiceState } from '../data/types';
 import { stageOf, type Stage } from './VoidParticles';
 
 interface Props {

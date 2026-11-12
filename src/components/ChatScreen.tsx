@@ -366,7 +366,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                         {user ? (
                           <p className="whitespace-pre-wrap text-[14px] leading-relaxed">{m.content}</p>
                         ) : (
-                          m.isStreaming && !m.content ? (
+                          m.isStreaming && !m.content.trim() ? (
                             <Thinking />
                           ) : (
                             <>
@@ -436,8 +436,8 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         {isStreaming && (
           <div className="mb-3 flex justify-center">
             <button onClick={onStop} className="press anim-pop glass-ink flex items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-medium">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white">
-                <Square className="h-2.5 w-2.5 fill-ink text-ink" />
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white">
+                <Square className="h-3 w-3 fill-black text-black" />
               </span>
               Parar resposta
             </button>

@@ -136,7 +136,7 @@ export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         </div>
       )}
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] flex flex-col-reverse items-center gap-2 px-4 pb-[calc(max(env(safe-area-inset-bottom),12px)+138px)]" aria-live="polite">
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] flex flex-col-reverse items-center gap-2 px-4 pb-[calc(max(env(safe-area-inset-bottom),12px)+92px)]" aria-live="polite">
         {toasts.map((t) => (
           <div
             key={t.id}
