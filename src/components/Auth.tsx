@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { VoidMark } from './VoidMark';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
 import { signIn, signUp, resetPassword, passwordStrength, type Account } from '../data/auth';
 import { transition } from '../data/nav';
 import { DustField } from './DustField';
+import { VoidParticles } from './VoidParticles';
 
 type View = 'welcome' | 'signin' | 'signup' | 'reset';
 
@@ -35,7 +35,7 @@ const Field: React.FC<{
       {icon}
       {label}
     </span>
-    <span className={`glass flex items-center rounded-2xl pr-2 ${invalid ? 'ring-1 ring-red-500' : ''}`}>
+    <span className={`glass flex items-center overflow-hidden rounded-2xl pr-2 ${invalid ? 'ring-1 ring-red-500' : ''}`}>
       <input
         type={type}
         value={value}
@@ -49,6 +49,79 @@ const Field: React.FC<{
     </span>
   </label>
 );
+
+const SLIDES = [
+  { t: 'Libere o conhecimento', t2: 'de qualquer máquina.', s: 'Seu manual vivo para moto, carro, trator e mais.' },
+  { t: 'Pergunte, fale', t2: 'ou envie arquivos.', s: 'Texto, voz, PDF, planilha, foto e áudio: o Void lê e entende.' },
+  { t: 'Respostas com fonte,', t2: 'direto na bancada.', s: 'Torque, folgas e códigos de falha, com o manual de onde veio.' },
+];
+
+/** Entrada: nuvem de pontos da marca, três mensagens que passam sozinhas e um único caminho principal. */
+const Welcome: React.FC<{ dark: boolean; onStart: () => void; onSignin: () => void }> = ({ dark, onStart, onSignin }) => {
+  const [i, setI] = useState(0);
+  const [pulse, setPulse] = useState(0);
+  const touch = useRef<number | null>(null);
+  const hold = useRef(false);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      if (hold.current) return;
+      setI((n) => (n + 1) % SLIDES.length);
+      setPulse((p) => p + 1);
+    }, 4800);
+    return () => window.clearInterval(id);
+  }, []);
+  const go = (n: number) => {
+    hold.current = true;
+    setI((n + SLIDES.length) % SLIDES.length);
+    setPulse((p) => p + 1);
+    window.setTimeout(() => (hold.current = false), 8000);
+  };
+
+  return (
+    <div
+      className="safe-top safe-bottom relative mx-auto flex min-h-[100dvh] w-full max-w-[520px] flex-1 flex-col px-[clamp(20px,6vw,40px)]"
+      onTouchStart={(e) => (touch.current = e.touches[0].clientX)}
+      onTouchEnd={(e) => {
+        if (touch.current === null) return;
+        const dx = e.changedTouches[0].clientX - touch.current;
+        touch.current = null;
+        if (Math.abs(dx) > 50) go(i + (dx < 0 ? 1 : -1));
+      }}
+    >
+      <div className="relative -mx-[clamp(20px,6vw,40px)] min-h-0 flex-1" style={{ minHeight: '44dvh' }}>
+        <VoidParticles state="idle" pulse={pulse} dark={dark} className="pointer-events-none absolute inset-0 h-full w-full" />
+      </div>
+
+      <div className="pb-2 text-center" aria-live="polite">
+        <h1 key={i} className="anim-fade-up text-[clamp(30px,4vw+16px,42px)] font-medium leading-[1.1] tracking-[-0.02em]">
+          {SLIDES[i].t}
+          <br />
+          <span className="text-sub">{SLIDES[i].t2}</span>
+        </h1>
+        <p key={'s' + i} className="anim-fade-up mx-auto mt-3 min-h-[44px] max-w-[330px] text-[15px] leading-relaxed text-sub" style={{ ['--i' as string]: 1 }}>
+          {SLIDES[i].s}
+        </p>
+        <div className="mt-2 flex justify-center" role="tablist" aria-label="Mensagens">
+          {SLIDES.map((_, n) => (
+            <button key={n} role="tab" aria-selected={n === i} aria-label={`Mensagem ${n + 1}`} onClick={() => go(n)} className="flex h-11 w-8 items-center justify-center">
+              <span className={`block h-1.5 rounded-full bg-ink transition-all duration-300 ${n === i ? 'w-6' : 'w-1.5 opacity-25'}`} />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2 pb-4 pt-1">
+        <button onClick={onStart} className="glass-ink press h-[56px] rounded-full text-[16px] font-medium">
+          Começar
+        </button>
+        <button onClick={onSignin} className="press min-h-12 rounded-full text-[15px] text-sub">
+          Já tenho conta · <span className="font-medium text-ink underline underline-offset-4">Entrar</span>
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export const AuthFlow: React.FC<AuthProps> = ({ dark, onDone, initial = 'welcome' }) => {
   const [view, setView] = useState<View>(initial);
@@ -134,25 +207,7 @@ export const AuthFlow: React.FC<AuthProps> = ({ dark, onDone, initial = 'welcome
   if (view === 'welcome') {
     return (
       <Shell dark={dark}>
-        <div className="safe-top safe-bottom mx-auto flex w-full max-w-[460px] flex-1 flex-col items-center justify-center px-[clamp(20px,6vw,40px)] text-center">
-          <VoidMark size={84} className="anim-float mb-8 text-ink" />
-          <h1 className="anim-fade-up text-[clamp(30px,4vw+16px,44px)] font-medium leading-[1.1] tracking-[-0.02em]">
-            Libere o conhecimento
-            <br />
-            de <span className="text-sub">qualquer máquina.</span>
-          </h1>
-          <p className="anim-fade-up mt-4 max-w-[340px] text-[15px] leading-relaxed text-sub" style={{ ['--i' as string]: 2 }}>
-            Seu manual vivo para moto, carro, trator e mais. Pergunte, fale ou envie seus arquivos.
-          </p>
-          <div className="anim-fade-up mt-10 flex w-full flex-col gap-3" style={{ ['--i' as string]: 3 }}>
-            <button onClick={() => go('signin', 'forward')} className="glass-ink press h-[54px] rounded-full text-[15px] font-medium">
-              Entrar
-            </button>
-            <button onClick={() => go('signup', 'forward')} className="glass press h-[54px] rounded-full text-[15px] font-medium">
-              Criar conta
-            </button>
-          </div>
-        </div>
+        <Welcome dark={dark} onStart={() => go('signup', 'forward')} onSignin={() => go('signin', 'forward')} />
       </Shell>
     );
   }

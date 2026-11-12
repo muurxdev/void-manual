@@ -312,3 +312,17 @@ html, body { overscroll-behavior: none; }
 @keyframes sheetOut { to { opacity: 0; transform: translate3d(0, 40px, 0) scale(.97); } }
 .anim-sheet-in  { animation: sheetIn 560ms var(--spring-soft) both; }
 .anim-sheet-out { animation: sheetOut 260ms var(--ease-in) both; }
+
+/* campos preenchidos pelo navegador mantêm o vidro do app */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: rgb(var(--ink));
+  caret-color: rgb(var(--ink));
+  box-shadow: 0 0 0 1000px transparent inset;
+  -webkit-box-shadow: 0 0 0 1000px transparent inset;
+  transition: background-color 600000s 0s, color 600000s 0s;
+  border-radius: inherit;
+}
