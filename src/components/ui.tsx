@@ -60,8 +60,8 @@ export const Dropdown: React.FC<DropdownProps> = ({ open, onClose, items, placem
       <div
         role="menu"
         aria-label={title}
-        className={`glass-strong absolute z-40 w-[232px] rounded-[22px] p-1.5 ${PLACEMENT[placement]} ${
-          closing ? 'anim-pop-out' : 'anim-pop'
+        className={`menu-surface absolute z-40 w-[232px] rounded-[22px] p-1.5 ${PLACEMENT[placement]} ${
+          closing ? 'menu-out' : 'menu-in'
         }`}
       >
         {title && <p className="px-3 pb-1 pt-2 text-[12px] uppercase tracking-wider text-mute">{title}</p>}

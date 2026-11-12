@@ -288,7 +288,6 @@ html[data-nav='theme']::view-transition-new(root)   { animation: fadeIn 500ms va
 .press:active { transform: scale(.93); transition-duration: 120ms; transition-timing-function: var(--ease-out); }
 .anim-fade-up { animation: fadeUpSpring 620ms var(--spring-soft) both; animation-delay: calc(var(--i, 0) * 45ms); }
 .anim-pop { animation: popIn 520ms var(--spring) both; }
-.menu-item { animation: fadeUpSpring 520ms var(--spring-soft) both; animation-delay: calc(var(--i, 0) * 35ms + 40ms); }
 @keyframes fadeUpSpring { from { opacity: 0; transform: translate3d(0, 22px, 0) scale(.97); } to { opacity: 1; transform: none; } }
 html[data-nav='forward']::view-transition-new(root) { animation-timing-function: var(--spring-soft); animation-duration: 620ms; }
 html[data-nav='back']::view-transition-new(root)    { animation-timing-function: var(--spring-soft); animation-duration: 620ms; }
@@ -334,3 +333,19 @@ select:-webkit-autofill {
 .think-mark { display: inline-flex; animation: thinkSpin 3.4s linear infinite; }
 .think-halo { animation: thinkPulse 1.6s var(--ease-in-out) infinite; }
 .anim-word-in { display: inline-block; animation: wordIn 380ms var(--ease-out) both; }
+
+/* telas cheias (Chat, Voz): abrem expandindo do ponto do toque e voltam para ele */
+@keyframes revealIn  { from { clip-path: circle(0 at var(--nx, 50%) var(--ny, 85%)); } to { clip-path: circle(150vmax at var(--nx, 50%) var(--ny, 85%)); } }
+@keyframes revealOut { from { clip-path: circle(150vmax at var(--nx, 50%) var(--ny, 85%)); } to { clip-path: circle(0 at var(--nx, 50%) var(--ny, 85%)); } }
+html[data-nav='forward']::view-transition-old(root) { animation: none; z-index: 1; }
+html[data-nav='forward']::view-transition-new(root) { animation: revealIn 560ms var(--ease-out) both; z-index: 2; }
+html[data-nav='back']::view-transition-old(root)    { animation: revealOut 480ms var(--ease-in-out) both; z-index: 3; }
+html[data-nav='back']::view-transition-new(root)    { animation: none; z-index: 1; }
+
+/* menu suspenso: sobe de baixo para cima, sem vidro (não pisca) */
+@keyframes menuRise { from { opacity: 0; transform: translate3d(0, 18px, 0) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes menuFall { from { opacity: 1; transform: none; } to { opacity: 0; transform: translate3d(0, 12px, 0) scale(.98); } }
+.menu-in  { animation: menuRise 320ms var(--ease-out) both; }
+.menu-out { animation: menuFall 200ms var(--ease-in) both; }
+.menu-surface { background: rgb(var(--card)); border: 1px solid rgb(var(--ink) / .08); box-shadow: 0 18px 48px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.08); }
+.menu-item { animation: fadeIn 240ms ease-out both; animation-delay: calc(var(--i, 0) * 22ms + 60ms); }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, type RefObject } from 'react';
-import { BookOpen, History, MessageSquarePlus, Mic, Plus, Settings, Sparkles, UploadCloud, User } from 'lucide-react';
+import { BookOpen, History, MessageSquarePlus, Mic, Plus, Settings, Gem, UploadCloud, User } from 'lucide-react';
 import { Dropdown, type MenuItem } from './ui';
 
 /** Quem rola avisa o dock: some ao descer, volta ao subir. */
@@ -86,14 +86,14 @@ export const Dock: React.FC<DockProps> = ({ onNewChat, onVoice, onLibrary, onAdd
     { key: 'lib', label: 'Biblioteca', hint: 'Seus manuais e arquivos', icon: <BookOpen className={ic} />, onSelect: onLibrary },
     { key: 'arq', label: 'Adicionar arquivo', hint: 'PDF, Word, Excel, imagem', icon: <UploadCloud className={ic} />, onSelect: onAddFile },
     { key: 'his', label: 'Conversas', hint: 'Seu histórico', icon: <History className={ic} />, onSelect: onHistory },
-    { key: 'pla', label: 'Planos', hint: 'Limites e assinatura', icon: <Sparkles className={ic} />, onSelect: onPlans },
+    { key: 'pla', label: 'Planos', hint: 'Limites e assinatura', icon: <Gem className={ic} />, onSelect: onPlans },
     { key: 'per', label: 'Perfil', hint: 'Conta e preferências', icon: <User className={ic} />, onSelect: onProfile },
     { key: 'cfg', label: 'Configurações', hint: 'Tema, voz e unidades', icon: <Settings className={ic} />, onSelect: onSettings },
   ];
   return (
     <nav
       style={{ transform: hidden || kb ? 'translate3d(0, 160%, 0)' : 'none', transition: 'transform 600ms var(--spring-soft)' }}
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[45] flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+18px)]"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+18px)]"
       aria-label="Principal"
     >
       <div className="pointer-events-auto relative">

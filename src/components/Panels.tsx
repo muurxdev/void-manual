@@ -165,13 +165,25 @@ export const ScreenPanel: React.FC<PanelBase> = ({ title, subtitle, onClose, hea
             }}
           >
             <span className="mx-auto mb-2 block h-1 w-10 rounded-full bg-ink/15" aria-hidden="true" />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">{headerExtra}</div>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2">
+                {onBack && (
+                  <button onClick={onBack} aria-label="Voltar" className="icon-btn glass shrink-0">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                )}
+                <h1 className="truncate text-[22px] font-medium tracking-[-0.01em]">{title}</h1>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+              {headerExtra}
               <button onClick={close} aria-label="Fechar" className="icon-btn glass">
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                   <path d="M18 6 6 18M6 6l12 12" />
                 </svg>
               </button>
+              </div>
             </div>
           </div>
         ) : (
@@ -190,14 +202,18 @@ export const ScreenPanel: React.FC<PanelBase> = ({ title, subtitle, onClose, hea
         )}
         <PullRefresh target={body} />
         <div ref={body} className="scroll-smooth-area min-h-0 flex-1">
-          <div className={'mx-auto w-full max-w-[760px] px-[22px] ' + (footer ? 'pb-6' : sheet ? '[padding-bottom:48px]' : '[padding-bottom:104px]')}>
-            <h1 className="mt-3 text-[clamp(28px,4vw+14px,38px)] font-medium leading-tight tracking-[-0.02em]">{title}</h1>
-            {subtitle && <p className="mt-1 text-[14px] text-sub">{subtitle}</p>}
+          <div className={'mx-auto w-full max-w-[760px] px-[22px] ' + (footer ? 'pb-6' : sheet ? '[padding-bottom:120px]' : '[padding-bottom:104px]')}>
+            {sheet ? (
+              subtitle && <p className="mt-2 text-[14px] text-sub">{subtitle}</p>
+            ) : (
+              <h1 className="mt-3 text-[clamp(28px,4vw+14px,38px)] font-medium leading-tight tracking-[-0.02em]">{title}</h1>
+            )}
+            {!sheet && subtitle && <p className="mt-1 text-[14px] text-sub">{subtitle}</p>}
             <div className="mt-5">{children}</div>
           </div>
         </div>
         {footer && (
-          <div className="shrink-0 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-3" style={{ background: 'linear-gradient(to top, rgb(var(--paper)) 72%, rgb(var(--paper) / 0))' }}>
+          <div className="shrink-0 pb-[calc(env(safe-area-inset-bottom)+96px)] pt-3" style={{ background: 'linear-gradient(to top, rgb(var(--paper)) 72%, rgb(var(--paper) / 0))' }}>
             <div className="mx-auto w-full max-w-[760px] px-[22px]">{footer}</div>
           </div>
         )}

@@ -66,7 +66,7 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
   /* ---------- 3. confirmação ---------- */
   if (step === 'done') {
     return (
-      <ScreenPanel page title="Pronto" onClose={onClose} footer={<Cta onClick={onClose}>Voltar ao Void</Cta>}>
+      <ScreenPanel title="Pronto" onClose={onClose} footer={<Cta onClick={onClose}>Voltar ao Void</Cta>}>
         <div className="flex flex-col items-center py-10 text-center">
           <span className="glass-ink anim-pop flex h-20 w-20 items-center justify-center rounded-full">
             <Check className="h-9 w-9 stroke-[3]" />
@@ -84,7 +84,6 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
   if (step === 'pay') {
     return (
       <ScreenPanel
-        page
         title="Pagamento"
         subtitle="Passo 2 de 3"
         onClose={onClose}
@@ -165,7 +164,6 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
   /* ---------- 1. escolher ---------- */
   return (
     <ScreenPanel
-      page
       title="Planos"
       subtitle="Escolha como usar o Void"
       onClose={onClose}

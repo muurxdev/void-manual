@@ -44,3 +44,12 @@ if (import.meta.env.PROD) {
   document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && check());
   window.setTimeout(check, 4000);
 }
+
+// carrega as telas em segundo plano: abrir não mostra tela em branco
+window.setTimeout(() => {
+  void import('./components/VoiceScreen');
+  void import('./components/ChatScreen');
+  void import('./components/Sheets');
+  void import('./components/Library');
+  void import('./components/PlansPanel');
+}, 1200);

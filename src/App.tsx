@@ -677,7 +677,7 @@ export function App() {
         {account && sheet === 'profile' && (
           <ProfilePanel email={account.email} profile={profile} onSave={setProfile} onClose={() => closeSheet()} onSignOut={askLogout} />
         )}
-        {account && screen === 'home' && !sheet && (
+        {account && screen === 'home' && (
           <Dock
             onNewChat={newChat}
             onVoice={openVoice}
