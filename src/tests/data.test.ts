@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { KEYS, repo, useAdapter, type DataAdapter } from '../data/repo';
-import { passwordStrength } from '../data/auth';
 import { generateLocalAnswer, searchManuals } from '../data/rag';
 
 describe('camada de dados', () => {
@@ -17,14 +16,6 @@ describe('camada de dados', () => {
     expect(repo.get(KEYS.plan('outro@b.c'), 'free')).toBe('free');
     repo.remove(KEYS.plan('a@b.c'));
     expect(repo.get(KEYS.plan('a@b.c'), 'free')).toBe('free');
-  });
-});
-
-describe('senha', () => {
-  it('mede a força de 0 a 4', () => {
-    expect(passwordStrength('')).toBe(0);
-    expect(passwordStrength('abc')).toBe(1);
-    expect(passwordStrength('Abcdefghij1!')).toBeGreaterThanOrEqual(3);
   });
 });
 

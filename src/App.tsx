@@ -11,7 +11,8 @@ import { useTheme, detectLens } from './data/theme';
 import { loadPrefs, speakText, type SpeakHandle } from './data/tts';
 import { voiceSummary } from './data/voiceText';
 import { transition, type NavKind } from './data/nav';
-import { getSession, signOut, type Account } from './data/auth';
+import { currentAccount, onAccountChange, signOut, type Account } from './data/auth';
+import { askAI, AiError } from './data/ai';
 import { usePlan } from './data/usePlan';
 // cada tela pesada só é baixada quando a pessoa abre
 const VoiceScreen = lazy(() => import('./components/VoiceScreen').then((m) => ({ default: m.VoiceScreen })));
@@ -49,6 +50,7 @@ export function App() {
     addMessage,
     updateStreamingMessage,
     finalizeStreamingMessage,
+    patchMessage,
     allManuals,
     profile,
     setProfile,
@@ -57,7 +59,25 @@ export function App() {
   const lib = useLibrary();
   useEffect(() => detectLens(), []);
 
-  const [account, setAccount] = useState<Account | null>(() => getSession());
+  const [account, setAccount] = useState<Account | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  // a sessão vem do servidor; até saber, não mostra a tela de entrada para não piscar
+  useEffect(() => {
+    let live = true;
+    currentAccount()
+      .then((acc) => {
+        if (live) {
+          setAccount(acc);
+          setAuthReady(true);
+        }
+      })
+      .catch(() => live && setAuthReady(true));
+    const off = onAccountChange((acc) => live && setAccount(acc));
+    return () => {
+      live = false;
+      off();
+    };
+  }, []);
   const planCtl = usePlan(account?.email);
   const [screen, setScreen] = useState<Screen>(() => {
     try {
@@ -201,13 +221,40 @@ export function App() {
   }, [lib.uploads]);
 
   // contexto da pergunta: máquina escolhida e, se houver, o arquivo da biblioteca
+  const askToken = useRef(0);
+  const questionWithContext = (content: string) => {
+    const prev = [...(latest.current.activeConversation?.messages ?? [])].reverse().find((x) => x.role === 'user')?.content;
+    return prev && content.trim().split(/\s+/).length <= 7 ? prev + ' ' + content : content;
+  };
+  const historyPairs = () => {
+    const msgs = latest.current.activeConversation?.messages ?? [];
+    const pairs: { q: string; a: string }[] = [];
+    for (let i = 0; i < msgs.length - 1; i++) if (msgs[i].role === 'user' && msgs[i + 1].role === 'assistant' && msgs[i + 1].content) pairs.push({ q: msgs[i].content, a: voiceSummary(msgs[i + 1].content).slice(0, 500) });
+    return pairs.slice(-3);
+  };
+  /** IA no servidor; se não der (sem internet, sem chave, erro), usa o motor do aparelho. Sem saldo no plano, devolve null. */
+  const resolveAnswer = async (content: string, mode: 'chat' | 'voice') => {
+    try {
+      const { ragManuals: all, contextItem: ctx } = latest.current;
+      const pool = ctx ? all.filter((x) => x.id === ctx.id) : all;
+      const r = await askAI({ question: questionWithContext(content), manuals: pool.length ? pool : all, history: historyPairs(), mode });
+      planCtl.applyServer(r.plan, r.left);
+      return { text: r.text, citations: r.citations, analysis: 'Resposta gerada com IA a partir dos manuais.' };
+    } catch (e) {
+      if (e instanceof AiError && e.code === 'limite') {
+        fb.toast('Você usou todas as perguntas de hoje no plano ' + planCtl.plan.name, 'info');
+        openSheet('plans');
+        return null;
+      }
+      if (!guardQuestion()) return null;
+      return answer(content);
+    }
+  };
+
   const answer = (content: string) => {
     const { ragManuals: all, contextItem: ctx } = latest.current;
     const pool = ctx ? all.filter((x) => x.id === ctx.id) : all;
-    // pergunta curta ("e a folga?") herda o assunto da pergunta anterior da mesma conversa
-    const prev = [...(latest.current.activeConversation?.messages ?? [])].reverse().find((x) => x.role === 'user')?.content;
-    const withContext = prev && content.trim().split(/\s+/).length <= 7 ? prev + ' ' + content : content;
-    return generateLocalAnswer(withContext, pool.length ? pool : all);
+    return generateLocalAnswer(questionWithContext(content), pool.length ? pool : all);
   };
 
   /* ---------- chat de texto ---------- */
@@ -223,9 +270,8 @@ export function App() {
     return true;
   };
 
-  const handleSend = (content: string, options: { deepThink: boolean; attachment?: string; forceNew?: boolean }) => {
+  const handleSend = async (content: string, options: { deepThink: boolean; attachment?: string; forceNew?: boolean }) => {
     if (isStreaming) return;
-    if (!guardQuestion()) return;
     const conv = options.forceNew ? createConversation(content) : (activeConversation ?? createConversation(content));
     const convId = conv.id;
     const now = Date.now();
@@ -233,17 +279,27 @@ export function App() {
     addMessage(convId, { id: 'msg-u-' + now.toString(36), role: 'user', content, timestamp: now, attachment: options.attachment });
     if (screen !== 'chat') navigate('chat', 'forward');
 
-    const { text: base, citations, analysis } = answer(content);
-    let full = base;
-    if (options.deepThink) full += `\n\n> **Análise profunda:** cruze com histórico de falhas térmicas e resistência do chicote principal.`;
-
     const msgId = 'msg-a-' + now.toString(36);
-    addMessage(convId, { id: msgId, role: 'assistant', content: '', timestamp: now + 10, citations, analysis, isStreaming: true });
+    addMessage(convId, { id: msgId, role: 'assistant', content: '', timestamp: now + 10, isStreaming: true });
     setIsStreaming(true);
+    const token = ++askToken.current;
+    const state: StreamState = { timer: 0, convId, msgId, text: '' };
+    streamRef.current = state; // dá para tocar em "Parar" já enquanto a IA pensa
+
+    const res = await resolveAnswer(content, 'chat');
+    if (token !== askToken.current) return; // a pessoa parou
+    if (!res) {
+      finalizeStreamingMessage(convId, msgId, 'Não consegui responder agora. Veja o seu plano ou tente de novo em instantes.');
+      streamRef.current = null;
+      setIsStreaming(false);
+      return;
+    }
+    patchMessage(convId, msgId, { citations: res.citations, analysis: res.analysis });
+    let full = res.text;
+    if (options.deepThink) full += `\n\n> **Análise profunda:** cruze com histórico de falhas térmicas e resistência do chicote principal.`;
 
     const words = full.split(' ');
     let i = 0;
-    const state: StreamState = { timer: 0, convId, msgId, text: '' };
     state.timer = window.setInterval(() => {
       if (i < words.length) {
         state.text += (i > 0 ? ' ' : '') + words[i++];
@@ -255,10 +311,10 @@ export function App() {
         setIsStreaming(false);
       }
     }, 28);
-    streamRef.current = state;
   };
 
   const handleStop = () => {
+    askToken.current++;
     const s = streamRef.current;
     if (!s) return;
     clearInterval(s.timer);
@@ -278,8 +334,7 @@ export function App() {
     clearTimers();
   };
 
-  const askVoid = (content: string) => {
-    if (!guardQuestion()) return;
+  const askVoid = async (content: string) => {
     stopVoiceOutput();
     setVoiceError('');
     setVoiceUser(content);
@@ -291,12 +346,21 @@ export function App() {
 
     const conv = latest.current.activeConversation ?? createConversation(content);
     const now = Date.now();
-    const { text: base, citations, analysis } = answer(content);
     addMessage(conv.id, { id: 'msg-u-' + now.toString(36), role: 'user', content, timestamp: now });
-    addMessage(conv.id, { id: 'msg-a-' + now.toString(36), role: 'assistant', content: base, timestamp: now + 10, citations, analysis });
-    setVoiceCites(citations.map((c) => ({ title: c.title, line: c.line })));
+    const token = ++askToken.current;
+    const started = Date.now();
 
-    const summary = voiceSummary(base);
+    const res = await resolveAnswer(content, 'voice');
+    if (token !== askToken.current) return;
+    if (!res) {
+      clearTimers();
+      setVoiceStatus('idle');
+      return;
+    }
+    addMessage(conv.id, { id: 'msg-a-' + now.toString(36), role: 'assistant', content: res.text, timestamp: now + 10, citations: res.citations, analysis: res.analysis });
+    setVoiceCites(res.citations.map((c) => ({ title: c.title, line: c.line })));
+
+    const summary = voiceSummary(res.text);
     timers.current.push(
       window.setTimeout(() => {
         setVoiceStatus('speaking');
@@ -313,7 +377,7 @@ export function App() {
             speechRef.current = null;
           },
         });
-      }, PHASES.length * 700 + 100)
+      }, Math.max(0, PHASES.length * 700 + 100 - (Date.now() - started)))
     );
   };
 
@@ -382,6 +446,7 @@ export function App() {
   };
 
   const resetVoice = () => {
+    askToken.current++;
     recRef.current?.abort?.();
     stopVoiceOutput();
     setVoiceStatus('idle');
@@ -417,7 +482,7 @@ export function App() {
 
   const logout = () => {
     resetVoice();
-    signOut();
+    void signOut();
     closeSheet(true);
     stack.current = [];
     depth.current = 0;
@@ -456,7 +521,7 @@ export function App() {
       <GlassDefs />
       <div className="relative h-full">
         <Suspense fallback={null}>
-        {!account && <AuthFlow dark={dark} onDone={onAuth} />}
+        {authReady && !account && <AuthFlow dark={dark} onDone={onAuth} />}
 
         {/* com uma tela cheia aberta, o fundo fica inerte: sem foco, sem leitor de tela */}
         <div className="h-full" {...(sheet ? ({ inert: true } as object) : {})} aria-hidden={sheet ? true : undefined}>

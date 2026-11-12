@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
-import { signIn, signUp, resetPassword, passwordStrength, type Account } from '../data/auth';
+import { ArrowLeft, KeyRound, Mail, User } from 'lucide-react';
+import { sendCode, verifyCode, type Account } from '../data/auth';
 import { transition } from '../data/nav';
 import { DustField } from './DustField';
 import { VoidParticles, type Stage } from './VoidParticles';
 
-type View = 'welcome' | 'signin' | 'signup' | 'reset';
+type View = 'welcome' | 'signin' | 'signup' | 'code';
 
 interface AuthProps {
   dark: boolean;
@@ -126,127 +126,118 @@ const Welcome: React.FC<{ dark: boolean; onStart: () => void; onSignin: () => vo
 
 export const AuthFlow: React.FC<AuthProps> = ({ dark, onDone, initial = 'welcome' }) => {
   const [view, setView] = useState<View>(initial);
+  const [from, setFrom] = useState<'signin' | 'signup'>('signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [pw, setPw] = useState('');
-  const [pw2, setPw2] = useState('');
-  const [show, setShow] = useState(false);
-  const [remember, setRemember] = useState(true);
+  const [code, setCode] = useState('');
   const [terms, setTerms] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [wait, setWait] = useState(0);
+
+  // contagem para poder pedir outro código
+  useEffect(() => {
+    if (wait <= 0) return;
+    const id = window.setTimeout(() => setWait((w) => w - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [wait]);
 
   const go = (v: View, kind: 'forward' | 'back') => {
     setError('');
     transition(kind, () => setView(v));
   };
 
-  const submitIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const askCode = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setBusy(true);
     setError('');
     try {
-      onDone(await signIn(email, pw, remember));
+      await sendCode(email, from === 'signup' ? name : undefined);
+      setCode('');
+      setWait(60);
+      if (view !== 'code') go('code', 'forward');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível entrar.');
+      setError(err instanceof Error ? err.message : 'Não consegui enviar o código.');
     } finally {
       setBusy(false);
     }
   };
 
-  const submitUp = async (e: React.FormEvent) => {
+  const confirm = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pw.length < 6) return setError('A senha precisa ter pelo menos 6 caracteres.');
-    if (pw !== pw2) return setError('As senhas não conferem.');
-    if (!terms) return setError('Aceite os termos para continuar.');
     setBusy(true);
     setError('');
     try {
-      onDone(await signUp(name, email, pw));
+      onDone(await verifyCode(email, code));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível criar a conta.');
+      setError(err instanceof Error ? err.message : 'Não consegui entrar.');
     } finally {
       setBusy(false);
     }
   };
-
-  const submitReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pw.length < 6) return setError('A senha precisa ter pelo menos 6 caracteres.');
-    if (pw !== pw2) return setError('As senhas não conferem.');
-    setBusy(true);
-    setError('');
-    try {
-      onDone(await resetPassword(email, pw));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível redefinir.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const ready = view === 'signin' ? !!email.trim() && !!pw : view === 'reset' ? !!email.trim() && pw.length >= 6 && pw === pw2 : !!name.trim() && !!email.trim() && pw.length >= 6 && pw === pw2 && terms;
-  const strength = passwordStrength(pw);
-  const meter =
-    pw && view !== 'signin' ? (
-      <div className="px-1" aria-live="polite">
-        <div className="flex gap-1.5">
-          {[1, 2, 3, 4].map((n) => (
-            <span key={n} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${strength >= n ? (strength <= 1 ? 'bg-ink/35' : strength === 2 ? 'bg-ink/60' : 'bg-ink') : 'bg-ink/10'}`} />
-          ))}
-        </div>
-        <p className="mt-1 text-[12px] text-mute">{['', 'Senha fraca', 'Pode melhorar', 'Boa senha', 'Senha forte'][strength]}</p>
-      </div>
-    ) : null;
-
-  const eye = (
-    <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Ocultar senha' : 'Mostrar senha'} className="flex h-11 w-11 items-center justify-center rounded-full text-mute active:bg-ink/5">
-      {show ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
-    </button>
-  );
 
   if (view === 'welcome') {
     return (
       <Shell dark={dark}>
-        <Welcome dark={dark} onStart={() => go('signup', 'forward')} onSignin={() => go('signin', 'forward')} />
+        <Welcome
+          dark={dark}
+          onStart={() => {
+            setFrom('signup');
+            go('signup', 'forward');
+          }}
+          onSignin={() => {
+            setFrom('signin');
+            go('signin', 'forward');
+          }}
+        />
       </Shell>
     );
   }
 
-  const signin = view === 'signin';
-  const reset = view === 'reset';
+  const isCode = view === 'code';
+  const signup = view === 'signup';
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+  const ready = isCode ? code.replace(/\D/g, '').length === 6 : emailOk && (!signup || (!!name.trim() && terms));
+
   return (
     <Shell dark={dark}>
-      <div className="safe-top safe-bottom mx-auto flex w-full max-w-[460px] flex-1 flex-col pb-16 px-[clamp(20px,6vw,40px)]">
-        <button onClick={() => go('welcome', 'back')} aria-label="Voltar" className="icon-btn glass">
+      <div className="safe-top safe-bottom mx-auto flex w-full max-w-[460px] flex-1 flex-col px-[clamp(20px,6vw,40px)] pb-16">
+        <button onClick={() => go(isCode ? from : 'welcome', 'back')} aria-label="Voltar" className="icon-btn glass">
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="anim-fade-up mt-8 text-[34px] font-medium tracking-[-0.02em]">{reset ? 'Nova senha' : signin ? 'Entrar' : 'Criar conta'}</h1>
+        <h1 className="anim-fade-up mt-8 text-[34px] font-medium tracking-[-0.02em]">{isCode ? 'Digite o código' : signup ? 'Criar conta' : 'Entrar'}</h1>
         <p className="anim-fade-up mt-1 text-[14px] text-sub" style={{ ['--i' as string]: 1 }}>
-          {reset ? 'As contas ficam só neste aparelho, então dá para redefinir aqui.' : signin ? 'Que bom te ver de novo.' : 'Leva menos de um minuto.'}
+          {isCode ? 'Enviamos 6 números para ' + email.trim() + '. Vale por 10 minutos.' : signup ? 'Sem senha: você entra com um código no e-mail.' : 'Vamos mandar um código para o seu e-mail.'}
         </p>
 
-        <form onSubmit={reset ? submitReset : signin ? submitIn : submitUp} className="mt-7 space-y-4">
-          {!signin && !reset && <Field icon={<User className="h-3.5 w-3.5" />} label="Seu nome" value={name} onChange={setName} autoComplete="name" />}
-          <Field icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" type="email" value={email} onChange={setEmail} autoComplete="email" />
-          <Field icon={<Lock className="h-3.5 w-3.5" />} label={reset ? 'Nova senha' : 'Senha'} type={show ? 'text' : 'password'} value={pw} onChange={setPw} autoComplete={signin ? 'current-password' : 'new-password'} trailing={eye} invalid={!!error && !signin && pw.length < 6} />
-          {meter}
-          {!signin && <Field icon={<Lock className="h-3.5 w-3.5" />} label="Repita a senha" type={show ? 'text' : 'password'} value={pw2} onChange={setPw2} autoComplete="new-password" invalid={!!pw2 && pw2 !== pw} />}
+        <form onSubmit={isCode ? confirm : askCode} className="mt-7 space-y-4">
+          {!isCode && signup && <Field icon={<User className="h-3.5 w-3.5" />} label="Seu nome" value={name} onChange={setName} autoComplete="name" />}
+          {!isCode && <Field icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" type="email" value={email} onChange={setEmail} autoComplete="email" />}
+          {isCode && (
+            <label className="block">
+              <span className="mb-1.5 flex items-center gap-1.5 px-1 text-[12px] text-mute">
+                <KeyRound className="h-3.5 w-3.5" /> Código
+              </span>
+              <span className="glass flex items-center overflow-hidden rounded-2xl px-2">
+                <input
+                  autoFocus
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  placeholder="000000"
+                  aria-label="Código de 6 números"
+                  className="min-w-0 flex-1 bg-transparent px-3 py-4 text-center font-mono text-[28px] tracking-[0.5em] text-ink placeholder:text-mute focus:outline-none"
+                />
+              </span>
+            </label>
+          )}
 
-          {reset ? null : signin ? (
-            <div className="flex items-center justify-between gap-3 px-1 text-[13px] text-sub">
-              <label className="flex min-h-11 items-center gap-2.5">
-                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-[22px] w-[22px] accent-[rgb(var(--ink))]" />
-                Lembrar de mim
-              </label>
-              <button type="button" onClick={() => go('reset', 'forward')} className="min-h-11 font-medium text-ink underline underline-offset-4">
-                Esqueci a senha
-              </button>
-            </div>
-          ) : (
+          {!isCode && signup && (
             <label className="flex items-start gap-2.5 px-1 text-[13px] leading-snug text-sub">
               <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} className="mt-0.5 h-[22px] w-[22px] shrink-0 accent-[rgb(var(--ink))]" />
-              Concordo com os termos de uso. Meus dados ficam guardados neste aparelho.
+              Concordo com os termos de uso e a política de privacidade.
             </label>
           )}
 
@@ -257,16 +248,30 @@ export const AuthFlow: React.FC<AuthProps> = ({ dark, onDone, initial = 'welcome
           )}
 
           <button type="submit" disabled={busy || !ready} className="glass-ink press h-[54px] w-full rounded-full text-[15px] font-medium disabled:opacity-50">
-            {busy ? 'Aguarde…' : reset ? 'Salvar nova senha' : signin ? 'Entrar' : 'Criar minha conta'}
+            {busy ? 'Aguarde…' : isCode ? 'Entrar' : 'Enviar código'}
           </button>
+
+          {isCode && (
+            <button type="button" onClick={() => askCode()} disabled={busy || wait > 0} className="press min-h-12 w-full rounded-full text-[14px] text-sub disabled:opacity-60">
+              {wait > 0 ? 'Pedir outro código em ' + wait + ' s' : 'Não chegou? Pedir outro código'}
+            </button>
+          )}
         </form>
 
-        <p className="mt-auto pt-8 text-center text-[13px] text-sub">
-          {signin ? 'Ainda não tem conta? ' : reset ? 'Lembrou a senha? ' : 'Já tem conta? '}
-          <button onClick={() => go(signin ? 'signup' : 'signin', 'forward')} className="min-h-11 font-medium text-ink underline underline-offset-4">
-            {signin ? 'Criar conta' : 'Entrar'}
-          </button>
-        </p>
+        {!isCode && (
+          <p className="mt-auto pt-8 text-center text-[13px] text-sub">
+            {signup ? 'Já tem conta? ' : 'Ainda não tem conta? '}
+            <button
+              onClick={() => {
+                setFrom(signup ? 'signin' : 'signup');
+                go(signup ? 'signin' : 'signup', 'forward');
+              }}
+              className="min-h-11 font-medium text-ink underline underline-offset-4"
+            >
+              {signup ? 'Entrar' : 'Criar conta'}
+            </button>
+          </p>
+        )}
       </div>
     </Shell>
   );

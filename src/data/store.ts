@@ -125,6 +125,10 @@ export function useVoidStore() {
     );
   }
 
+  function patchMessage(conversationId: string, messageId: string, patch: Partial<Message>) {
+    setConversations(prev => prev.map(conv => (conv.id === conversationId ? { ...conv, messages: conv.messages.map(m => (m.id === messageId ? { ...m, ...patch } : m)) } : conv)));
+  }
+
   function addManual(manual: Manual) {
     setManuals(prev => [manual, ...prev]);
   }
@@ -145,6 +149,7 @@ export function useVoidStore() {
     addMessage,
     updateStreamingMessage,
     finalizeStreamingMessage,
+    patchMessage,
     manuals,
     allManuals: [...(catalogData as Manual[]), ...manuals],
     addManual,

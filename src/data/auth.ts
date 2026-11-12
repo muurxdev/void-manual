@@ -1,112 +1,69 @@
+import { supabase } from './supabase';
+
 /**
- * Contas locais deste aparelho (sem servidor). A senha nunca é guardada em texto:
- * guardamos um hash PBKDF2 com sal. Serve para separar usuários e dar a tela de entrada/saída.
+ * Login por código de 6 dígitos enviado por e-mail (Resend), sem senha.
+ * Quem entra pela primeira vez já cria a conta; o e-mail é comprovado pelo próprio código.
  */
 export interface Account {
   email: string;
   name: string;
-  salt: string;
-  hash: string;
 }
 
-const ACCOUNTS = 'void_web_accounts';
-const SESSION = 'void_web_session';
+const MESSAGES: Record<string, string> = {
+  email_invalido: 'Esse e-mail não parece certo.',
+  aguarde: 'Espere um minuto para pedir outro código.',
+  muitas_tentativas: 'Muitas tentativas. Peça um código novo daqui a pouco.',
+  email_indisponivel: 'O envio de e-mail ainda não está ativo. Tente de novo em instantes.',
+  envio_falhou: 'Não consegui enviar o e-mail agora. Tente de novo.',
+  codigo_invalido: 'Digite os 6 números do código.',
+  codigo_expirado: 'O código expirou. Peça um novo.',
+  codigo_errado: 'Código errado. Confira o e-mail e tente de novo.',
+  falha_interna: 'Algo falhou do nosso lado. Tente de novo.',
+};
 
-const enc = new TextEncoder();
-const toHex = (buf: ArrayBuffer | Uint8Array) =>
-  Array.from(buf instanceof Uint8Array ? buf : new Uint8Array(buf), (b) => b.toString(16).padStart(2, '0')).join('');
-
-async function hashPassword(password: string, salt: string): Promise<string> {
-  if (crypto.subtle) {
-    const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
-    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: 150000 }, key, 256);
-    return toHex(bits);
+/** Lê o erro devolvido pela função e o traduz para uma frase simples. */
+async function readError(err: unknown): Promise<string> {
+  const ctx = (err as { context?: Response })?.context;
+  if (ctx && typeof ctx.json === 'function') {
+    try {
+      const j = await ctx.clone().json();
+      if (j?.error && MESSAGES[j.error]) return MESSAGES[j.error];
+    } catch {
+      /* sem corpo */
+    }
   }
-  // endereços http fora de localhost não têm crypto.subtle: usa um hash simples só para não guardar a senha pura
-  let h = 2166136261;
-  for (const c of salt + password) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
-  return (h >>> 0).toString(16);
+  return 'Sem conexão com o servidor. Verifique a internet e tente de novo.';
 }
 
-function readAccounts(): Account[] {
-  try {
-    return JSON.parse(localStorage.getItem(ACCOUNTS) || '[]');
-  } catch {
-    return [];
-  }
+const toAccount = (u: { email?: string | null; user_metadata?: { name?: string } }): Account => ({
+  email: u.email ?? '',
+  name: u.user_metadata?.name || (u.email ?? '').split('@')[0],
+});
+
+export async function sendCode(email: string, name?: string): Promise<void> {
+  const { error } = await supabase.functions.invoke('send-code', { body: { email, name } });
+  if (error) throw new Error(await readError(error));
 }
 
-export const hasAccounts = () => readAccounts().length > 0;
-
-export function getSession(): Account | null {
-  try {
-    const email = localStorage.getItem(SESSION) || sessionStorage.getItem(SESSION);
-    return readAccounts().find((a) => a.email === email) ?? null;
-  } catch {
-    return null;
-  }
+export async function verifyCode(email: string, code: string): Promise<Account> {
+  const { data, error } = await supabase.functions.invoke('verify-code', { body: { email, code } });
+  if (error || !data?.token_hash) throw new Error(error ? await readError(error) : MESSAGES.falha_interna);
+  const res = await supabase.auth.verifyOtp({ token_hash: data.token_hash, type: 'magiclink' });
+  if (res.error || !res.data.user) throw new Error(MESSAGES.falha_interna);
+  return toAccount(res.data.user);
 }
 
-function startSession(email: string, remember: boolean) {
-  try {
-    localStorage.removeItem(SESSION);
-    sessionStorage.removeItem(SESSION);
-    (remember ? localStorage : sessionStorage).setItem(SESSION, email);
-  } catch {
-    /* sem storage */
-  }
+export async function currentAccount(): Promise<Account | null> {
+  const { data } = await supabase.auth.getSession();
+  return data.session ? toAccount(data.session.user) : null;
 }
 
-export async function signUp(name: string, email: string, password: string): Promise<Account> {
-  const mail = email.trim().toLowerCase();
-  const accounts = readAccounts();
-  if (accounts.some((a) => a.email === mail)) throw new Error('Este e-mail já tem conta. Toque em Entrar.');
-  const salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
-  const account: Account = { email: mail, name: name.trim(), salt, hash: await hashPassword(password, salt) };
-  localStorage.setItem(ACCOUNTS, JSON.stringify([...accounts, account]));
-  startSession(mail, true);
-  return account;
+/** Avisa quando a sessão muda (entrou, saiu, expirou). */
+export function onAccountChange(cb: (a: Account | null) => void): () => void {
+  const { data } = supabase.auth.onAuthStateChange((_e, session) => cb(session ? toAccount(session.user) : null));
+  return () => data.subscription.unsubscribe();
 }
 
-export async function signIn(email: string, password: string, remember: boolean): Promise<Account> {
-  const mail = email.trim().toLowerCase();
-  const account = readAccounts().find((a) => a.email === mail);
-  if (!account || (await hashPassword(password, account.salt)) !== account.hash) {
-    throw new Error('E-mail ou senha incorretos.');
-  }
-  startSession(mail, remember);
-  return account;
-}
-
-export function signOut() {
-  try {
-    localStorage.removeItem(SESSION);
-    sessionStorage.removeItem(SESSION);
-  } catch {
-    /* sem storage */
-  }
-}
-
-/** Redefine a senha de uma conta deste aparelho (as contas ficam só aqui, não há e-mail de recuperação). */
-export async function resetPassword(email: string, password: string): Promise<Account> {
-  const mail = email.trim().toLowerCase();
-  const accounts = readAccounts();
-  const i = accounts.findIndex((x) => x.email === mail);
-  if (i < 0) throw new Error('Não achei conta com este e-mail neste aparelho.');
-  const salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
-  const next: Account = { ...accounts[i], salt, hash: await hashPassword(password, salt) };
-  accounts[i] = next;
-  localStorage.setItem(ACCOUNTS, JSON.stringify(accounts));
-  startSession(mail, true);
-  return next;
-}
-
-/** 0 a 4: tamanho, mistura de maiúsculas/minúsculas, números e símbolos. */
-export function passwordStrength(pw: string): number {
-  let s = 0;
-  if (pw.length >= 6) s++;
-  if (pw.length >= 10) s++;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
-  if (/\d/.test(pw) && /[^A-Za-z0-9]/.test(pw)) s++;
-  return pw ? Math.max(1, s) : 0;
+export async function signOut(): Promise<void> {
+  await supabase.auth.signOut();
 }

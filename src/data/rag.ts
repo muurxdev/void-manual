@@ -15,7 +15,7 @@ function keywords(text: string): Set<string> {
   return new Set(normalize(text).split(/[^a-z0-9-]+/).filter(word => word.length > 2 && !stopWords.has(word)));
 }
 
-export function searchManuals(question: string, manuals: Manual[] = []): Citation[] {
+export function searchManuals(question: string, manuals: Manual[] = [], limit = 4): Citation[] {
   const allManuals = [...bundledCatalog, ...manuals];
   const terms = [...keywords(question)];
   if (!terms.length) return [];
@@ -57,7 +57,7 @@ export function searchManuals(question: string, manuals: Manual[] = []): Citatio
       seen.add(k);
       return true;
     })
-    .slice(0, 4)
+    .slice(0, limit)
     .map(({ title, line, text }) => ({ title, line, text }));
 }
 
