@@ -3,7 +3,7 @@ import { ArrowLeft, Keyboard, Mic, Square, ArrowUp, MessageSquare, FileText, X, 
 import { useFeedback } from './Feedback';
 import { Dropdown, type MenuItem } from './ui';
 import { type VoiceState } from './Particles';
-import { VoidParticles } from './VoidParticles';
+import { VoidParticles, stageOf } from './VoidParticles';
 
 interface Cite {
   title: string;
@@ -210,7 +210,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       </header>
 
       {/* a marca vira uma nuvem de pontos viva, no meio da tela */}
-      <VoidParticles state={status} pulse={pulse} dark={dark} className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
+      <VoidParticles state={status} stage={stageOf(status, phase)} pulse={pulse} dark={dark} className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
 
       <p
         className="absolute inset-x-0 z-10 flex h-5 items-center justify-center gap-1.5 text-[13px] text-ink/55"

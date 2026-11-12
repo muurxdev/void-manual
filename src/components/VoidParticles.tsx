@@ -1,14 +1,41 @@
 import React, { useEffect, useRef } from 'react';
 import type { VoiceState } from './Particles';
 
+/** Estágios da animação: a marca muda de forma conforme o Void ouve, lê, procura, diagnostica e responde. */
+export type Stage = 'idle' | 'listen' | 'read' | 'search' | 'diagnose' | 'speak';
+
+// forma-alvo de cada estágio: encolher/crescer, abrir os pontos, velocidade de giro, varredura, brilho
+const FORMS: Record<Stage, { contract: number; disperse: number; spin: number; scan: number; glow: number }> = {
+  idle: { contract: 1, disperse: 0, spin: 0, scan: 0, glow: 0.06 },
+  listen: { contract: 1.05, disperse: 0.24, spin: 0, scan: 0, glow: 0.22 },
+  read: { contract: 0.95, disperse: 0.08, spin: 0.012, scan: 1, glow: 0.14 },
+  search: { contract: 0.86, disperse: 0.5, spin: 0.03, scan: 0, glow: 0.2 },
+  diagnose: { contract: 0.58, disperse: 0.02, spin: 0.06, scan: 0, glow: 0.42 },
+  speak: { contract: 1.04, disperse: 0.24, spin: 0, scan: 0, glow: 0.26 },
+};
+
+/** Traduz o estado da voz e a fase do "pensando" no estágio da animação. */
+export function stageOf(state: VoiceState, phase = ''): Stage {
+  if (state === 'listening') return 'listen';
+  if (state === 'speaking') return 'speak';
+  if (state === 'thinking') return /Consultando/.test(phase) ? 'search' : /Diagnostic/.test(phase) ? 'diagnose' : 'read';
+  return 'idle';
+}
+
 interface Props {
   state: VoiceState;
+  /** se informado, manda no formato (senão deriva de state) */
+  stage?: Stage;
+  /** a marca se monta a partir da poeira ao aparecer (passar de tela) */
+  intro?: boolean;
   /** incrementa a cada palavra falada/ouvida: cada incremento é uma batida */
   pulse: number;
   dark?: boolean;
   className?: string;
   /** altura do centro da marca, de 0 (topo) a 1 (base) */
   centerY?: number;
+  /** multiplicador de tamanho (a home usa maior) */
+  sizeMul?: number;
 }
 
 import { markBody } from './VoidMark';
@@ -53,9 +80,11 @@ async function sampleLogo(step: number): Promise<Pt[]> {
  * ouvir, gira ao pensar e bate a cada palavra falada. Fundo transparente, sempre escura/clara
  * por cima de quem a usa (cores próprias).
  */
-export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, className, centerY = 0.5 }) => {
+export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pulse, dark = true, className, centerY = 0.5, sizeMul = 1 }) => {
   const ref = useRef<HTMLCanvasElement>(null);
-  const live = useRef({ state, beat: 0, last: pulse, dark, cyf: centerY });
+  const live = useRef({ state, stage: stage ?? stageOf(state), beat: 0, last: pulse, dark, cyf: centerY, intro, mul: sizeMul });
+  live.current.mul = sizeMul;
+  live.current.stage = stage ?? stageOf(state);
   live.current.cyf = centerY;
   live.current.state = state;
   live.current.dark = dark;
@@ -111,6 +140,8 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
     let raf = 0;
     let energy = 0;
     let spin = 0;
+    const form = { contract: 1, disperse: 0, spin: 0, scan: 0, glow: 0.06 };
+    let assemble = live.current.intro && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1;
     const t0 = performance.now();
 
     let last = 0;
@@ -123,10 +154,19 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
       last = now;
       const t = reduce ? 0 : (now - t0) / 1000;
       const s = live.current;
-      const target = s.state === 'listening' ? 0.5 : s.state === 'speaking' ? 0.65 : s.state === 'thinking' ? 0.3 : 0.08;
-      energy += (target - energy) * 0.06;
+      const tf = FORMS[s.stage];
+      const k = 0.07; // a forma muda aos poucos, em vez de pular
+      form.contract += (tf.contract - form.contract) * k;
+      form.disperse += (tf.disperse - form.disperse) * k;
+      form.spin += (tf.spin - form.spin) * k;
+      form.scan += (tf.scan - form.scan) * k;
+      form.glow += (tf.glow - form.glow) * k;
+      assemble = Math.min(1, assemble + 0.014);
+      const ease = 1 - Math.pow(1 - assemble, 3);
+      const energy0 = form.glow * 2.2;
+      energy += (energy0 - energy) * 0.06;
       s.beat *= 0.9;
-      if (s.state === 'thinking') spin += 0.035;
+      if (form.spin > 0.004) spin += form.spin;
       else spin += (Math.round(spin / 6.2832) * 6.2832 - spin) * 0.06; // volta de frente
 
       ctx.clearRect(0, 0, w, h);
@@ -134,7 +174,7 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
       {
         const gr = Math.min(w, h * 0.6) * 0.62;
         const halo = ctx.createRadialGradient(w / 2, h * live.current.cyf, 0, w / 2, h * live.current.cyf, gr);
-        const a0 = 0.05 + energy * 0.2 + live.current.beat * 0.08;
+        const a0 = 0.05 + form.glow * 0.5 + live.current.beat * 0.08;
         halo.addColorStop(0, live.current.dark ? `rgba(255,255,255,${a0})` : `rgba(0,0,0,${a0 * 0.7})`);
         halo.addColorStop(1, "rgba(128,128,128,0)");
         ctx.fillStyle = halo;
@@ -142,7 +182,7 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
       }
       const cx = w / 2;
       const cy = h * live.current.cyf;
-      const scale = Math.min(w, h * 0.6) * 0.46 * (1 + Math.sin(t * 1.2) * 0.012 + s.beat * 0.06);
+      const scale = Math.min(w, h * 0.6) * 0.46 * live.current.mul * form.contract * (1 + Math.sin(t * 1.2) * 0.012 + s.beat * 0.06);
       const yaw = Math.sin(t * 0.45) * 0.5 + spin;
       const pitch = Math.sin(t * 0.33) * 0.12;
       const cyaw = Math.cos(yaw);
@@ -152,12 +192,18 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
       const amp = 0.012 + energy * 0.1 + s.beat * 0.09;
       for (const b of buckets) b.length = 0;
 
+      const scatter = (1 - ease) * 3.2; // montagem: começa espalhado e se junta
       const place = (p: Pt, extra: number) => {
         // ondulação que anda pelo corpo
         const n = Math.sin(p.x * 3.4 + t * 1.8 + p.r * 0.2) * Math.cos(p.y * 3.1 - t * 1.4);
         const z0 = p.z + n * amp * 1.6;
-        const x0 = p.x + Math.sin(p.r + t * 2) * amp * 0.5 * extra;
-        const y0 = p.y + Math.cos(p.r + t * 1.7) * amp * 0.5 * extra;
+        // abrir: cada ponto se afasta do centro numa medida própria; busca: orbita em volta
+        const open = 1 + form.disperse * (0.35 + 0.65 * Math.sin(p.r * 3.1 + t * 1.3) ** 2) + scatter * (0.5 + 0.5 * Math.sin(p.r * 5.3));
+        const orb = form.disperse * 0.5 * Math.sin(t * 1.1 + p.r);
+        const bx = p.x * open - p.y * orb * 0.25;
+        const by = p.y * open + p.x * orb * 0.25;
+        const x0 = bx + Math.sin(p.r + t * 2) * amp * 0.5 * extra;
+        const y0 = by + Math.cos(p.r + t * 1.7) * amp * 0.5 * extra;
         const x1 = x0 * cyaw + z0 * syaw;
         const z1 = -x0 * syaw + z0 * cyaw;
         const y2 = y0 * cp - z1 * sp;
@@ -170,8 +216,16 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
         const p = pts[i];
         const q = place(p, 1);
         const sz = 1.15 * q.f * (small ? 1.25 : 1);
-        const bi = Math.max(0, Math.min(BUCKETS - 1, Math.floor((p.k * 0.8 + (q.z + 0.4) * 0.35) * BUCKETS)));
-        buckets[bi].push(q.sx, q.sy, sz);
+        let bi = Math.max(0, Math.min(BUCKETS - 1, Math.floor((p.k * 0.8 + (q.z + 0.4) * 0.35) * BUCKETS)));
+        let sz2 = sz;
+        if (form.scan > 0.05) {
+          const band = Math.sin(t * 2.4) * 0.55;
+          if (Math.abs(p.y - band) < 0.11) {
+            bi = BUCKETS - 1;
+            sz2 = sz * (1 + form.scan * 0.9);
+          }
+        }
+        buckets[bi].push(q.sx, q.sy, sz2);
       }
       for (let b = 0; b < BUCKETS; b++) {
         const arr = buckets[b];
