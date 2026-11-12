@@ -380,7 +380,7 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
           <div className="card flex items-start gap-3 p-3.5 text-[13px] leading-snug text-sub">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
             <p>
-              Void · manual vivo para qualquer máquina. Seus dados ficam guardados só neste aparelho. Dica: segure o microfone da tela de voz para falar, ou toque uma vez para deixar ligado.
+              Void · manual vivo para qualquer máquina. Versão de {new Date(__BUILD__).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}. Seus dados ficam guardados só neste aparelho. Dica: segure o microfone da tela de voz para falar, ou toque uma vez para deixar ligado.
             </p>
           </div>
         </div>

@@ -6,6 +6,7 @@ export default defineConfig({
   // GitHub Pages serve em /void-manual/; Netlify e dev servem na raiz
   base: process.env.VITE_BASE || '/',
   plugins: [react()],
+  define: { __BUILD__: JSON.stringify(new Date().toISOString()) },
   server: {
     host: '0.0.0.0',
     port: 5173,
