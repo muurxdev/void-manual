@@ -4,7 +4,7 @@ import { useFeedback } from './Feedback';
 import { Dropdown, type MenuItem } from './ui';
 import { type VoiceState } from './Particles';
 import { stageOf } from './VoidParticles';
-import { VoidBubble } from './VoidBubble';
+import { VoidWave } from './VoidWave';
 
 interface Cite {
   title: string;
@@ -68,6 +68,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   const fileRef = useRef<HTMLInputElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
+  const waveSlot = useRef<HTMLCanvasElement>(null);
   const busy = status === 'thinking';
 
   // acompanha o texto que vai aparecendo
@@ -185,7 +186,6 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
 
   const label = status === 'thinking' ? phase : error ? '' : LABEL[status];
   const words = userText.split(' ').filter(Boolean);
-  const splitAt = status === 'listening' ? Math.max(0, words.length - 4) : words.length;
   const rw = replyText.split(' ');
   const cut = status === 'speaking' ? Math.max(0, rw.length - 3) : rw.length;
   const replyHead = rw.slice(0, cut).join(' ') + (cut > 0 && cut < rw.length ? ' ' : '');
@@ -193,106 +193,133 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   const side = 'clamp(16px,5.6vw,40px)';
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden text-ink" style={{ background: dark ? 'radial-gradient(110% 60% at 50% 30%, #15121f 0%, #07060b 60%, #000 100%)' : 'linear-gradient(180deg, #fde9f2 0%, #efe9ff 42%, #f7f9ff 72%, #ffffff 100%)' }}>
-      <header className="safe-top relative z-20 grid grid-cols-[48px_1fr_48px] items-center" style={{ paddingInline: side }}>
-        <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
-          <ArrowLeft className="h-[18px] w-[18px]" />
-        </button>
-        <h1 className="glass mx-auto rounded-full px-5 py-2 text-[15px] font-medium">Void Voice</h1>
-        <div className="relative justify-self-end">
-          <button
-            onClick={() => setMenu((m) => !m)}
-            aria-label="Ações e informações"
-            aria-haspopup="menu"
-            aria-expanded={menu}
-            className="icon-btn glass"
-          >
-            <MoreHorizontal className="h-[18px] w-[18px]" />
-          </button>
-          <Dropdown open={menu} onClose={() => setMenu(false)} items={menuItems} placement="bottom-end" />
-        </div>
-      </header>
+    <div className="relative flex h-full flex-col overflow-hidden text-ink" style={{ background: dark ? 'radial-gradient(120% 70% at 50% 100%, #17181c 0%, #08080a 55%, #000 100%)' : 'linear-gradient(180deg, #fafafa 0%, #f1f1f2 100%)' }}>
+      <VoidWave
+        state={status}
+        stage={stageOf(status, phase)}
+        pulse={pulse}
+        dark={dark}
+        arcClass="pointer-events-none absolute inset-0 z-0 h-full w-full"
+        waveRef={waveSlot}
+      />
 
-      {/* a marca vira uma nuvem de pontos viva, no meio da tela */}
-      <VoidBubble centerY={0.4} state={status} stage={stageOf(status, phase)} pulse={pulse} dark={dark} className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
-
-      <div className="pointer-events-none absolute inset-x-0 z-10 flex justify-center" style={{ top: 'calc(40% + min(28vw, 20vh) + 6px)' }} aria-live="polite">
-        {label && (
-          <span key={label} className="glass anim-fade-up flex items-center gap-2 rounded-full px-5 py-2 text-[16px] font-medium text-ink">
-            {label}
-            {(status === 'listening' || status === 'speaking' || status === 'thinking') && (
-              <span className="inline-flex gap-0.5" aria-hidden="true">
-                {[0, 1, 2].map((i) => (
-                  <span key={i} className="anim-orb h-1.5 w-1.5 rounded-full bg-ink/70" style={{ animationDelay: `${i * 160}ms` }} />
-                ))}
-              </span>
-            )}
-          </span>
-        )}
-      </div>
-
-      {/* o que foi dito e a resposta: o texto cresce de baixo para cima, em níveis de importância */}
-      <div
-        ref={textRef}
-        className="scroll-smooth-area absolute inset-x-0 z-10 mx-auto flex w-full max-w-[640px] flex-col px-[clamp(22px,7vw,44px)]"
-        style={{ top: 'calc(40% + min(28vw, 20vh) + 58px)', bottom: 128, maskImage: 'linear-gradient(to bottom, transparent 0, #000 56px, #000 calc(100% - 12px), transparent)' }}
-        aria-live="polite"
+      {/* cartão de vidro: texto no alto, onda no meio, microfone embaixo */}
+      <section
+        className="absolute z-10 mx-auto flex max-w-[460px] flex-col overflow-hidden rounded-[34px] border"
+        style={{
+          left: side,
+          right: side,
+          top: 'max(env(safe-area-inset-top), 14px)',
+          bottom: mode === 'voice' ? 'max(env(safe-area-inset-bottom), 56px)' : 132,
+          transition: 'bottom 420ms var(--sheet-ease)',
+          borderColor: dark ? 'rgba(255,255,255,.14)' : 'rgba(0,0,0,.08)',
+          background: dark
+            ? 'linear-gradient(180deg, rgba(22,22,25,.82) 0%, rgba(9,9,11,.9) 58%, rgba(58,58,64,.62) 100%)'
+            : 'linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(250,250,251,.94) 60%, rgba(228,228,232,.9) 100%)',
+          boxShadow: dark ? '0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12)' : '0 24px 60px rgba(0,0,0,.12), inset 0 1px 0 #fff',
+          backdropFilter: 'blur(14px)',
+          WebkitBackdropFilter: 'blur(14px)',
+        }}
       >
-        <div className="mt-auto pb-3">
-          {error ? (
-            <p className="anim-fade-in text-center text-[15px] text-ink/60">{error}</p>
-          ) : (
-            <>
-              {userText && (
-                <section className="anim-fade-up text-center">
-                  <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Você</h2>
-                  <p className="text-[clamp(20px,1.6vw+14px,26px)] font-semibold leading-[1.25] tracking-[-0.01em]">
-                    <span className="text-ink">{words.slice(0, splitAt).join(' ')} </span>
-                    <span className="text-ink/30">{words.slice(splitAt).join(' ')}</span>
-                  </p>
-                </section>
-              )}
-              {replyText && (
-                <section className="anim-fade-up mt-6 text-center">
-                  <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Void</h2>
-                  <p className="text-[clamp(20px,1.4vw+14px,24px)] font-medium leading-snug tracking-[-0.01em] text-ink">
-                    {replyHead}<span className="bg-gradient-to-r from-[#ff7ab8] to-[#8a6bff] bg-clip-text text-transparent">{replyTail}</span>
-                    {status === 'speaking' && <span className="ml-0.5 inline-block h-4 w-[2px] animate-blink bg-ink align-middle" />}
-                  </p>
-                </section>
-              )}
-              {replyText && status !== 'speaking' && citations.length > 0 && (
-                <section className="anim-fade-up mt-5 text-center">
-                  <h2 className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Fontes</h2>
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {citations.slice(0, 3).map((c, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-ink/10 px-2.5 py-1 text-[12px] text-ink/70">
-                        <FileText className="h-3 w-3" />
-                        {c.title.length > 26 ? c.title.slice(0, 26) + '…' : c.title}
-                      </span>
-                    ))}
+        <header className="flex items-center justify-between px-3 pt-3">
+          <div className="relative">
+            <button onClick={() => setMenu((m) => !m)} aria-label="Ações e informações" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass">
+              <MoreHorizontal className="h-[18px] w-[18px]" />
+            </button>
+            <Dropdown open={menu} onClose={() => setMenu(false)} items={menuItems} placement="bottom-start" />
+          </div>
+          <h1 className="text-[13px] font-medium tracking-wide text-ink/55">Void Voice</h1>
+          <button onClick={onBack} aria-label="Fechar e voltar" className="icon-btn glass">
+            <X className="h-[18px] w-[18px]" />
+          </button>
+        </header>
+
+        {/* o que foi dito e a resposta, em níveis */}
+        <div
+          ref={textRef}
+          className="scroll-smooth-area flex min-h-0 flex-1 flex-col px-6 pt-4"
+          style={{ maskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)' }}
+          aria-live="polite"
+        >
+          <div className="my-auto pb-2">
+            {error ? (
+              <p className="anim-fade-in text-[17px] leading-snug text-ink/60">{error}</p>
+            ) : !userText && !replyText ? (
+              <p className="text-[clamp(24px,2vw+14px,30px)] font-medium leading-tight tracking-[-0.02em] text-ink/35">
+                Pode falar.
+                <span className="text-ink"> Eu estou ouvindo.</span>
+              </p>
+            ) : (
+              <>
+                {userText && (
+                  <section className="anim-fade-up">
+                    <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Você</h2>
+                    <p className="text-[clamp(22px,1.8vw+13px,28px)] font-medium leading-[1.2] tracking-[-0.015em]">
+                      <span className="text-ink/40">{words.slice(0, Math.max(0, words.length - 2)).join(' ')} </span>
+                      <span className="text-ink">{words.slice(Math.max(0, words.length - 2)).join(' ')}</span>
+                    </p>
+                  </section>
+                )}
+                {replyText && (
+                  <section className="anim-fade-up mt-5">
+                    <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Void</h2>
+                    <p className="text-[clamp(18px,1.2vw+13px,22px)] leading-snug tracking-[-0.01em]">
+                      <span className="text-ink/60">{replyHead}</span>
+                      <span className="font-semibold text-ink">{replyTail}</span>
+                      {status === 'speaking' && <span className="ml-0.5 inline-block h-4 w-[2px] animate-blink bg-ink align-middle" />}
+                    </p>
+                  </section>
+                )}
+                {replyText && status !== 'speaking' && citations.length > 0 && (
+                  <section className="anim-fade-up mt-4">
+                    <h2 className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Fontes</h2>
+                    <div className="flex flex-wrap gap-1.5">
+                      {citations.slice(0, 3).map((c, i) => (
+                        <span key={i} className="inline-flex items-center gap-1 rounded-full bg-ink/10 px-2.5 py-1 text-[12px] text-ink/70">
+                          <FileText className="h-3 w-3" />
+                          {c.title.length > 26 ? c.title.slice(0, 26) + '…' : c.title}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                {replyText && status !== 'speaking' && canOpenChat && (
+                  <div className="anim-fade-up mt-4">
+                    <button onClick={onOpenChat} className="glass press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
+                      <MessageSquare className="h-4 w-4" /> Continuar no chat
+                    </button>
                   </div>
-                </section>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* estado, sempre visível */}
+        <div className="flex h-10 items-center justify-center" aria-live="polite">
+          {label && (
+            <span key={label} className="anim-fade-up flex items-center gap-2 rounded-full px-4 py-1.5 text-[15px] font-medium text-ink">
+              {label}
+              {(status === 'listening' || status === 'speaking' || status === 'thinking') && (
+                <span className="inline-flex gap-0.5" aria-hidden="true">
+                  {[0, 1, 2].map((i) => (
+                    <span key={i} className="anim-orb h-1.5 w-1.5 rounded-full bg-ink/70" style={{ animationDelay: (i * 160) + 'ms' }} />
+                  ))}
+                </span>
               )}
-              {replyText && status !== 'speaking' && canOpenChat && (
-                <div className="anim-fade-up mt-5 flex justify-center">
-                  <button onClick={onOpenChat} className="glass press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
-                    <MessageSquare className="h-4 w-4" /> Continuar no chat
-                  </button>
-                </div>
-              )}
-            </>
+            </span>
           )}
         </div>
-      </div>
 
-      {/* controles: voz e texto trocam de lugar com animação */}
-      <div className="absolute inset-x-0 bottom-0 z-10 h-[116px]">
+        {/* onda luminosa */}
+        <div className="relative h-[120px] shrink-0">
+          <canvas ref={waveSlot} className="absolute inset-0 h-full w-full" aria-hidden="true" />
+        </div>
+
+        {/* microfone no centro, atalhos nos lados */}
         <div
-          className={`absolute bottom-[max(env(safe-area-inset-bottom),16px)] left-1/2 flex w-full max-w-[420px] -translate-x-1/2 items-center justify-between transition-all duration-[380ms] ${
-            mode === 'voice' ? 'opacity-100' : 'pointer-events-none translate-y-6 opacity-0'
-          }`}
-          style={{ transitionTimingFunction: 'var(--spring)', paddingInline: 'clamp(28px,10vw,56px)' }}
+          className={'flex items-center justify-center gap-7 pb-5 pt-1 transition-all duration-[380ms] ' + (mode === 'voice' ? 'opacity-100' : 'pointer-events-none h-0 overflow-hidden pb-0 pt-0 opacity-0')}
+          style={{ transitionTimingFunction: 'var(--spring)' }}
         >
           <button onClick={() => setMode('text')} aria-label="Escrever" className="glass press flex h-[52px] w-[52px] items-center justify-center rounded-full">
             <Keyboard className="h-5 w-5" />
@@ -304,8 +331,8 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             onClick={(e) => e.detail === 0 && onMic()}
             disabled={busy}
             aria-label={status === 'listening' ? 'Parar de ouvir' : status === 'speaking' ? 'Interromper' : 'Falar'}
-            className={`glass-ink press relative flex h-[72px] w-[72px] items-center justify-center rounded-full ${busy ? 'opacity-60' : ''}`}
-           
+            className={'press relative flex h-[72px] w-[72px] items-center justify-center rounded-full bg-ink text-paper ' + (busy ? 'opacity-60' : '')}
+            style={{ boxShadow: dark ? '0 0 46px rgba(255,255,255,.35)' : '0 12px 36px rgba(0,0,0,.28)' }}
           >
             {status === 'listening' && <span className="anim-ring absolute inset-0 rounded-full border border-ink/50" />}
             {status === 'speaking' ? <Square className="h-6 w-6 fill-current" /> : <Mic className="h-8 w-8" />}
@@ -314,7 +341,10 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             <BookOpen className="h-5 w-5" />
           </button>
         </div>
+      </section>
 
+      {/* campo de texto (modo teclado) */}
+      <div className="absolute inset-x-0 bottom-0 z-20 h-[116px]">
         <div
           className={`absolute bottom-[max(env(safe-area-inset-bottom),16px)] left-1/2 flex w-full max-w-[640px] -translate-x-1/2 flex-col gap-2 transition-all duration-[380ms] ${
             mode === 'text' ? 'opacity-100' : 'pointer-events-none translate-y-8 opacity-0'
