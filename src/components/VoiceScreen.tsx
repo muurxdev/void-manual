@@ -211,7 +211,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       </header>
 
       {/* o orbe: o buraco negro muda de forma a cada estágio */}
-      <div className={"relative z-0 " + (emptyIdle && mode === "voice" ? "min-h-0 flex-1" : "shrink-0")} style={emptyIdle && mode === "voice" ? undefined : { height: orbH }}>
+      <div className={"relative z-0 " + (emptyIdle ? "min-h-0 flex-1" : "shrink-0")} style={emptyIdle ? { marginBottom: 112 } : { height: orbH }}>
         <VoidParticles state={status} stage={stageOf(status, phase)} pulse={pulse} dark={dark} sizeMul={0.95} className="pointer-events-none absolute inset-0 h-full w-full" />
       </div>
 
@@ -234,7 +234,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       {/* conversa: texto grande, em níveis */}
       <div
         ref={textRef}
-        className={(emptyIdle && mode === "voice" ? "hidden " : "") + "scroll-smooth-area relative z-10 min-h-0 flex-1 px-[clamp(22px,7vw,40px)]"}
+        className={(emptyIdle ? "hidden " : "") + "scroll-smooth-area relative z-10 min-h-0 flex-1 px-[clamp(22px,7vw,40px)]"}
         style={{ paddingBottom: mode === 'voice' ? 138 : 124, maskImage: 'linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 40px), transparent)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 40px), transparent)' }}
         aria-live="polite"
       >

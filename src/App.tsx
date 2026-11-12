@@ -87,7 +87,6 @@ export function App() {
     }
   });
   const [sheet, setSheet] = useState<SheetName>(null);
-  const [quickKey, setQuickKey] = useState<'lib' | 'arq'>('lib');
   const fb = useFeedback();
   const [isStreaming, setIsStreaming] = useState(false);
   const [contextItem, setContextItem] = useState<{ id: string; title: string } | null>(null);
@@ -573,7 +572,6 @@ export function App() {
             onNewChat={newChat}
             onVoice={openVoice}
             onLibrary={() => {
-              setQuickKey('lib');
               openSheet('library');
             }}
             onProfile={() => openSheet('profile')}
@@ -679,23 +677,19 @@ export function App() {
         {account && sheet === 'profile' && (
           <ProfilePanel email={account.email} profile={profile} onSave={setProfile} onClose={() => closeSheet()} onSignOut={askLogout} />
         )}
-        {account && screen === 'home' && (
+        {account && screen === 'home' && !sheet && (
           <Dock
-            active={sheet === 'settings' ? 'settings' : sheet ? '' : 'home'}
-            onHome={() => window.dispatchEvent(new Event(sheet ? 'void-close-panel' : 'void-scroll-top'))}
             onNewChat={newChat}
             onVoice={openVoice}
-            onSettings={() => (sheet === 'settings' ? undefined : openSheet('settings'))}
-            quickActive={sheet === 'library' ? quickKey : ''}
-            onLibrary={() => {
-              setQuickKey('lib');
-              if (sheet !== 'library') openSheet('library');
-            }}
+            onLibrary={() => openSheet('library')}
             onAddFile={() => {
-              setQuickKey('arq');
-              if (sheet !== 'library') openSheet('library');
+              openSheet('library');
               window.setTimeout(() => window.dispatchEvent(new Event('void-pick-file')), 450);
             }}
+            onHistory={() => openSheet('history')}
+            onPlans={() => openSheet('plans')}
+            onProfile={() => openSheet('profile')}
+            onSettings={() => openSheet('settings')}
           />
         )}
         {account && sheet === 'history' && (

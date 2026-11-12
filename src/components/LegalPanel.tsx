@@ -59,7 +59,7 @@ const DOCS: Record<LegalKind, { title: string; sections: { h: string; p: string[
 export const LegalPanel: React.FC<{ kind: LegalKind; onClose: () => void }> = ({ kind, onClose }) => {
   const d = DOCS[kind];
   return (
-    <ScreenPanel title={d.title} subtitle="Rascunho, sujeito a revisão" onClose={onClose}>
+    <ScreenPanel page title={d.title} subtitle="Rascunho, sujeito a revisão" onClose={onClose}>
       <div className="space-y-5 pb-4">
         {d.sections.map((s) => (
           <section key={s.h}>
