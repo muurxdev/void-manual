@@ -1,0 +1,37 @@
+[
+  {
+    "id": "catalog:m-cg160",
+    "title": "Honda CG/Bros 160 · Manual de Serviço (PGM-FI Flex)",
+    "text": "Honda CG 160 Titan / Fan / Start / NXR 160 Bros: 162 cc, anos 2015–2026, Injeção Eletrônica (PGM-FI Flex).\ntorque biela: 14 N.m (1.4 kgf.m) — Aplicar óleo de motor na rosca e na superfície de assentamento\ntorque cabecote porcas: 32 N.m (3.3 kgf.m) — Aperto cruzado em duas etapas\nfolga valvula admissao: 0.08 mm (± 0.02 mm) — Motor frio (abaixo de 35°C)\nfolga valvula escape: 0.24 mm (± 0.02 mm) — Motor frio (abaixo de 35°C)\npressao compressao cilindro: 1.200 kPa (171 psi) — Acelerador totalmente aberto\npressao bomba combustivel: 294 kPa (3.0 kgf/cm² · 43 psi) em marcha lenta\nvela carbonizada ou mistura rica: Verificar sensor MAP/EOT, pressão do regulador de combustível (294 kPa), bico injetor gotejando, filtro de ar obstruído e folga de válvulas (0.08 mm adm / 0.24 mm esc).\nfolga eletrodo vela: 0.80 - 0.90 mm — Vela NGK CPR8EA-9 ou CPR9EA-9 (torque da vela: 16 N.m).",
+    "aliases": ["CG 160", "Titan 160", "CG 160 Titan", "Bros 160", "NXR 160", "Vela carbonizada"],
+    "category": "honda"
+  },
+  {
+    "id": "catalog:m-pgmfi",
+    "title": "Tabela de Códigos de Falha PGM-FI / OBD2 Motos",
+    "text": "Tabela de Códigos de Piscada MIL (PGM-FI) e OBD2 (P0xxx):\ncodigo 1 piscada (P0107 / P0108): Sensor MAP — Tensão baixa ou alta no circuito do sensor de pressão absoluta do coletor.\ncodigo 7 piscadas (P0117 / P0118): Sensor EOT / ECT — Temperatura do óleo ou líquido de arrefecimento fora da faixa.\ncodigo 8 piscadas (P0122 / P0123): Sensor TP (TPS) — Sensor de posição da borboleta do acelerador.\ncodigo 9 piscadas (P0112 / P0113): Sensor IAT — Sensor de temperatura do ar de admissão.\ncodigo 12 piscadas (P0201): Bico Injetor — Circuito do injetor nº 1 aberto ou em curto (resistência padrão: 11.5 - 12.5 Ω a 20°C).\ncodigo 21 piscadas (P0131 / P0132): Sonda Lambda (Sensor O2) — Mistura pobre/rica ou aquecedor da sonda (código 23).\ncodigo P0300 / P0301: Falha de ignição detectada no cilindro — Testar vela, cachimbo supressor (5 kΩ), bobina de ignição, pressão da bomba (3.0 bar) e compressão.",
+    "aliases": ["PGM-FI", "P0300", "P0201", "P0122", "OBD", "OBD2", "Códigos"],
+    "category": "eletronica"
+  },
+  {
+    "id": "catalog:m-mt07",
+    "title": "Yamaha MT-07 · Esquema Elétrico & Especificações CP2",
+    "text": "Yamaha MT-07 (Motor CP2 689 cc Crossplane): Injeção Eletrônica YCC-T / TCI.\nesquema eletrico mt07: Relé principal e fusível FI (15A) alimentam ECU (fio Vermelho/Branco), bobinas de ignição #1 (Laranja) e #2 (Cinza), injetores #1 (Marrom/Vermelho) e #2 (Verde/Vermelho) e bomba de combustível (Azul/Preto).\nfolga valvula admissao mt07: 0.11 - 0.20 mm — Motor frio (sistema por pastilhas / shims)\nfolga valvula escape mt07: 0.24 - 0.30 mm — Motor frio (sistema por pastilhas / shims)\ntorque cabecote mt07: 1ª etapa 20 N.m · 2ª etapa 35 N.m + 180° — Parafusos lubrificados com óleo de motor\ntorque eixo traseiro mt07: 105 N.m (10.5 kgf.m) · Eixo dianteiro: 65 N.m\npressao combustivel mt07: 324 kPa (3.24 bar · 47 psi)",
+    "aliases": ["MT-07", "MT07", "Yamaha MT-07", "Esquema elétrico"],
+    "category": "yamaha"
+  },
+  {
+    "id": "catalog:m-cb500f",
+    "title": "Honda CB 500F / CB 500X · Ajuste de Tuchos, Pastilhas e Torques",
+    "text": "Honda CB 500F / CB 500X / CBR 500R (471 cc DOHC bicilíndrico):\najuste de tuchos e folga de valvulas cb500f: Admissão: 0.16 ± 0.03 mm · Escape: 0.27 ± 0.03 mm (Motor frio abaixo de 35°C). Cálculo da nova pastilha: A = (B - C) + D.\ntorque mancais comando cb500f: 12 N.m (1.2 kgf.m) — Aperto cruzado gradual\ntorque tampa cabecote cb500f: 10 N.m (1.0 kgf.m)\ntorque porcas cabecote cb500f: 47 N.m (4.8 kgf.m) — Aplicar óleo de motor nas roscas",
+    "aliases": ["CB 500F", "CB500F", "CB 500X", "Ajuste de tuchos"],
+    "category": "honda"
+  },
+  {
+    "id": "catalog:m-lander250",
+    "title": "Yamaha XTZ 250 Lander / Fazer 250 · Injeção e Torques",
+    "text": "Yamaha XTZ 250 Lander / YS 250 Fazer / FZ25: 249 cc, Injeção Eletrônica (Blueflex).\ndiagrama injecao lander 250: ECU pino 1 (Terra Preto), sensor híbrido TPS/IAT/MAP, bobina de pulso (192 - 288 Ω a 20°C), bico injetor (12 Ω) e bomba de combustível (pressão de linha: 250 kPa / 2.5 bar).\ntorque cabecote porcas: 22 N.m (2.2 kgf.m) — Aperto cruzado\nfolga valvula admissao: 0.08 - 0.12 mm — Motor frio\nfolga valvula escape: 0.12 - 0.16 mm — Motor frio\nfolga eletrodo vela: 0.70 - 0.80 mm — Vela NGK DR8EA",
+    "aliases": ["XTZ 250", "Lander 250", "XTZ 250 Lander", "FZ25", "YS 250"],
+    "category": "yamaha"
+  }
+]
