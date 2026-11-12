@@ -7,6 +7,8 @@ interface Props {
   pulse: number;
   dark?: boolean;
   className?: string;
+  /** altura do centro da marca, de 0 (topo) a 1 (base) */
+  centerY?: number;
 }
 
 import { markBody } from './VoidMark';
@@ -51,9 +53,10 @@ async function sampleLogo(step: number): Promise<Pt[]> {
  * ouvir, gira ao pensar e bate a cada palavra falada. Fundo transparente, sempre escura/clara
  * por cima de quem a usa (cores próprias).
  */
-export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, className }) => {
+export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, className, centerY = 0.5 }) => {
   const ref = useRef<HTMLCanvasElement>(null);
-  const live = useRef({ state, beat: 0, last: pulse, dark });
+  const live = useRef({ state, beat: 0, last: pulse, dark, cyf: centerY });
+  live.current.cyf = centerY;
   live.current.state = state;
   live.current.dark = dark;
 
@@ -130,15 +133,15 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
       // brilho suave atrás da marca, que cresce com a energia (ouvindo/falando)
       {
         const gr = Math.min(w, h * 0.6) * 0.62;
-        const halo = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, gr);
+        const halo = ctx.createRadialGradient(w / 2, h * live.current.cyf, 0, w / 2, h * live.current.cyf, gr);
         const a0 = 0.05 + energy * 0.2 + live.current.beat * 0.08;
         halo.addColorStop(0, live.current.dark ? `rgba(255,255,255,${a0})` : `rgba(0,0,0,${a0 * 0.7})`);
         halo.addColorStop(1, "rgba(128,128,128,0)");
         ctx.fillStyle = halo;
-        ctx.fillRect(w / 2 - gr, h / 2 - gr, gr * 2, gr * 2);
+        ctx.fillRect(w / 2 - gr, h * live.current.cyf - gr, gr * 2, gr * 2);
       }
       const cx = w / 2;
-      const cy = h / 2;
+      const cy = h * live.current.cyf;
       const scale = Math.min(w, h * 0.6) * 0.46 * (1 + Math.sin(t * 1.2) * 0.012 + s.beat * 0.06);
       const yaw = Math.sin(t * 0.45) * 0.5 + spin;
       const pitch = Math.sin(t * 0.33) * 0.12;
