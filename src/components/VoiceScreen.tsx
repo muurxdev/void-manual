@@ -199,45 +199,32 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         stage={stageOf(status, phase)}
         pulse={pulse}
         dark={dark}
-        arcClass="pointer-events-none absolute inset-0 z-0 h-full w-full"
+        arcClass="hidden"
         waveRef={waveSlot}
       />
 
-      {/* cartão de vidro: texto no alto, onda no meio, microfone embaixo */}
+      {/* tela normal: cabeçalho, texto no alto, onda no meio, microfone embaixo */}
       <section
-        className="absolute z-10 mx-auto flex max-w-[460px] flex-col overflow-hidden rounded-[34px] border"
-        style={{
-          left: side,
-          right: side,
-          top: 'max(env(safe-area-inset-top), 14px)',
-          bottom: mode === 'voice' ? 'max(env(safe-area-inset-bottom), 56px)' : 132,
-          transition: 'bottom 420ms var(--sheet-ease)',
-          borderColor: dark ? 'rgba(255,255,255,.14)' : 'rgba(0,0,0,.08)',
-          background: dark
-            ? 'linear-gradient(180deg, rgba(22,22,25,.82) 0%, rgba(9,9,11,.9) 58%, rgba(58,58,64,.62) 100%)'
-            : 'linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(250,250,251,.94) 60%, rgba(228,228,232,.9) 100%)',
-          boxShadow: dark ? '0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12)' : '0 24px 60px rgba(0,0,0,.12), inset 0 1px 0 #fff',
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
-        }}
+        className="absolute inset-0 z-10 mx-auto flex max-w-[640px] flex-col"
+        style={{ bottom: mode === 'voice' ? 0 : 116, transition: 'bottom 420ms var(--sheet-ease)' }}
       >
-        <header className="flex items-center justify-between px-3 pt-3">
-          <div className="relative">
+        <header className="safe-top grid grid-cols-[48px_1fr_48px] items-center" style={{ paddingInline: side }}>
+          <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
+            <ArrowLeft className="h-[18px] w-[18px]" />
+          </button>
+          <h1 className="glass mx-auto rounded-full px-5 py-2 text-[15px] font-medium">Void Voice</h1>
+          <div className="relative justify-self-end">
             <button onClick={() => setMenu((m) => !m)} aria-label="Ações e informações" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass">
               <MoreHorizontal className="h-[18px] w-[18px]" />
             </button>
-            <Dropdown open={menu} onClose={() => setMenu(false)} items={menuItems} placement="bottom-start" />
+            <Dropdown open={menu} onClose={() => setMenu(false)} items={menuItems} placement="bottom-end" />
           </div>
-          <h1 className="text-[13px] font-medium tracking-wide text-ink/55">Void Voice</h1>
-          <button onClick={onBack} aria-label="Fechar e voltar" className="icon-btn glass">
-            <X className="h-[18px] w-[18px]" />
-          </button>
         </header>
 
         {/* o que foi dito e a resposta, em níveis */}
         <div
           ref={textRef}
-          className="scroll-smooth-area flex min-h-0 max-h-[46%] shrink-0 flex-col px-6 pt-4"
+          className="scroll-smooth-area flex min-h-0 max-h-[46%] shrink-0 flex-col px-6 pt-8"
           style={{ maskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)' }}
           aria-live="polite"
         >
@@ -318,7 +305,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
 
         {/* microfone no centro, atalhos nos lados */}
         <div
-          className={'flex items-center justify-center gap-7 pb-5 pt-1 transition-all duration-[380ms] ' + (mode === 'voice' ? 'opacity-100' : 'pointer-events-none h-0 overflow-hidden pb-0 pt-0 opacity-0')}
+          className={'flex items-center justify-center gap-7 pb-[max(env(safe-area-inset-bottom),22px)] pt-1 transition-all duration-[380ms] ' + (mode === 'voice' ? 'opacity-100' : 'pointer-events-none h-0 overflow-hidden pb-0 pt-0 opacity-0')}
           style={{ transitionTimingFunction: 'var(--spring)' }}
         >
           <button onClick={() => setMode('text')} aria-label="Escrever" className="glass press flex h-[52px] w-[52px] items-center justify-center rounded-full">

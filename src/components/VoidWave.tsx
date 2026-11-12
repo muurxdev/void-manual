@@ -108,8 +108,8 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
       const t = now / 1000;
       const dk = s.dark;
 
-      /* ---- arco de luz ---- */
-      {
+      /* ---- arco de luz (desligado quando o canvas está oculto) ---- */
+      if (arc.clientWidth > 0) {
         const w = size.aw;
         const h = size.ah;
         actx.clearRect(0, 0, w, h);
