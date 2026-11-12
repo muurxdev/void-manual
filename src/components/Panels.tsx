@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { useSmoothWheel } from '../data/useSmoothWheel';
 import { useDockScroll } from './Dock';
 import { PullRefresh } from './PullRefresh';
@@ -54,8 +54,8 @@ export const ScreenPanel: React.FC<PanelBase> = ({ title, subtitle, onClose, hea
     window.setTimeout(onClose, 400);
   }, [onClose]);
 
-  // entrada: da direita para a esquerda
-  useEffect(() => {
+  // entrada: já nasce fora da tela (antes da pintura) e sobe
+  useLayoutEffect(() => {
     const w = (sheet ? root.current?.offsetHeight : root.current?.offsetWidth) ?? window.innerWidth;
     place(w, 0);
     const id = requestAnimationFrame(() => requestAnimationFrame(() => place(0, 520)));

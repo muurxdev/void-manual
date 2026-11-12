@@ -47,9 +47,9 @@ if (import.meta.env.PROD) {
 
 // carrega as telas em segundo plano: abrir não mostra tela em branco
 window.setTimeout(() => {
-  void import('./components/VoiceScreen');
-  void import('./components/ChatScreen');
-  void import('./components/Sheets');
-  void import('./components/Library');
-  void import('./components/PlansPanel');
+
+
+
+
+
 }, 1200);

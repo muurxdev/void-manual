@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { useVoidStore } from './data/store';
 import { generateLocalAnswer } from './data/rag';
 import { HomeScreen } from './components/HomeScreen';
@@ -15,13 +15,11 @@ import { currentAccount, onAccountChange, signOut, type Account } from './data/a
 import { askAI, askAIStream, AiError } from './data/ai';
 import { usePlan } from './data/usePlan';
 // cada tela pesada só é baixada quando a pessoa abre
-const VoiceScreen = lazy(() => import('./components/VoiceScreen').then((m) => ({ default: m.VoiceScreen })));
-const ChatScreen = lazy(() => import('./components/ChatScreen').then((m) => ({ default: m.ChatScreen })));
-const SettingsPanel = lazy(() => import('./components/Sheets').then((m) => ({ default: m.SettingsPanel })));
-const ProfilePanel = lazy(() => import('./components/Sheets').then((m) => ({ default: m.ProfilePanel })));
-const HistorySheet = lazy(() => import('./components/Sheets').then((m) => ({ default: m.HistorySheet })));
-const LibrarySheet = lazy(() => import('./components/Library').then((m) => ({ default: m.LibrarySheet })));
-const PlansPanel = lazy(() => import('./components/PlansPanel').then((m) => ({ default: m.PlansPanel })));
+import { VoiceScreen } from './components/VoiceScreen';
+import { ChatScreen } from './components/ChatScreen';
+import { SettingsPanel, ProfilePanel, HistorySheet } from './components/Sheets';
+import { LibrarySheet } from './components/Library';
+import { PlansPanel } from './components/PlansPanel';
 import { toManual } from './data/library';
 import { useLibrary } from './data/useLibrary';
 
