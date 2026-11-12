@@ -19,6 +19,8 @@ interface VoiceScreenProps {
   error: string;
   pulse: number;
   citations: Cite[];
+  /** perguntas e respostas anteriores desta conversa (contexto) */
+  history: { q: string; a: string }[];
   dark: boolean;
   canOpenChat: boolean;
   onBack: () => void;
@@ -48,6 +50,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   error,
   pulse,
   citations,
+  history,
   dark,
   canOpenChat,
   onBack,
@@ -75,7 +78,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   useEffect(() => {
     const el = textRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-  }, [replyText, userText]);
+  }, [replyText, userText, status, history.length]);
 
   useEffect(() => {
     if (mode === 'text') {
@@ -224,20 +227,30 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         {/* o que foi dito e a resposta, em níveis */}
         <div
           ref={textRef}
-          className={"scroll-smooth-area flex min-h-0 shrink-0 flex-col px-6 pt-8 " + (mode === 'text' ? 'max-h-[30%]' : 'max-h-[46%]')}
+          className={"scroll-smooth-area flex min-h-0 shrink-0 flex-col px-6 pt-8 " + (mode === 'text' ? 'max-h-[30%]' : 'max-h-[54%]')}
           style={{ maskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)' }}
           aria-live="polite"
         >
           <div className="pb-2">
             {error ? (
               <p className="anim-fade-in text-[17px] leading-snug text-ink/60">{error}</p>
-            ) : !userText && !replyText ? (
+            ) : !userText && !replyText && history.length === 0 ? (
               <p className="text-[clamp(24px,2vw+14px,30px)] font-medium leading-tight tracking-[-0.02em] text-ink/35">
                 Pode falar.
                 <span className="text-ink"> Eu estou ouvindo.</span>
               </p>
             ) : (
               <>
+                {history.length > 0 && (
+                  <div className="mb-5 space-y-3 opacity-80">
+                    {history.map((h, i) => (
+                      <div key={i}>
+                        <p className="text-[15px] leading-snug text-ink/45">{h.q}</p>
+                        <p className="mt-0.5 text-[14px] leading-snug text-ink/35">{h.a}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {userText && (
                   <section className="anim-fade-up">
                     <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.14em] text-ink/45">Você</h2>
@@ -270,16 +283,26 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
                     </div>
                   </section>
                 )}
-                {replyText && status !== 'speaking' && canOpenChat && (
-                  <div className="anim-fade-up mt-4">
-                    <button onClick={onOpenChat} className="glass press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
-                      <MessageSquare className="h-4 w-4" /> Continuar no chat
+                {(replyText || history.length > 0) && status !== 'speaking' && status !== 'thinking' && (
+                  <div className="anim-fade-up mt-5 flex flex-wrap gap-2">
+                    <button onClick={onMic} className="glass-ink press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
+                      <Mic className="h-4 w-4" /> Continuar falando
                     </button>
+                    {canOpenChat && (
+                      <button onClick={onOpenChat} className="glass press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
+                        <MessageSquare className="h-4 w-4" /> Abrir no chat
+                      </button>
+                    )}
                   </div>
                 )}
               </>
             )}
           </div>
+        </div>
+
+        {/* onda luminosa */}
+        <div className="relative flex min-h-[130px] flex-1 items-center">
+          <canvas ref={waveSlot} className="h-[240px] w-full shrink-0" aria-hidden="true" />
         </div>
 
         {/* estado, sempre visível */}
@@ -296,11 +319,6 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
               )}
             </span>
           )}
-        </div>
-
-        {/* onda luminosa */}
-        <div className="relative flex min-h-[130px] flex-1 items-center">
-          <canvas ref={waveSlot} className="h-[200px] w-full shrink-0" aria-hidden="true" />
         </div>
 
         {/* espaço reservado para os botões, que ficam acima de tudo */}

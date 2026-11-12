@@ -151,7 +151,7 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
         wctx.clearRect(0, 0, w, h);
         wctx.globalAlpha = ap;
         const cy = h / 2;
-        const amp = (form.amp * (0.78 + 0.22 * Math.sin(t * 0.7)) + (s.stage === 'speak' || s.stage === 'listen' ? level * 0.28 : 0)) * h * 0.72; // parado, ela continua viva
+        const amp = Math.min((form.amp * (0.78 + 0.22 * Math.sin(t * 0.7)) + (s.stage === 'speak' || s.stage === 'listen' ? level * 0.28 : 0)) * h * 0.72, h * 0.34); // margem: a ponta e o brilho nunca encostam na borda do canvas; // parado, ela continua viva
         const n = Math.round(form.lines);
         for (let li = 0; li < LINES.length; li++) {
           const L = LINES[li];

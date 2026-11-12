@@ -216,7 +216,10 @@ export function App() {
   const answer = (content: string) => {
     const { ragManuals: all, machine: m, contextItem: ctx } = latest.current;
     const pool = ctx ? all.filter((x) => x.id === ctx.id) : all;
-    return generateLocalAnswer(m ? `${m} ${content}` : content, pool.length ? pool : all);
+    // pergunta curta ("e a folga?") herda o assunto da pergunta anterior da mesma conversa
+    const prev = [...(latest.current.activeConversation?.messages ?? [])].reverse().find((x) => x.role === 'user')?.content;
+    const withContext = prev && content.trim().split(/\s+/).length <= 7 ? prev + ' ' + content : content;
+    return generateLocalAnswer(m ? `${m} ${withContext}` : withContext, pool.length ? pool : all);
   };
 
   /* ---------- chat de texto ---------- */
@@ -423,6 +426,14 @@ export function App() {
     });
   };
 
+  // o que já foi dito nesta conversa, para a tela de voz mostrar o contexto
+  const voiceHistory = (() => {
+    const msgs = activeConversation?.messages ?? [];
+    const pairs: { q: string; a: string }[] = [];
+    for (let i = 0; i < msgs.length - 1; i++) if (msgs[i].role === 'user' && msgs[i + 1].role === 'assistant') pairs.push({ q: msgs[i].content, a: (() => { const s = voiceSummary(msgs[i + 1].content); return s.length > 110 ? s.slice(0, 110).trimEnd() + '…' : s; })() });
+    return (voiceUser ? pairs.slice(0, -1) : pairs).slice(-3);
+  })();
+
   const askLogout = async () => {
     const ok = await fb.confirm({ title: 'Sair da conta?', message: 'Você vai precisar entrar de novo para usar o Void.', confirmLabel: 'Sair', danger: true });
     if (!ok) return;
@@ -477,6 +488,7 @@ export function App() {
             error={voiceError}
             pulse={voicePulse}
             citations={voiceCites}
+            history={voiceHistory}
             dark={dark}
             canOpenChat={!!activeConversation && activeConversation.messages.length > 0}
             onBack={() => {
