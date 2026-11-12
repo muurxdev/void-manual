@@ -331,10 +331,10 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       </section>
 
       {/* campo de texto (modo teclado) */}
-      <div className="absolute inset-x-0 bottom-0 z-20 h-[116px]">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[116px]">
         <div
           className={`absolute bottom-[max(env(safe-area-inset-bottom),16px)] left-1/2 flex w-full max-w-[640px] -translate-x-1/2 flex-col gap-2 transition-all duration-[380ms] ${
-            mode === 'text' ? 'opacity-100' : 'pointer-events-none translate-y-8 opacity-0'
+            mode === 'text' ? 'pointer-events-auto opacity-100' : 'pointer-events-none translate-y-8 opacity-0'
           }`}
           style={{ transitionTimingFunction: 'var(--spring)', paddingInline: side }}
         >
