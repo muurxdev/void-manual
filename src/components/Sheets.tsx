@@ -127,9 +127,9 @@ export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, o
           <span className="mb-1.5 block px-1 text-[12px] text-mute">Máquinas que você atende</span>
           <div className="field flex flex-wrap items-center gap-2 !py-2.5">
             {tags.map((m) => (
-              <span key={m} className="flex min-h-9 items-center gap-1 rounded-full bg-fill pl-3 pr-1 text-[13px]">
+              <span key={m} className="flex min-h-11 items-center gap-0.5 rounded-full bg-fill pl-4 pr-1 text-[13px]">
                 {m}
-                <button type="button" onClick={() => setTags(tags.filter((x) => x !== m))} aria-label={`Remover ${m}`} className="flex h-8 w-8 items-center justify-center rounded-full text-mute">
+                <button type="button" onClick={() => setTags(tags.filter((x) => x !== m))} aria-label={`Remover ${m}`} className="flex h-11 w-11 items-center justify-center rounded-full text-mute">
                   <X className="h-3.5 w-3.5" />
                 </button>
               </span>
@@ -145,7 +145,7 @@ export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, o
               }}
               onBlur={addTag}
               placeholder={tags.length ? 'Adicionar…' : 'Moto, carro, trator…'}
-              className="min-w-[110px] flex-1 bg-transparent py-1 text-[14px] focus:outline-none"
+              className="min-h-11 min-w-[110px] flex-1 bg-transparent py-1 text-[14px] focus:outline-none"
             />
           </div>
         </div>
@@ -298,7 +298,7 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
             </label>
             <label className="block">
               <span className="mb-1 block text-[12px] text-mute">Voz</span>
-              <select value={prefs.voiceURI} onChange={(e) => updatePrefs({ voiceURI: e.target.value })} className="field !py-2.5">
+              <select value={prefs.voiceURI} onChange={(e) => updatePrefs({ voiceURI: e.target.value })} className="field min-h-11 !py-2.5">
                 <option value="">Automática{auto ? ` · ${auto.name}` : ''}</option>
                 {voices.map((v) => (
                   <option key={v.voiceURI} value={v.voiceURI}>

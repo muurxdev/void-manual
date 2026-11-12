@@ -244,14 +244,14 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
       </div>}
 
       <div data-nodrag className="-mx-[22px] mt-3 flex gap-2 overflow-x-auto px-[22px] pb-1">
-        <button onClick={nextSort} aria-label={`Ordenar: ${SORT_LABEL[sort]}. Toque para trocar`} className="press flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-fill px-3.5 text-[13px]">
+        <button onClick={nextSort} aria-label={`Ordenar: ${SORT_LABEL[sort]}. Toque para trocar`} className="press flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-fill px-3.5 text-[13px]">
           <ArrowUpDown className="h-3.5 w-3.5" /> {SORT_LABEL[sort]}
         </button>
         {FILTERS.filter((f) => f.id === 'all' || counts[f.id]).map((f) => (
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
-            className={`press min-h-10 shrink-0 rounded-full px-3.5 text-[13px] transition-colors ${filter === f.id ? 'bg-ink text-paper' : 'border border-hair text-ink/70'}`}
+            className={`press min-h-11 shrink-0 rounded-full px-3.5 text-[13px] transition-colors ${filter === f.id ? 'bg-ink text-paper' : 'border border-hair text-ink/70'}`}
           >
             {f.label} <span className="font-mono text-[12px] opacity-60">{counts[f.id] || 0}</span>
           </button>
@@ -264,7 +264,7 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
             <button
               key={t}
               onClick={() => setTopic(topic === t ? '' : t)}
-              className={`press min-h-10 shrink-0 rounded-full px-3.5 text-[12px] transition-colors ${topic === t ? 'bg-ink text-paper' : 'bg-fill text-sub'}`}
+              className={`press min-h-11 shrink-0 rounded-full px-3.5 text-[12px] transition-colors ${topic === t ? 'bg-ink text-paper' : 'bg-fill text-sub'}`}
             >
               {t} · {n}
             </button>

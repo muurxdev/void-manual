@@ -191,7 +191,7 @@ export const AuthFlow: React.FC<AuthProps> = ({ dark, onDone, initial = 'welcome
       <div className="px-1" aria-live="polite">
         <div className="flex gap-1.5">
           {[1, 2, 3, 4].map((n) => (
-            <span key={n} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${strength >= n ? (strength <= 1 ? 'bg-red-500' : strength === 2 ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-ink/10'}`} />
+            <span key={n} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${strength >= n ? (strength <= 1 ? 'bg-ink/35' : strength === 2 ? 'bg-ink/60' : 'bg-ink') : 'bg-ink/10'}`} />
           ))}
         </div>
         <p className="mt-1 text-[12px] text-mute">{['', 'Senha fraca', 'Pode melhorar', 'Boa senha', 'Senha forte'][strength]}</p>

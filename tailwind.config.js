@@ -19,7 +19,6 @@ export default {
         fill: v('fill'),
         bubble: v('bubble'),
         assistant: v('assistant'),
-        azul: v('azul'),
       },
       keyframes: {
         blink: { '0%,100%': { opacity: '1' }, '50%': { opacity: '0' } },

@@ -224,7 +224,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         const key = `${msg.id}-${i}`;
         const on = checked[key] ?? chk[1].toLowerCase() === 'x';
         out.push(
-          <button key={key} onClick={() => setChecked((p) => ({ ...p, [key]: !on }))} className="my-1 flex w-full items-start gap-2.5 text-left">
+          <button key={key} onClick={() => setChecked((p) => ({ ...p, [key]: !on }))} className="flex min-h-11 w-full items-start gap-2.5 py-2 text-left">
             <span className={`mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-md border ${on ? 'border-ink bg-ink text-paper' : 'border-ink/25 bg-paper'}`}>
               {on && <Check className="h-3 w-3 stroke-[3]" />}
             </span>
@@ -334,27 +334,27 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                         )}
                       </div>
                       {!user && !m.isStreaming && sources.length > 0 && <p className="mt-1.5 px-1 text-[12px] text-mute">Baseado em {sources.join(' e ')}</p>}
-                      <div className="mt-0.5 flex flex-wrap items-center gap-0.5 px-1 text-[12px] text-mute">
+                      <div className="mt-0 flex flex-wrap items-center px-1 text-[12px] text-mute">
                         <span className="mr-1">{time(m.timestamp)}</span>
                         {!user && !m.isStreaming && (
                           <>
-                            <button onClick={() => copy(m.id, m.content)} aria-label="Copiar" className="flex h-9 w-9 items-center justify-center rounded-full active:bg-ink/5">
+                            <button onClick={() => copy(m.id, m.content)} aria-label="Copiar" className="flex h-11 w-11 items-center justify-center rounded-full active:bg-ink/5">
                               {copiedId === m.id ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                             </button>
-                            <button onClick={() => speak(m.content)} aria-label="Ouvir" className="flex h-9 w-9 items-center justify-center rounded-full active:bg-ink/5">
+                            <button onClick={() => speak(m.content)} aria-label="Ouvir" className="flex h-11 w-11 items-center justify-center rounded-full active:bg-ink/5">
                               <Volume2 className="h-4 w-4" />
                             </button>
-                            <button onClick={() => share(m.content)} aria-label="Compartilhar" className="flex h-9 w-9 items-center justify-center rounded-full active:bg-ink/5">
+                            <button onClick={() => share(m.content)} aria-label="Compartilhar" className="flex h-11 w-11 items-center justify-center rounded-full active:bg-ink/5">
                               <Share2 className="h-4 w-4" />
                             </button>
-                            <button onClick={() => vote(m.id, 'up')} aria-label="Gostei" aria-pressed={votes[m.id] === 'up'} className={`flex h-9 w-9 items-center justify-center rounded-full active:bg-ink/5 ${votes[m.id] === 'up' ? 'text-ink' : ''}`}>
+                            <button onClick={() => vote(m.id, 'up')} aria-label="Gostei" aria-pressed={votes[m.id] === 'up'} className={`flex h-11 w-11 items-center justify-center rounded-full active:bg-ink/5 ${votes[m.id] === 'up' ? 'text-ink' : ''}`}>
                               <ThumbsUp className={`h-4 w-4 ${votes[m.id] === 'up' ? 'fill-current' : ''}`} />
                             </button>
-                            <button onClick={() => vote(m.id, 'down')} aria-label="Não gostei" aria-pressed={votes[m.id] === 'down'} className={`flex h-9 w-9 items-center justify-center rounded-full active:bg-ink/5 ${votes[m.id] === 'down' ? 'text-ink' : ''}`}>
+                            <button onClick={() => vote(m.id, 'down')} aria-label="Não gostei" aria-pressed={votes[m.id] === 'down'} className={`flex h-11 w-11 items-center justify-center rounded-full active:bg-ink/5 ${votes[m.id] === 'down' ? 'text-ink' : ''}`}>
                               <ThumbsDown className={`h-4 w-4 ${votes[m.id] === 'down' ? 'fill-current' : ''}`} />
                             </button>
                             {m.id === lastAssistantId && lastUser && !isStreaming && (
-                              <button onClick={() => onSend(lastUser.content, { deepThink: false })} aria-label="Perguntar de novo" className="flex h-9 w-9 items-center justify-center rounded-full active:bg-ink/5">
+                              <button onClick={() => onSend(lastUser.content, { deepThink: false })} aria-label="Perguntar de novo" className="flex h-11 w-11 items-center justify-center rounded-full active:bg-ink/5">
                                 <RotateCcw className="h-4 w-4" />
                               </button>
                             )}
@@ -364,7 +364,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                       {!user && m.id === lastAssistantId && !isStreaming && (
                         <div className="mt-2 flex flex-wrap gap-2">
                           {FOLLOW.map((f) => (
-                            <button key={f} onClick={() => onSend(f, { deepThink: false })} className="glass press min-h-10 rounded-full px-3.5 text-[13px]">
+                            <button key={f} onClick={() => onSend(f, { deepThink: false })} className="glass press min-h-11 rounded-full px-4 text-[13px]">
                               {f}
                             </button>
                           ))}
