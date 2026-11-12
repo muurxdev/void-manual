@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, BookOpen, Crown, LogOut, MessageSquare, Mic, User } from 'lucide-react';
+import { ArrowUpRight, BookOpen, LogOut, MessageSquare, Mic, User } from 'lucide-react';
 import { useDockScroll } from './Dock';
 import { PullRefresh } from './PullRefresh';
 import type { Conversation, WorkshopProfile } from '../data/types';
@@ -178,7 +178,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
             </div>
 
             <button onClick={onPlans} aria-label={'Planos. Seu plano: ' + planName + ', ' + planNote} className="glass press flex h-11 items-center gap-2 rounded-full px-3.5 text-[13px]">
-              <Crown className="h-3.5 w-3.5" />
               <span className="font-medium">{planName}</span>
               <span className="max-w-[26vw] truncate text-mute md:max-w-[220px]">{planNote}</span>
             </button>

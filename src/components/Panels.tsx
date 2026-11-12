@@ -6,6 +6,8 @@ import { PullRefresh } from './PullRefresh';
 
 interface PanelBase {
   showBack?: boolean;
+  /** o que a seta faz; por padrão fecha a tela */
+  onBack?: () => void;
   title: string;
   subtitle?: string;
   onClose: () => void;
@@ -18,7 +20,7 @@ interface PanelBase {
  * sai da esquerda para a direita. Também fecha arrastando da borda
  * esquerda para a direita (como nos apps do celular).
  * ========================================================== */
-export const ScreenPanel: React.FC<PanelBase> = ({ title, subtitle, onClose, headerExtra, children, showBack = true }) => {
+export const ScreenPanel: React.FC<PanelBase> = ({ title, subtitle, onClose, headerExtra, children, showBack = true, onBack }) => {
   const root = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const shade = useRef<HTMLDivElement>(null);
@@ -131,7 +133,7 @@ export const ScreenPanel: React.FC<PanelBase> = ({ title, subtitle, onClose, hea
       >
         <div className="safe-top mx-auto flex w-full max-w-[760px] items-center justify-between px-[22px] pb-2">
           {showBack ? (
-          <button onClick={close} aria-label="Voltar" className="icon-btn glass">
+          <button onClick={onBack ?? close} aria-label="Voltar" className="icon-btn glass">
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>

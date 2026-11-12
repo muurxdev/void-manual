@@ -12,7 +12,7 @@ import { loadPrefs, speakText, type SpeakHandle } from './data/tts';
 import { voiceSummary } from './data/voiceText';
 import { transition, type NavKind } from './data/nav';
 import { currentAccount, onAccountChange, signOut, type Account } from './data/auth';
-import { askAI, AiError } from './data/ai';
+import { askAI, askAIStream, AiError } from './data/ai';
 import { usePlan } from './data/usePlan';
 // cada tela pesada só é baixada quando a pessoa abre
 const VoiceScreen = lazy(() => import('./components/VoiceScreen').then((m) => ({ default: m.VoiceScreen })));
@@ -233,15 +233,25 @@ export function App() {
     return pairs.slice(-3);
   };
   /** IA no servidor; se não der (sem internet, sem chave, erro), usa o motor do aparelho. Sem saldo no plano, devolve null. */
-  const resolveAnswer = async (content: string, mode: 'chat' | 'voice') => {
+  const abortRef = useRef<AbortController | null>(null);
+  const resolveAnswer = async (content: string, mode: 'chat' | 'voice', onText?: (t: string) => void) => {
     try {
       const { ragManuals: all, contextItem: ctx } = latest.current;
       const pool = ctx ? all.filter((x) => x.id === ctx.id) : all;
-      const r = await askAI({ question: questionWithContext(content), manuals: pool.length ? pool : all, history: historyPairs(), mode });
+      const base = { question: questionWithContext(content), manuals: pool.length ? pool : all, history: historyPairs() };
+      if (mode === 'chat' && onText) {
+        abortRef.current?.abort();
+        const ac = new AbortController();
+        abortRef.current = ac;
+        const s = await askAIStream(base, onText, ac.signal);
+        planCtl.applyServer(s.plan, s.left);
+        return { text: s.text, citations: s.citations, analysis: 'Resposta gerada com IA a partir dos manuais.', streamed: true };
+      }
+      const r = await askAI({ ...base, mode });
       planCtl.applyServer(r.plan, r.left);
       // na voz, tira marcas de fonte como [1] para não serem lidas em voz alta
       const text = mode === 'voice' ? r.text.replace(/\s*\[\d+\]/g, '') : r.text;
-      return { text, citations: r.citations, analysis: 'Resposta gerada com IA a partir dos manuais.' };
+      return { text, citations: r.citations, analysis: 'Resposta gerada com IA a partir dos manuais.', streamed: false };
     } catch (e) {
       if (e instanceof AiError && e.code === 'limite') {
         fb.toast('Você usou todas as perguntas de hoje no plano ' + planCtl.plan.name, 'info');
@@ -249,7 +259,9 @@ export function App() {
         return null;
       }
       if (!guardQuestion()) return null;
-      return answer(content);
+      if ((e as Error)?.name === 'AbortError') return null;
+      const loc = answer(content);
+      return { ...loc, streamed: false };
     }
   };
 
@@ -288,7 +300,21 @@ export function App() {
     const state: StreamState = { timer: 0, convId, msgId, text: '' };
     streamRef.current = state; // dá para tocar em "Parar" já enquanto a IA pensa
 
-    const res = await resolveAnswer(content, 'chat');
+    // o texto aparece à medida que chega, no máximo uma vez por quadro
+    let latestText = '';
+    let queued = 0;
+    const flush = () => {
+      queued = 0;
+      if (token === askToken.current) {
+        state.text = latestText;
+        updateStreamingMessage(convId, msgId, latestText);
+      }
+    };
+    const res = await resolveAnswer(content, 'chat', (t) => {
+      latestText = t;
+      if (!queued) queued = requestAnimationFrame(flush);
+    });
+    if (queued) cancelAnimationFrame(queued);
     if (token !== askToken.current) return; // a pessoa parou
     if (!res) {
       finalizeStreamingMessage(convId, msgId, 'Não consegui responder agora. Veja o seu plano ou tente de novo em instantes.');
@@ -297,6 +323,12 @@ export function App() {
       return;
     }
     patchMessage(convId, msgId, { citations: res.citations, analysis: res.analysis });
+    if (res.streamed) {
+      finalizeStreamingMessage(convId, msgId, res.text);
+      streamRef.current = null;
+      setIsStreaming(false);
+      return;
+    }
     let full = res.text;
     if (options.deepThink) full += `\n\n> **Análise profunda:** cruze com histórico de falhas térmicas e resistência do chicote principal.`;
 
@@ -317,6 +349,7 @@ export function App() {
 
   const handleStop = () => {
     askToken.current++;
+    abortRef.current?.abort();
     const s = streamRef.current;
     if (!s) return;
     clearInterval(s.timer);

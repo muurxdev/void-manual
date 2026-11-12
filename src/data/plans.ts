@@ -89,3 +89,16 @@ export function checkFiles(plan: Plan, current: number, adding: number): { ok: b
   const room = Math.max(0, max - current);
   return { ok: adding <= room, max, room };
 }
+
+/** Muda para true quando o PagBank estiver ligado no servidor. Enquanto for false, "Pagar" entra na lista de espera. */
+export const PAYMENTS_LIVE = false;
+
+export const BILLING_MONTHS = 12;
+
+/** Preço por mês no ciclo escolhido. */
+export const monthlyPrice = (p: Plan, annual: boolean): number => (annual ? p.price * (1 - ANNUAL_DISCOUNT) : p.price);
+
+/** Quanto é cobrado de uma vez no ciclo escolhido (12 meses no anual). */
+export const chargeTotal = (p: Plan, annual: boolean): number => (annual ? monthlyPrice(p, true) * BILLING_MONTHS : p.price);
+
+export const money = (v: number): string => 'R$ ' + v.toFixed(2).replace('.', ',');
