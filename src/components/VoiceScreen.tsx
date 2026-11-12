@@ -237,11 +237,11 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         {/* o que foi dito e a resposta, em níveis */}
         <div
           ref={textRef}
-          className="scroll-smooth-area flex min-h-0 flex-1 flex-col px-6 pt-4"
+          className="scroll-smooth-area flex min-h-0 max-h-[46%] shrink-0 flex-col px-6 pt-4"
           style={{ maskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 14px), transparent)' }}
           aria-live="polite"
         >
-          <div className="my-auto pb-2">
+          <div className="pb-2">
             {error ? (
               <p className="anim-fade-in text-[17px] leading-snug text-ink/60">{error}</p>
             ) : !userText && !replyText ? (
@@ -312,7 +312,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         </div>
 
         {/* onda luminosa */}
-        <div className="relative h-[120px] shrink-0">
+        <div className="relative min-h-[150px] flex-1">
           <canvas ref={waveSlot} className="absolute inset-0 h-full w-full" aria-hidden="true" />
         </div>
 

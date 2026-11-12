@@ -16,12 +16,12 @@ interface Props {
 
 // forma-alvo por estágio: altura da onda, velocidade, número de linhas visíveis, varredura, brilho do arco
 const FORMS: Record<Stage, { amp: number; speed: number; lines: number; scan: number; arc: number }> = {
-  idle: { amp: 0.07, speed: 0.5, lines: 5, scan: 0, arc: 0.35 },
-  listen: { amp: 0.4, speed: 0.9, lines: 5, scan: 0, arc: 0.6 },
-  read: { amp: 0.16, speed: 0.7, lines: 4, scan: 1, arc: 0.6 },
-  search: { amp: 0.3, speed: 1.8, lines: 6, scan: 0, arc: 0.7 },
-  diagnose: { amp: 0.035, speed: 2.4, lines: 2, scan: 0, arc: 1 },
-  speak: { amp: 0.5, speed: 0.9, lines: 5, scan: 0, arc: 0.75 },
+  idle: { amp: 0.36, speed: 0.85, lines: 5, scan: 0, arc: 0.5 },
+  listen: { amp: 0.45, speed: 1.1, lines: 5, scan: 0, arc: 0.65 },
+  read: { amp: 0.3, speed: 0.9, lines: 4, scan: 1, arc: 0.65 },
+  search: { amp: 0.42, speed: 1.9, lines: 6, scan: 0, arc: 0.75 },
+  diagnose: { amp: 0.07, speed: 2.4, lines: 2, scan: 0, arc: 1 },
+  speak: { amp: 0.55, speed: 1.0, lines: 5, scan: 0, arc: 0.8 },
 };
 
 /**
@@ -71,7 +71,7 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
     ro.observe(wave);
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const form = { amp: 0.07, speed: 0.5, lines: 5, scan: 0, arc: 0.35 };
+    const form = { amp: 0.36, speed: 0.85, lines: 5, scan: 0, arc: 0.5 };
     let phase = 0;
     let level = 0;
     let appear = reduce ? 1 : 0;
@@ -147,7 +147,7 @@ export const VoidWave: React.FC<Props> = ({ state, stage, pulse, dark = true, ar
         wctx.clearRect(0, 0, w, h);
         wctx.globalAlpha = ap;
         const cy = h / 2;
-        const amp = (form.amp + (s.stage === 'speak' || s.stage === 'listen' ? level * 0.28 : 0)) * h * 0.5;
+        const amp = (form.amp * (0.78 + 0.22 * Math.sin(t * 0.7)) + (s.stage === 'speak' || s.stage === 'listen' ? level * 0.28 : 0)) * h * 0.5; // parado, ela continua viva
         const n = Math.round(form.lines);
         for (let li = 0; li < LINES.length; li++) {
           const L = LINES[li];
