@@ -37,16 +37,7 @@ export function useTheme() {
     } catch {
       /* sem storage */
     }
-    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
-    if (doc.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      document.documentElement.dataset.nav = 'theme';
-      doc.startViewTransition(() => {
-        apply(next);
-        setChoice(next);
-      });
-    } else {
-      setChoice(next);
-    }
+    setChoice(next);
   }, []);
 
   const resolved = resolve(choice);

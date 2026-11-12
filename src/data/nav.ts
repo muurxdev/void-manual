@@ -1,33 +1,38 @@
-import { flushSync } from 'react-dom';
-
 export type NavKind = 'forward' | 'back' | 'rise';
 
-/** Último toque na tela: as telas abrem expandindo daqui e voltam para cá. */
-let tap = { x: innerWidth / 2, y: innerHeight * 0.8 };
+/** Último toque: as telas cheias crescem daqui e encolhem de volta para cá. */
+let tap = { x: window.innerWidth / 2, y: window.innerHeight * 0.85 };
 const origins: { x: number; y: number }[] = [];
-if (typeof window !== 'undefined') {
-  window.addEventListener(
-    'pointerdown',
-    (e) => {
-      tap = { x: e.clientX, y: e.clientY };
-    },
-    { capture: true, passive: true }
-  );
-}
+window.addEventListener(
+  'pointerdown',
+  (e) => {
+    tap = { x: e.clientX, y: e.clientY };
+  },
+  { capture: true, passive: true }
+);
 
-/** Troca de estado com transição nativa (View Transitions); sem suporte, troca direta. */
+let pending = 0;
+
+/**
+ * Troca de tela sem View Transitions (elas piscavam).
+ * - forward: troca já; a tela nova se anima sozinha (classe screen-in) a partir do toque.
+ * - back: a tela atual encolhe para o ponto de origem e só então sai.
+ */
 export function transition(kind: NavKind, update: () => void) {
-  const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
-  if (!doc.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    update();
-    return;
-  }
+  const root = document.documentElement;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let o = tap;
   if (kind === 'forward') origins.push(tap);
   else if (kind === 'back') o = origins.pop() ?? tap;
-  const root = document.documentElement;
-  root.style.setProperty('--nx', Math.round(o.x) + 'px');
-  root.style.setProperty('--ny', Math.round(o.y) + 'px');
-  root.dataset.nav = kind;
-  doc.startViewTransition(() => flushSync(update));
+  root.style.setProperty('--ox', Math.round(o.x) + 'px');
+  root.style.setProperty('--oy', Math.round(o.y) + 'px');
+  const el = kind === 'back' && !reduce ? document.querySelector('[data-screen]') : null;
+  if (!el) {
+    update();
+    return;
+  }
+  el.classList.remove('screen-in');
+  el.classList.add('screen-out');
+  window.clearTimeout(pending);
+  pending = window.setTimeout(update, 230);
 }

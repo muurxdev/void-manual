@@ -560,6 +560,7 @@ export function App() {
         {/* com uma tela cheia aberta, o fundo fica inerte: sem foco, sem leitor de tela */}
         <div className="h-full" {...(sheet ? ({ inert: true } as object) : {})} aria-hidden={sheet ? true : undefined}>
         {account && screen === 'home' && (
+          <div className="screen-fade h-full">
           <HomeScreen
             profile={profile}
             conversations={conversations}
@@ -579,9 +580,11 @@ export function App() {
             onViewAll={() => openSheet('history')}
             onAsk={askFromHome}
           />
+          </div>
         )}
 
         {account && screen === 'voice' && (
+          <div data-screen className="screen-in h-full">
           <VoiceScreen
             status={voiceStatus}
             phase={voicePhase}
@@ -605,9 +608,11 @@ export function App() {
             onSendWithAttachment={(t, a) => handleSend(t, { deepThink: false, attachment: a })}
             onOpenChat={voiceToChat}
           />
+          </div>
         )}
 
         {account && screen === 'chat' && (
+          <div data-screen className="screen-in h-full">
           <ChatScreen
             title={activeConversation && activeConversation.messages.length > 0 ? activeConversation.title : 'Chat técnico'}
             messages={activeConversation?.messages ?? []}
@@ -630,6 +635,7 @@ export function App() {
                 : undefined
             }
           />
+          </div>
         )}
 
         </div>

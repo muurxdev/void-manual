@@ -43,7 +43,16 @@ const PLACEMENT: Record<DropdownProps['placement'], string> = {
 
 /** Menu em Liquid Glass com entrada em spring e itens em cascata. */
 export const Dropdown: React.FC<DropdownProps> = ({ open, onClose, items, placement, title }) => {
-  const { mounted, closing } = usePresence(open, 300);
+  const { mounted, closing } = usePresence(open, 220);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (!open) {
+      setShown(false);
+      return;
+    }
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setShown(true)));
+    return () => cancelAnimationFrame(id);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -60,9 +69,12 @@ export const Dropdown: React.FC<DropdownProps> = ({ open, onClose, items, placem
       <div
         role="menu"
         aria-label={title}
-        className={`menu-surface absolute z-40 w-[232px] rounded-[22px] p-1.5 ${PLACEMENT[placement]} ${
-          closing ? 'menu-out' : 'menu-in'
-        }`}
+        className={`menu-surface absolute z-40 w-[232px] rounded-[22px] p-1.5 ${PLACEMENT[placement]}`}
+        style={{
+          opacity: shown && !closing ? 1 : 0,
+          transform: shown && !closing ? 'none' : 'translate3d(0, 14px, 0) scale(.97)',
+          transition: shown && !closing ? 'opacity 200ms var(--ease-out), transform 280ms var(--ease-out)' : 'opacity 160ms var(--ease-in), transform 200ms var(--ease-in)',
+        }}
       >
         {title && <p className="px-3 pb-1 pt-2 text-[12px] uppercase tracking-wider text-mute">{title}</p>}
         {items.map((it, i) => (
