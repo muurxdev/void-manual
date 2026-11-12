@@ -28,3 +28,19 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { updateViaCache: 'none' }).catch(() => {});
   });
 }
+
+// versão nova publicada: ao voltar para o app, confere e recarrega sozinho (sem ficar preso na tela antiga)
+if (import.meta.env.PROD) {
+  const mine = Array.from(document.scripts).map((s) => s.src.match(/assets\/index-[^/]+\.js/)?.[0]).find(Boolean);
+  const check = async () => {
+    try {
+      const html = await (await fetch(import.meta.env.BASE_URL + '?_=' + Date.now(), { cache: 'no-store' })).text();
+      const now = html.match(/assets\/index-[^"']+\.js/)?.[0];
+      if (mine && now && now !== mine) location.reload();
+    } catch {
+      /* sem internet: segue */
+    }
+  };
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && check());
+  window.setTimeout(check, 4000);
+}
