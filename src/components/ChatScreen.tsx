@@ -24,6 +24,22 @@ interface ChatScreenProps {
   onDelete?: () => (() => void) | void;
 }
 
+const THINK = ['Lendo sua pergunta', 'Consultando os manuais', 'Montando a resposta'];
+
+/** Enquanto a resposta não começa: o estado muda sozinho e o texto brilha, como nos assistentes de IA. */
+const Thinking: React.FC = () => {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setI((n) => Math.min(n + 1, THINK.length - 1)), 1700);
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <p key={i} className="anim-fade-up flex items-center gap-2 py-0.5 text-[14px]" role="status" aria-live="polite">
+      <span className="shimmer-text font-medium">{THINK[i]}…</span>
+    </p>
+  );
+};
+
 const SUGGESTIONS: { q: string; sub: string }[] = [
   { q: 'Tabela de torque de cabeçote e biela da Honda CB 500F', sub: 'Torque e folgas' },
   { q: 'Tabela completa de códigos de falha PGM-FI e MIL Honda', sub: 'Códigos de falha' },
@@ -191,6 +207,10 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
       return n + (m && (checked[`${msg.id}-${i}`] ?? m[1].toLowerCase() === 'x') ? 1 : 0);
     }, 0);
     let counted = false;
+    let lastTextIdx = -1;
+    allLines.forEach((l, i) => {
+      if (l.trim() && !l.startsWith('```') && !l.startsWith('> ') && !l.startsWith('#') && !chkRe.test(l)) lastTextIdx = i;
+    });
     allLines.forEach((line, i) => {
       if (line.startsWith('```')) {
         if (code) {
@@ -236,7 +256,23 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
       if (line.startsWith('### ')) return void out.push(<h3 key={i} className="mb-1 mt-3 text-[15px] font-semibold">{inline(line.slice(4))}</h3>);
       if (line.startsWith('#### ')) return void out.push(<h4 key={i} className="mb-1 mt-3 text-[12px] font-semibold text-sub">{inline(line.slice(5))}</h4>);
       if (line.startsWith('> ')) return; // notas técnicas internas ficam ocultas
-      if (line.trim()) out.push(<p key={i} className="my-1 text-[14px] leading-relaxed">{inline(line)}</p>);
+      if (line.trim()) {
+        if (msg.isStreaming && i === lastTextIdx) {
+          const ws = line.split(' ');
+          const tail = ws.slice(-2);
+          out.push(
+            <p key={i} className="my-1 text-[14px] leading-relaxed">
+              {inline(ws.slice(0, -2).join(' ') + (ws.length > 2 ? ' ' : ''))}
+              {tail.map((w, k) => (
+                <span key={ws.length - 2 + k} className="anim-word-in">
+                  {w}
+                  {k < tail.length - 1 ? ' ' : ''}
+                </span>
+              ))}
+            </p>
+          );
+        } else out.push(<p key={i} className="my-1 text-[14px] leading-relaxed">{inline(line)}</p>);
+      }
     });
     return out;
   };
@@ -317,8 +353,11 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                 return (
                   <div key={m.id} className={`anim-fade-up flex gap-2.5 ${user ? 'justify-end' : 'justify-start'}`}>
                     {!user && (
-                      <span className="glass-ink mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
-                        <VoidMark size={18} />
+                      <span className="glass-ink relative mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+                        {m.isStreaming && <span className="think-halo absolute inset-0 rounded-full border border-ink/40" aria-hidden="true" />}
+                        <span className={m.isStreaming ? 'think-mark' : 'inline-flex'}>
+                          <VoidMark size={18} />
+                        </span>
                       </span>
                     )}
                     <div className={`flex min-w-0 max-w-[86%] flex-col ${user ? 'items-end' : 'items-start'}`}>
@@ -327,14 +366,18 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                         {user ? (
                           <p className="whitespace-pre-wrap text-[14px] leading-relaxed">{m.content}</p>
                         ) : (
-                          <>
-                            {body(m)}
-                            {m.isStreaming && <span className="ml-0.5 inline-block h-4 w-[2px] animate-blink bg-ink align-middle" />}
-                          </>
+                          m.isStreaming && !m.content ? (
+                            <Thinking />
+                          ) : (
+                            <>
+                              {body(m)}
+                              {m.isStreaming && <span className="ml-0.5 inline-block h-4 w-[2px] animate-blink bg-ink align-middle" />}
+                            </>
+                          )
                         )}
                       </div>
                       {!user && !m.isStreaming && sources.length > 0 && <p className="mt-1.5 px-1 text-[12px] text-mute">Baseado em {sources.join(' e ')}</p>}
-                      <div className="mt-0 flex flex-wrap items-center px-1 text-[12px] text-mute">
+                      <div className="anim-fade-in mt-0 flex flex-wrap items-center px-1 text-[12px] text-mute">
                         <span className="mr-1">{time(m.timestamp)}</span>
                         {!user && !m.isStreaming && (
                           <>

@@ -318,3 +318,19 @@ select:-webkit-autofill {
   transition: background-color 600000s 0s, color 600000s 0s;
   border-radius: inherit;
 }
+
+/* ---- animações de resposta no chat ---- */
+@keyframes shimmerMove { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+@keyframes thinkSpin { to { transform: rotate(360deg); } }
+@keyframes thinkPulse { 0%, 100% { transform: scale(1); opacity: .5; } 50% { transform: scale(1.35); opacity: 0; } }
+.shimmer-text {
+  background: linear-gradient(90deg, rgb(var(--ink) / .28) 0%, rgb(var(--ink)) 45%, rgb(var(--ink) / .28) 90%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmerMove 1.7s linear infinite;
+}
+.think-mark { display: inline-flex; animation: thinkSpin 3.4s linear infinite; }
+.think-halo { animation: thinkPulse 1.6s var(--ease-in-out) infinite; }
+.anim-word-in { display: inline-block; animation: wordIn 380ms var(--ease-out) both; }
