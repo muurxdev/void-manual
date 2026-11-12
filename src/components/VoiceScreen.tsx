@@ -209,28 +209,28 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       </header>
 
       {/* a marca vira uma nuvem de pontos viva, no meio da tela */}
-      <VoidParticles state={status} stage={stageOf(status, phase)} pulse={pulse} dark={dark} className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
+      <VoidParticles centerY={0.4} state={status} stage={stageOf(status, phase)} pulse={pulse} dark={dark} className="pointer-events-none absolute inset-0 z-0 h-full w-full" />
 
-      <p
-        className="absolute inset-x-0 z-10 flex h-5 items-center justify-center gap-1.5 text-[13px] text-ink/55"
-        style={{ top: 'calc(50% - min(22vw, 13vh) - 40px)' }}
-        aria-live="polite"
-      >
-        {label}
-        {(status === 'listening' || status === 'speaking' || status === 'thinking') && (
-          <span className="inline-flex gap-0.5" aria-hidden="true">
-            {[0, 1, 2].map((i) => (
-              <span key={i} className="anim-orb h-1 w-1 rounded-full bg-ink/60" style={{ animationDelay: `${i * 160}ms` }} />
-            ))}
+      <div className="pointer-events-none absolute inset-x-0 z-10 flex justify-center" style={{ top: 'calc(40% + min(22vw, 13vh) + 6px)' }} aria-live="polite">
+        {label && (
+          <span key={label} className="glass anim-fade-up flex items-center gap-2 rounded-full px-5 py-2 text-[16px] font-medium text-ink">
+            {label}
+            {(status === 'listening' || status === 'speaking' || status === 'thinking') && (
+              <span className="inline-flex gap-0.5" aria-hidden="true">
+                {[0, 1, 2].map((i) => (
+                  <span key={i} className="anim-orb h-1.5 w-1.5 rounded-full bg-ink/70" style={{ animationDelay: `${i * 160}ms` }} />
+                ))}
+              </span>
+            )}
           </span>
         )}
-      </p>
+      </div>
 
       {/* o que foi dito e a resposta: o texto cresce de baixo para cima, em níveis de importância */}
       <div
         ref={textRef}
         className="scroll-smooth-area absolute inset-x-0 z-10 mx-auto flex w-full max-w-[640px] flex-col px-[clamp(22px,7vw,44px)]"
-        style={{ top: '20%', bottom: 128, maskImage: 'linear-gradient(to bottom, transparent 0, #000 56px, #000 calc(100% - 12px), transparent)' }}
+        style={{ top: 'calc(40% + min(22vw, 13vh) + 58px)', bottom: 128, maskImage: 'linear-gradient(to bottom, transparent 0, #000 56px, #000 calc(100% - 12px), transparent)' }}
         aria-live="polite"
       >
         <div className="mt-auto pb-3">

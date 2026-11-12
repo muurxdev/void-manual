@@ -82,7 +82,7 @@ async function sampleLogo(step: number): Promise<Pt[]> {
  */
 export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pulse, dark = true, className, centerY = 0.5, sizeMul = 1 }) => {
   const ref = useRef<HTMLCanvasElement>(null);
-  const live = useRef({ state, stage: stage ?? stageOf(state), beat: 0, last: pulse, dark, cyf: centerY, intro, mul: sizeMul });
+  const live = useRef({ state, stage: stage ?? stageOf(state), beat: 0, lastAt: 0, rate: 2.6, last: pulse, dark, cyf: centerY, intro, mul: sizeMul });
   live.current.mul = sizeMul;
   live.current.stage = stage ?? stageOf(state);
   live.current.cyf = centerY;
@@ -93,6 +93,12 @@ export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pul
     if (pulse !== live.current.last) {
       live.current.last = pulse;
       live.current.beat = 1;
+      const nowMs = performance.now();
+      if (live.current.lastAt) {
+        const gap = (nowMs - live.current.lastAt) / 1000;
+        if (gap > 0.08 && gap < 1.5) live.current.rate += (1 / gap - live.current.rate) * 0.3; // palavras por segundo
+      }
+      live.current.lastAt = nowMs;
     }
   }, [pulse]);
 
@@ -141,6 +147,8 @@ export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pul
     let energy = 0;
     let spin = 0;
     const form = { contract: 1, disperse: 0, spin: 0, scan: 0, glow: 0.06 };
+    let beatS = 0; // batida suavizada
+    let wavePhase = 0; // fase da onda que atravessa a marca
     let assemble = live.current.intro && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1;
     const t0 = performance.now();
 
@@ -165,7 +173,10 @@ export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pul
       const ease = 1 - Math.pow(1 - assemble, 3);
       const energy0 = form.glow * 2.2;
       energy += (energy0 - energy) * 0.06;
-      s.beat *= 0.9;
+      s.beat *= 0.965;
+      beatS += (s.beat - beatS) * 0.1;
+      const speed = s.stage === 'speak' ? 0.9 + s.rate * 0.9 : 1.4;
+      wavePhase += speed * 0.016;
       if (form.spin > 0.004) spin += form.spin;
       else spin += (Math.round(spin / 6.2832) * 6.2832 - spin) * 0.06; // volta de frente
 
@@ -174,7 +185,7 @@ export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pul
       {
         const gr = Math.min(w, h * 0.6) * 0.62;
         const halo = ctx.createRadialGradient(w / 2, h * live.current.cyf, 0, w / 2, h * live.current.cyf, gr);
-        const a0 = 0.05 + form.glow * 0.5 + live.current.beat * 0.08;
+        const a0 = 0.05 + form.glow * 0.5 + beatS * 0.08;
         halo.addColorStop(0, live.current.dark ? `rgba(255,255,255,${a0})` : `rgba(0,0,0,${a0 * 0.7})`);
         halo.addColorStop(1, "rgba(128,128,128,0)");
         ctx.fillStyle = halo;
@@ -182,28 +193,29 @@ export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pul
       }
       const cx = w / 2;
       const cy = h * live.current.cyf;
-      const scale = Math.min(w, h * 0.6) * 0.46 * live.current.mul * form.contract * (1 + Math.sin(t * 1.2) * 0.012 + s.beat * 0.06);
+      const scale = Math.min(w, h * 0.6) * 0.46 * live.current.mul * form.contract * (1 + Math.sin(t * 1.2) * 0.012 + beatS * 0.05);
       const yaw = Math.sin(t * 0.45) * 0.5 + spin;
       const pitch = Math.sin(t * 0.33) * 0.12;
       const cyaw = Math.cos(yaw);
       const syaw = Math.sin(yaw);
       const cp = Math.cos(pitch);
       const sp = Math.sin(pitch);
-      const amp = 0.012 + energy * 0.1 + s.beat * 0.09;
+      const amp = 0.012 + energy * 0.06 + beatS * 0.05;
       for (const b of buckets) b.length = 0;
 
       const scatter = (1 - ease) * 3.2; // montagem: começa espalhado e se junta
       const place = (p: Pt, extra: number) => {
         // ondulação que anda pelo corpo
-        const n = Math.sin(p.x * 3.4 + t * 1.8 + p.r * 0.2) * Math.cos(p.y * 3.1 - t * 1.4);
+        const n = Math.sin(p.x * 2.6 + wavePhase * 1.6) * Math.cos(p.y * 2.4 - wavePhase * 1.2);
         const z0 = p.z + n * amp * 1.6;
         // abrir: cada ponto se afasta do centro numa medida própria; busca: orbita em volta
-        const open = 1 + form.disperse * (0.35 + 0.65 * Math.sin(p.r * 3.1 + t * 1.3) ** 2) + scatter * (0.5 + 0.5 * Math.sin(p.r * 5.3));
-        const orb = form.disperse * 0.5 * Math.sin(t * 1.1 + p.r);
+        const open = 1 + form.disperse * (0.35 + 0.65 * Math.sin((extra > 1 ? p.r * 3.1 : p.x * 2.1 + p.y * 1.7) + wavePhase * 0.7) ** 2) + scatter * (0.5 + 0.5 * Math.sin(p.r * 5.3));
+        const orb = form.disperse * 0.5 * Math.sin(wavePhase * 0.8 + (extra > 1 ? p.r : p.x * 1.2));
         const bx = p.x * open - p.y * orb * 0.25;
         const by = p.y * open + p.x * orb * 0.25;
-        const x0 = bx + Math.sin(p.r + t * 2) * amp * 0.5 * extra;
-        const y0 = by + Math.cos(p.r + t * 1.7) * amp * 0.5 * extra;
+        const ph = extra > 1 ? p.r : p.x * 2.2 + p.y * 1.8; // marca: fase espacial (fluido); poeira: aleatória
+        const x0 = bx + Math.sin(ph + wavePhase * 1.3) * amp * 0.5 * extra;
+        const y0 = by + Math.cos(ph + wavePhase * 1.1) * amp * 0.5 * extra;
         const x1 = x0 * cyaw + z0 * syaw;
         const z1 = -x0 * syaw + z0 * cyaw;
         const y2 = y0 * cp - z1 * sp;
