@@ -303,10 +303,15 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
           <canvas ref={waveSlot} className="absolute inset-0 h-full w-full" aria-hidden="true" />
         </div>
 
-        {/* microfone no centro, atalhos nos lados */}
+        {/* espaço reservado para os botões, que ficam acima de tudo */}
+        <div className={"shrink-0 transition-all duration-300 " + (mode === 'voice' ? 'h-[122px]' : 'h-0')} />
+      </section>
+
+      {/* botões de baixo: ficam acima de qualquer camada para sempre receber o toque */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center pb-[max(env(safe-area-inset-bottom),22px)]">
         <div
-          className={'flex items-center justify-center gap-7 pb-[max(env(safe-area-inset-bottom),22px)] pt-1 transition-all duration-[380ms] ' + (mode === 'voice' ? 'opacity-100' : 'pointer-events-none h-0 overflow-hidden pb-0 pt-0 opacity-0')}
-          style={{ transitionTimingFunction: 'var(--spring)' }}
+          className={'flex items-center justify-center gap-7 transition-opacity duration-300 ' + (mode === 'voice' ? 'pointer-events-auto opacity-100' : 'invisible opacity-0')}
+          style={{ touchAction: 'manipulation' }}
         >
           <button onClick={() => setMode('text')} aria-label="Escrever" className="glass press flex h-[52px] w-[52px] items-center justify-center rounded-full">
             <Keyboard className="h-5 w-5" />
@@ -327,8 +332,8 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
           <button onClick={onPickLibrary} aria-label="Usar um arquivo da biblioteca" className="glass press flex h-[52px] w-[52px] items-center justify-center rounded-full">
             <BookOpen className="h-5 w-5" />
           </button>
-        </div>
-      </section>
+                </div>
+      </div>
 
       {/* campo de texto (modo teclado) */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[116px]">
