@@ -66,7 +66,7 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     const small = window.innerWidth < 640;
-    const pts = sampleLogo(small ? 4 : 3);
+    const pts = sampleLogo(3);
     // poeira solta em volta
     const dust: Pt[] = Array.from({ length: small ? 140 : 260 }, () => {
       const a = Math.random() * 6.28;
@@ -121,9 +121,19 @@ export const VoidParticles: React.FC<Props> = ({ state, pulse, dark = true, clas
       else spin += (Math.round(spin / 6.2832) * 6.2832 - spin) * 0.06; // volta de frente
 
       ctx.clearRect(0, 0, w, h);
+      // brilho suave atrás da marca, que cresce com a energia (ouvindo/falando)
+      {
+        const gr = Math.min(w, h * 0.6) * 0.62;
+        const halo = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, gr);
+        const a0 = 0.05 + energy * 0.2 + live.current.beat * 0.08;
+        halo.addColorStop(0, live.current.dark ? `rgba(255,255,255,${a0})` : `rgba(0,0,0,${a0 * 0.7})`);
+        halo.addColorStop(1, "rgba(128,128,128,0)");
+        ctx.fillStyle = halo;
+        ctx.fillRect(w / 2 - gr, h / 2 - gr, gr * 2, gr * 2);
+      }
       const cx = w / 2;
       const cy = h / 2;
-      const scale = Math.min(w, h * 0.6) * 0.3 * (1 + Math.sin(t * 1.2) * 0.012 + s.beat * 0.06);
+      const scale = Math.min(w, h * 0.6) * 0.325 * (1 + Math.sin(t * 1.2) * 0.012 + s.beat * 0.06);
       const yaw = Math.sin(t * 0.45) * 0.5 + spin;
       const pitch = Math.sin(t * 0.33) * 0.12;
       const cyaw = Math.cos(yaw);

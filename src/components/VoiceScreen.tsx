@@ -37,6 +37,7 @@ const LABEL: Record<VoiceState, string> = {
   speaking: 'Falando',
 };
 
+const TRY = ['Torque da CB 500F', 'Falha P0300', 'Folga da Lander 250'];
 const GL = 'border border-ink/15 bg-ink/10 text-ink backdrop-blur-xl';
 
 export const VoiceScreen: React.FC<VoiceScreenProps> = ({
@@ -235,6 +236,17 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       >
         {error ? (
           <p className="anim-fade-in text-center text-[15px] text-ink/60">{error}</p>
+        ) : !userText && !replyText && status === 'idle' ? (
+          <div className="anim-fade-up flex flex-col items-center gap-1.5">
+            <p className="text-[12px] uppercase tracking-wider text-ink/45">Experimente perguntar</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {TRY.map((t) => (
+                <button key={t} onClick={() => onSendText(t)} className="glass press min-h-11 rounded-full px-4 text-[13px]">
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
         ) : (
           <>
             {userText && (
