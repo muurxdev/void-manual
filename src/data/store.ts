@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import type { Conversation, Manual, WorkshopProfile, Message } from './types';
 import catalogData from './catalog.json';
+import { repo, KEYS } from './repo';
 
 const STORAGE_KEYS = {
-  CONVERSATIONS: 'void_web_conversations',
-  ACTIVE_ID: 'void_web_active_id',
-  MANUALS: 'void_web_manuals',
-  PROFILE: 'void_web_profile',
+  CONVERSATIONS: KEYS.conversations,
+  ACTIVE_ID: KEYS.activeId,
+  MANUALS: KEYS.manuals,
+  PROFILE: KEYS.profile,
 };
 
 const defaultProfile: WorkshopProfile = {
@@ -19,64 +20,29 @@ const defaultProfile: WorkshopProfile = {
 };
 
 export function useVoidStore() {
-  const [conversations, setConversations] = useState<Conversation[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.CONVERSATIONS);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [conversations, setConversations] = useState<Conversation[]>(() => repo.get<Conversation[]>(STORAGE_KEYS.CONVERSATIONS, []));
 
-  const [activeId, setActiveId] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEYS.ACTIVE_ID);
-    } catch {
-      return null;
-    }
-  });
+  const [activeId, setActiveId] = useState<string | null>(() => repo.get<string | null>(STORAGE_KEYS.ACTIVE_ID, null));
 
-  const [manuals, setManuals] = useState<Manual[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.MANUALS);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [manuals, setManuals] = useState<Manual[]>(() => repo.get<Manual[]>(STORAGE_KEYS.MANUALS, []));
 
-  const [profile, setProfile] = useState<WorkshopProfile>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
-      return saved ? { ...defaultProfile, ...JSON.parse(saved) } : defaultProfile;
-    } catch {
-      return defaultProfile;
-    }
-  });
+  const [profile, setProfile] = useState<WorkshopProfile>(() => ({ ...defaultProfile, ...repo.get<Partial<WorkshopProfile>>(STORAGE_KEYS.PROFILE, {}) }));
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.CONVERSATIONS, JSON.stringify(conversations));
-    } catch {}
+    repo.set(STORAGE_KEYS.CONVERSATIONS, conversations);
   }, [conversations]);
 
   useEffect(() => {
-    try {
-      if (activeId) localStorage.setItem(STORAGE_KEYS.ACTIVE_ID, activeId);
-      else localStorage.removeItem(STORAGE_KEYS.ACTIVE_ID);
-    } catch {}
+    if (activeId) repo.set(STORAGE_KEYS.ACTIVE_ID, activeId);
+    else repo.remove(STORAGE_KEYS.ACTIVE_ID);
   }, [activeId]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.MANUALS, JSON.stringify(manuals));
-    } catch {}
+    repo.set(STORAGE_KEYS.MANUALS, manuals);
   }, [manuals]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
-    } catch {}
+    repo.set(STORAGE_KEYS.PROFILE, profile);
   }, [profile]);
 
   const activeConversation = conversations.find(c => c.id === activeId);

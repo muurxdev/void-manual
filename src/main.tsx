@@ -9,12 +9,16 @@ import '@fontsource/jetbrains-mono/500.css'
 import './index.css'
 import App from './App.tsx'
 import { FeedbackProvider } from './components/Feedback'
+import { ErrorBoundary, OfflineBanner } from './components/Boundary'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <FeedbackProvider>
-      <App />
-    </FeedbackProvider>
+    <ErrorBoundary>
+      <FeedbackProvider>
+        <App />
+        <OfflineBanner />
+      </FeedbackProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )
 

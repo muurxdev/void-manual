@@ -1,11 +1,7 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { useVoidStore } from './data/store';
 import { generateLocalAnswer } from './data/rag';
 import { HomeScreen } from './components/HomeScreen';
-import { VoiceScreen } from './components/VoiceScreen';
-import { ChatScreen } from './components/ChatScreen';
-import { SettingsPanel, ProfilePanel, HistorySheet } from './components/Sheets';
-import { LibrarySheet } from './components/Library';
 import { Dock } from './components/Dock';
 import { useFeedback } from './components/Feedback';
 import { AuthFlow } from './components/Auth';
@@ -16,11 +12,20 @@ import { loadPrefs, speakText, type SpeakHandle } from './data/tts';
 import { voiceSummary } from './data/voiceText';
 import { transition, type NavKind } from './data/nav';
 import { getSession, signOut, type Account } from './data/auth';
+import { usePlan } from './data/usePlan';
+// cada tela pesada só é baixada quando a pessoa abre
+const VoiceScreen = lazy(() => import('./components/VoiceScreen').then((m) => ({ default: m.VoiceScreen })));
+const ChatScreen = lazy(() => import('./components/ChatScreen').then((m) => ({ default: m.ChatScreen })));
+const SettingsPanel = lazy(() => import('./components/Sheets').then((m) => ({ default: m.SettingsPanel })));
+const ProfilePanel = lazy(() => import('./components/Sheets').then((m) => ({ default: m.ProfilePanel })));
+const HistorySheet = lazy(() => import('./components/Sheets').then((m) => ({ default: m.HistorySheet })));
+const LibrarySheet = lazy(() => import('./components/Library').then((m) => ({ default: m.LibrarySheet })));
+const PlansPanel = lazy(() => import('./components/PlansPanel').then((m) => ({ default: m.PlansPanel })));
 import { toManual } from './data/library';
 import { useLibrary } from './data/useLibrary';
 
 type Screen = 'home' | 'voice' | 'chat';
-type SheetName = 'library' | 'library-pick' | 'settings' | 'profile' | 'history' | null;
+type SheetName = 'library' | 'library-pick' | 'settings' | 'profile' | 'history' | 'plans' | null;
 
 interface StreamState {
   timer: number;
@@ -30,7 +35,6 @@ interface StreamState {
 }
 
 const PHASES = ['Lendo sua pergunta', 'Consultando os manuais', 'Diagnosticando'];
-const MACHINE_KEY = 'void_web_machine';
 const DEFAULT_TOPICS = ['Torque e folgas', 'Códigos de falha', 'Elétrica', 'Motor'];
 
 export function App() {
@@ -54,6 +58,7 @@ export function App() {
   useEffect(() => detectLens(), []);
 
   const [account, setAccount] = useState<Account | null>(() => getSession());
+  const planCtl = usePlan(account?.email);
   const [screen, setScreen] = useState<Screen>(() => {
     try {
       return sessionStorage.getItem('void_web_screen') === 'chat' && localStorage.getItem('void_web_active_id') ? 'chat' : 'home';
@@ -65,13 +70,6 @@ export function App() {
   const [quickKey, setQuickKey] = useState<'lib' | 'arq'>('lib');
   const fb = useFeedback();
   const [isStreaming, setIsStreaming] = useState(false);
-  const [machine, setMachine] = useState(() => {
-    try {
-      return localStorage.getItem(MACHINE_KEY) || '';
-    } catch {
-      return '';
-    }
-  });
   const [contextItem, setContextItem] = useState<{ id: string; title: string } | null>(null);
 
   // ---- conversa por voz ----
@@ -97,8 +95,8 @@ export function App() {
     return [...mine, ...DEFAULT_TOPICS.filter((d) => !mine.includes(d))].slice(0, 8);
   }, [lib.items]);
 
-  const latest = useRef({ activeConversation, ragManuals, voiceStatus, machine, contextItem, screen });
-  latest.current = { activeConversation, ragManuals, voiceStatus, machine, contextItem, screen };
+  const latest = useRef({ activeConversation, ragManuals, voiceStatus, contextItem, screen });
+  latest.current = { activeConversation, ragManuals, voiceStatus, contextItem, screen };
 
   /* ---------- navegação em pilha (voltar sempre volta à tela anterior) ---------- */
   const stack = useRef<Screen[]>([]);
@@ -202,29 +200,32 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lib.uploads]);
 
-  const setMachineSaved = (m: string) => {
-    setMachine(m);
-    fb.toast(m ? `Máquina: ${m}` : 'Todas as máquinas', 'info');
-    try {
-      localStorage.setItem(MACHINE_KEY, m);
-    } catch {
-      /* sem storage */
-    }
-  };
-
   // contexto da pergunta: máquina escolhida e, se houver, o arquivo da biblioteca
   const answer = (content: string) => {
-    const { ragManuals: all, machine: m, contextItem: ctx } = latest.current;
+    const { ragManuals: all, contextItem: ctx } = latest.current;
     const pool = ctx ? all.filter((x) => x.id === ctx.id) : all;
     // pergunta curta ("e a folga?") herda o assunto da pergunta anterior da mesma conversa
     const prev = [...(latest.current.activeConversation?.messages ?? [])].reverse().find((x) => x.role === 'user')?.content;
     const withContext = prev && content.trim().split(/\s+/).length <= 7 ? prev + ' ' + content : content;
-    return generateLocalAnswer(m ? `${m} ${withContext}` : withContext, pool.length ? pool : all);
+    return generateLocalAnswer(withContext, pool.length ? pool : all);
   };
 
   /* ---------- chat de texto ---------- */
+  /** Cada pergunta (texto ou voz) conta no plano. Sem saldo, abre a tela de planos. */
+  const guardQuestion = (): boolean => {
+    if (!planCtl.question.ok) {
+      const max = planCtl.plan.limits.questionsPerDay;
+      fb.toast('Você usou as ' + max + ' perguntas de hoje no plano ' + planCtl.plan.name, 'info');
+      openSheet('plans');
+      return false;
+    }
+    planCtl.countQuestion();
+    return true;
+  };
+
   const handleSend = (content: string, options: { deepThink: boolean; attachment?: string; forceNew?: boolean }) => {
     if (isStreaming) return;
+    if (!guardQuestion()) return;
     const conv = options.forceNew ? createConversation(content) : (activeConversation ?? createConversation(content));
     const convId = conv.id;
     const now = Date.now();
@@ -278,6 +279,7 @@ export function App() {
   };
 
   const askVoid = (content: string) => {
+    if (!guardQuestion()) return;
     stopVoiceOutput();
     setVoiceError('');
     setVoiceUser(content);
@@ -453,6 +455,7 @@ export function App() {
     <div className="h-[100dvh] w-full overflow-hidden bg-paper font-sans text-ink">
       <GlassDefs />
       <div className="relative h-full">
+        <Suspense fallback={null}>
         {!account && <AuthFlow dark={dark} onDone={onAuth} />}
 
         {/* com uma tela cheia aberta, o fundo fica inerte: sem foco, sem leitor de tela */}
@@ -463,8 +466,9 @@ export function App() {
             conversations={conversations}
             libraryCount={allManuals.length + lib.items.length}
             topics={topics}
-            machine={machine}
-            onMachine={setMachineSaved}
+            planName={planCtl.plan.name}
+            planNote={planCtl.question.left === null ? 'sem limite' : planCtl.question.left + ' restantes'}
+            onPlans={() => openSheet('plans')}
             onOpenChat={openChat}
             onNewChat={newChat}
             onVoice={openVoice}
@@ -537,7 +541,22 @@ export function App() {
             items={lib.items}
             included={allManuals}
             uploads={lib.uploads}
-            onFiles={lib.addFiles}
+            onFiles={(files) => {
+              const list = Array.from(files);
+              const room = planCtl.canAddFiles(lib.items.length, list.length);
+              const big = list.find((f) => f.size > planCtl.plan.limits.fileMb * 1048576);
+              if (big) {
+                fb.toast('O plano ' + planCtl.plan.name + ' aceita arquivos de até ' + planCtl.plan.limits.fileMb + ' MB', 'info');
+                openSheet('plans');
+                return [];
+              }
+              if (!room.ok) {
+                fb.toast('O plano ' + planCtl.plan.name + ' guarda até ' + room.max + ' arquivos seus', 'info');
+                openSheet('plans');
+                return [];
+              }
+              return lib.addFiles(list);
+            }}
             onRemove={lib.remove}
             onPick={
               sheet === 'library-pick'
@@ -550,6 +569,9 @@ export function App() {
             }
             onClose={() => closeSheet()}
           />
+        )}
+        {account && sheet === 'plans' && (
+          <PlansPanel plan={planCtl.plan} plans={planCtl.plans} usage={planCtl.usage} filesCount={lib.items.length} waitlist={planCtl.waitlist} onJoin={planCtl.joinWaitlist} onClose={() => closeSheet()} />
         )}
         {account && sheet === 'settings' && (
           <SettingsPanel theme={theme.choice} onTheme={theme.set} profile={profile} onSave={setProfile} onClose={() => closeSheet()} />
@@ -579,6 +601,7 @@ export function App() {
         {account && sheet === 'history' && (
           <HistorySheet conversations={conversations} onClose={() => closeSheet()} onOpen={openChat} onDelete={deleteConversation} onRestore={restoreConversation} onUpdate={updateConversation} />
         )}
+        </Suspense>
       </div>
     </div>
   );

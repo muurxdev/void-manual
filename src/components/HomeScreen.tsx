@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, BookOpen, ChevronDown, LogOut, MessageSquare, Mic, User, Wrench } from 'lucide-react';
+import { ArrowUpRight, BookOpen, Crown, LogOut, MessageSquare, Mic, User } from 'lucide-react';
 import { useDockScroll } from './Dock';
 import { PullRefresh } from './PullRefresh';
 import type { Conversation, WorkshopProfile } from '../data/types';
@@ -12,8 +12,10 @@ interface HomeScreenProps {
   conversations: Conversation[];
   libraryCount: number;
   topics: string[];
-  machine: string;
-  onMachine: (m: string) => void;
+  /** plano atual e o que resta dele hoje (ex.: Grátis · 7 restantes) */
+  planName: string;
+  planNote: string;
+  onPlans: () => void;
   onOpenChat: (id: string) => void;
   onNewChat: () => void;
   onVoice: () => void;
@@ -24,7 +26,6 @@ interface HomeScreenProps {
   onAsk: (q: string) => void;
 }
 
-const MACHINES = ['Moto', 'Carro', 'Caminhão', 'Trator', 'Colheitadeira'];
 
 const QUESTIONS: Record<string, [string, string]> = {
   'Torque e folgas': ['Quais são os torques de aperto principais?', 'Como ajustar a folga de válvulas?'],
@@ -81,8 +82,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
   conversations,
   libraryCount,
   topics,
-  machine,
-  onMachine,
+  planName,
+  planNote,
+  onPlans,
   onOpenChat,
   onNewChat,
   onVoice,
@@ -101,7 +103,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
     window.addEventListener('void-scroll-top', up);
     return () => window.removeEventListener('void-scroll-top', up);
   }, []);
-  const [menu, setMenu] = useState<'machine' | 'profile' | null>(null);
+  const [menu, setMenu] = useState<'profile' | null>(null);
   const [heroOk, setHeroOk] = useState(true);
   const [topic, setTopic] = useState('');
   const recent = conversations.filter((c) => c.messages.length > 0).slice(0, 3);
@@ -130,17 +132,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
     };
   }, []);
 
-  const personal = profile.models.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 4);
-  const machineItems: MenuItem[] = [
-    { key: 'all', label: 'Todas as máquinas', hint: 'Sem filtro', icon: <Wrench className="h-4 w-4" />, selected: !machine, onSelect: () => onMachine('') },
-    ...[...MACHINES, ...personal].map((m) => ({
-      key: m,
-      label: m,
-      icon: <Wrench className="h-4 w-4" />,
-      selected: machine === m,
-      onSelect: () => onMachine(m),
-    })),
-  ];
   const profileItems: MenuItem[] = [
     { key: 'p', label: 'Perfil', hint: profile.mechanic, icon: <User className="h-4 w-4" />, onSelect: onProfile },
     { key: 'x', label: 'Sair', icon: <LogOut className="h-4 w-4" />, danger: true, onSelect: onSignOut },
@@ -186,19 +177,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
               <Dropdown open={menu === 'profile'} onClose={() => setMenu(null)} items={profileItems} placement="bottom-start" />
             </div>
 
-            <div className="relative">
-              <button
-                onClick={() => setMenu((m) => (m === 'machine' ? null : 'machine'))}
-                aria-haspopup="menu"
-                aria-expanded={menu === 'machine'}
-                className="glass press flex h-11 items-center gap-2 rounded-full px-3.5 text-[13px]"
-              >
-                <Wrench className="h-3.5 w-3.5" />
-                <span className="max-w-[30vw] truncate md:max-w-[240px]">{machine || 'Máquinas'}</span>
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${menu === 'machine' ? 'rotate-180' : ''}`} />
-              </button>
-              <Dropdown open={menu === 'machine'} onClose={() => setMenu(null)} items={machineItems} placement="bottom-end" title="Tipo de máquina" />
-            </div>
+            <button onClick={onPlans} aria-label={'Planos. Seu plano: ' + planName + ', ' + planNote} className="glass press flex h-11 items-center gap-2 rounded-full px-3.5 text-[13px]">
+              <Crown className="h-3.5 w-3.5" />
+              <span className="font-medium">{planName}</span>
+              <span className="max-w-[26vw] truncate text-mute md:max-w-[220px]">{planNote}</span>
+            </button>
           </header>
 
           <div className="mt-[clamp(110px,19vh,190px)]">

@@ -5,6 +5,7 @@ import type { ThemeChoice } from '../data/theme';
 import { getVoices, loadPrefs, savePrefs, speakText, pickVoice, type VoicePrefs, type SpeakHandle } from '../data/tts';
 import { ScreenPanel } from './Panels';
 import { useFeedback } from './Feedback';
+import { LegalPanel, type LegalKind } from './LegalPanel';
 
 const UNIT_GROUPS = [
   { key: 'torque', label: 'Torque', options: ['Nm', 'kgf·m', 'lb·ft'] },
@@ -183,6 +184,7 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [saved, setSaved] = useState(false);
   const dirty = f.units !== profile.units;
+  const [legal, setLegal] = useState<LegalKind | null>(null);
   const [units, setUnits] = useState(() => parseUnits(profile.units));
   const fb = useFeedback();
   const demo = useRef<SpeakHandle | null>(null);
@@ -266,6 +268,7 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
   const label = 'mb-1.5 block px-1 text-[12px] text-mute';
 
   return (
+    <>
     <ScreenPanel title="Configurações" subtitle="Tema, voz e unidades" onClose={onClose}>
       <form onSubmit={submit} className="space-y-4 pb-2">
         <div>
@@ -377,6 +380,14 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
 
         <div>
           <span className={label}>Sobre</span>
+          <div className="card mb-2 divide-y divide-hair p-1">
+            <button type="button" onClick={() => setLegal('terms')} className="press flex min-h-12 w-full items-center rounded-2xl px-3 text-left text-[14px]">
+              Termos de uso
+            </button>
+            <button type="button" onClick={() => setLegal('privacy')} className="press flex min-h-12 w-full items-center rounded-2xl px-3 text-left text-[14px]">
+              Política de privacidade
+            </button>
+          </div>
           <div className="card flex items-start gap-3 p-3.5 text-[13px] leading-snug text-sub">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
             <p>
@@ -386,6 +397,8 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
         </div>
       </form>
     </ScreenPanel>
+    {legal && <LegalPanel kind={legal} onClose={() => setLegal(null)} />}
+    </>
   );
 };
 
