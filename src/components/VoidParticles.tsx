@@ -208,25 +208,26 @@ export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pul
 
       const scatter = (1 - ease) * 3.2; // montagem: começa espalhado e se junta
       const place = (p: Pt, extra: number) => {
-        // ondulação que anda pelo corpo
-        const n = Math.sin(p.x * 2.6 + wavePhase * 1.6) * Math.cos(p.y * 2.4 - wavePhase * 1.2);
-        const z0 = p.z + n * amp * 1.6;
+        // fluxo: os pontos vêm para a frente e voltam, em ondas lentas que saem do centro
+        const rad = Math.hypot(p.x, p.y);
+        const z0 = p.z + Math.sin(rad * 3.4 - wavePhase * 1.8) * (0.14 + 0.5 * beatS) * (extra > 1 ? 0.6 : 1);
         // abrir: cada ponto se afasta do centro numa medida própria; busca: orbita em volta
         const open = 1 + form.disperse * (0.35 + 0.65 * Math.sin((extra > 1 ? p.r * 3.1 : p.x * 2.1 + p.y * 1.7) + wavePhase * 0.7) ** 2) + scatter * (0.5 + 0.5 * Math.sin(p.r * 5.3));
         const orb = form.disperse * 0.5 * Math.sin(wavePhase * 0.8 + (extra > 1 ? p.r : p.x * 1.2));
         // onda que sai do centro: amplitude e velocidade acompanham a fala
-        const rad = Math.hypot(p.x, p.y);
-        const rip = 1 + Math.sin(rad * 5.2 - wavePhase * 2.2) * 0.07 * beatS * (extra > 1 ? 0.5 : 1);
+        const rip = 1;
         const bx = p.x * open * rip - p.y * orb * 0.25;
         const by = p.y * open * rip + p.x * orb * 0.25;
         const ph = extra > 1 ? p.x * 1.1 + p.y * 0.9 : p.x * 2.2 + p.y * 1.8; // marca: fase espacial (fluido); poeira: aleatória
-        const x0 = bx + Math.sin(ph + wavePhase * 1.3) * amp * 0.5 * extra;
-        const y0 = by + Math.cos(ph + wavePhase * 1.1) * amp * 0.5 * extra;
+        // sem tremor: só a poeira distante se desloca de leve
+        const wob = extra > 1 ? amp * 0.5 * extra : 0;
+        const x0 = bx + Math.sin(ph + wavePhase * 1.3) * wob;
+        const y0 = by + Math.cos(ph + wavePhase * 1.1) * wob;
         const x1 = x0 * cyaw + z0 * syaw;
         const z1 = -x0 * syaw + z0 * cyaw;
         const y2 = y0 * cp - z1 * sp;
         const z2 = y0 * sp + z1 * cp;
-        const f = 6 / (6 - z2);
+        const f = 3.6 / (3.6 - z2); // perspectiva forte: quem vem para a frente cresce e se afasta do centro
         return { sx: cx + x1 * scale * f, sy: cy + y2 * scale * f, f, z: z2 };
       };
 
