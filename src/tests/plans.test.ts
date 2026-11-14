@@ -42,3 +42,17 @@ describe('planos', () => {
     }
   });
 });
+
+import { isValidCpf, maskCpf } from '../data/plans';
+describe('cpf', () => {
+  it('valida os dígitos verificadores', () => {
+    expect(isValidCpf('529.982.247-25')).toBe(true);
+    expect(isValidCpf('529.982.247-24')).toBe(false);
+    expect(isValidCpf('111.111.111-11')).toBe(false);
+    expect(isValidCpf('123')).toBe(false);
+  });
+  it('aplica a máscara', () => {
+    expect(maskCpf('52998224725')).toBe('529.982.247-25');
+    expect(maskCpf('5299')).toBe('529.9');
+  });
+});

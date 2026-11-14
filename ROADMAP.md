@@ -18,3 +18,12 @@ Atualize a cada rodada. Cada item diz o que mudou, por que é mais profissional 
 - Transcrição (Groq/Whisper): `GROQ_API_KEY` + função `transcribe`.
 - Resend com domínio verificado e `RESEND_FROM`.
 - Excluir conta e exportar dados (LGPD): função `delete-account`.
+
+## Checkout (adicionado em 2026-11-13) — o que o backend precisa
+- Edge function `create-payment` (Mercado Pago): recebe plano, ciclo, método, nome e CPF; devolve link/ID do Checkout Pro (cartão) ou QR + copia e cola (Pix) e `expires_at`.
+- Webhook `mp-webhook`: confirma o pagamento, grava `subscriptions` (user_id, plan, cycle, status, renews_at) e envia recibo por e-mail (Resend).
+- Tabela `coupons` (code, percent, valid_until, max_uses) + checagem no servidor; hoje `COUPONS` em `plans.ts` está vazio.
+- Tabela `invoices` (protocolo, valor, método, data) para o recibo e para "Assinatura" no Perfil.
+- Cancelamento e troca de plano; renovação mensal/anual; e-mail de falha de pagamento.
+- LGPD: CPF só em trânsito para o Mercado Pago, nunca gravado em claro.
+- Troque `PAYMENTS_LIVE` para `true` em `plans.ts` quando o servidor estiver pronto.

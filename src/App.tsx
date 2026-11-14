@@ -673,13 +673,13 @@ export function App() {
           />
         )}
         {account && sheet === 'plans' && (
-          <PlansPanel plan={planCtl.plan} plans={planCtl.plans} usage={planCtl.usage} filesCount={lib.items.length} waitlist={planCtl.waitlist} onJoin={planCtl.joinWaitlist} onClose={() => closeSheet()} />
+          <PlansPanel plan={planCtl.plan} plans={planCtl.plans} usage={planCtl.usage} filesCount={lib.items.length} waitlist={planCtl.waitlist} onJoin={planCtl.joinWaitlist} onClose={() => closeSheet()} email={account.email} name={profile.mechanic} />
         )}
         {account && sheet === 'settings' && (
           <SettingsPanel theme={theme.choice} onTheme={theme.set} profile={profile} onSave={setProfile} onClose={() => closeSheet()} />
         )}
         {account && sheet === 'profile' && (
-          <ProfilePanel email={account.email} profile={profile} onSave={setProfile} onClose={() => closeSheet()} onSignOut={askLogout} />
+          <ProfilePanel email={account.email} profile={profile} onSave={setProfile} onClose={() => closeSheet()} onSignOut={askLogout} planName={planCtl.plan.name} onPlans={() => openSheet('plans')} stats={{ conversations: conversations.length, files: lib.items.length, questions: planCtl.usage.questions }} />
         )}
         {account && screen === 'home' && (
           <Dock

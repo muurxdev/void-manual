@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Trash2, Check, Sun, Moon, Monitor, LogOut, Volume2, Search, X, Download, Info, Camera, Pin, PinOff, Pencil } from 'lucide-react';
+import { Trash2, Check, Sun, Moon, Monitor, LogOut, Volume2, Search, X, Download, Info, Camera, Pin, PinOff, Pencil, Gem, Ruler, FileText, ShieldCheck, Mic as MicIcon } from 'lucide-react';
 import type { Conversation, WorkshopProfile } from '../data/types';
 import type { ThemeChoice } from '../data/theme';
 import { getVoices, loadPrefs, savePrefs, speakText, pickVoice, type VoicePrefs, type SpeakHandle } from '../data/tts';
 import { ScreenPanel } from './Panels';
 import { useFeedback } from './Feedback';
 import { LegalPanel, type LegalKind } from './LegalPanel';
+import { Group, Row, Toggle, Segmented } from './Rows';
 
 const UNIT_GROUPS = [
   { key: 'torque', label: 'Torque', options: ['Nm', 'kgf·m', 'lb·ft'] },
@@ -33,6 +34,9 @@ interface ProfileProps {
   onClose: () => void;
   onSignOut: () => void;
   email?: string;
+  planName?: string;
+  onPlans?: () => void;
+  stats?: { conversations: number; files: number; questions: number };
 }
 
 const toThumb = (file: File): Promise<string> =>
@@ -53,7 +57,7 @@ const toThumb = (file: File): Promise<string> =>
     img.src = url;
   });
 
-export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, onClose, onSignOut }) => {
+export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, onClose, onSignOut, planName, onPlans, stats }) => {
   const [f, setF] = useState<WorkshopProfile>(profile);
   const [saved, setSaved] = useState(false);
   const [tag, setTag] = useState('');
@@ -92,65 +96,86 @@ export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, o
     if (ok) onSignOut();
   };
 
-  const row = (label: string, key: keyof WorkshopProfile) => (
-    <label className="block">
-      <span className="mb-1.5 block px-1 text-caption text-mute">{label}</span>
-      <input value={f[key]} onChange={(e) => setF({ ...f, [key]: e.target.value })} className="field" />
-    </label>
-  );
-
   return (
     <ScreenPanel title="Perfil" onClose={onClose}>
-      <div className="mb-4 flex items-center gap-3">
-        <button type="button" onClick={() => photoRef.current?.click()} aria-label="Trocar foto" className="press relative h-16 w-16 shrink-0">
-          <span className="glass-ink flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-heading font-semibold">
+      <div className="flex flex-col items-center text-center">
+        <button type="button" onClick={() => photoRef.current?.click()} aria-label="Trocar foto" className="press relative h-24 w-24 shrink-0">
+          <span className="glass-ink flex h-24 w-24 items-center justify-center overflow-hidden rounded-full text-display font-semibold">
             {f.photo ? <img src={f.photo} alt="" className="h-full w-full object-cover" /> : f.mechanic.slice(0, 1).toUpperCase() || '?'}
           </span>
-          <span className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-hair bg-paper">
-            <Camera className="h-3.5 w-3.5" />
+          <span className="glass loop-border absolute -bottom-0.5 -right-0.5 flex h-9 w-9 items-center justify-center rounded-full">
+            <Camera className="h-4 w-4" />
           </span>
         </button>
         <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={pickPhoto} />
-        <div className="min-w-0">
-          <p className="truncate text-body font-medium">{f.mechanic || 'Seu nome'}</p>
-          <p className="truncate text-small text-mute">{email || f.name}</p>
-          {f.photo && (
-            <button type="button" onClick={() => setF({ ...f, photo: undefined })} className="mt-0.5 min-h-8 text-caption text-sub underline underline-offset-4">
-              Remover foto
-            </button>
-          )}
-        </div>
+        <h2 className="mt-3 max-w-full truncate text-title font-medium">{f.mechanic || 'Seu nome'}</h2>
+        <p className="max-w-full truncate text-small text-sub">{email || f.name}</p>
+        {f.photo && (
+          <button type="button" onClick={() => setF({ ...f, photo: undefined })} className="mt-1 min-h-9 text-caption text-sub underline underline-offset-4">
+            Remover foto
+          </button>
+        )}
       </div>
-      <form onSubmit={submit} className="space-y-3 pb-2">
-        {row('Seu nome', 'mechanic')}
-        {row('Nome da oficina', 'name')}
-        <div>
-          <span className="mb-1.5 block px-1 text-caption text-mute">Máquinas que você atende</span>
-          <div className="field flex flex-wrap items-center gap-2 !py-2.5">
-            {tags.map((m) => (
-              <span key={m} className="flex min-h-11 items-center gap-0.5 rounded-full bg-fill pl-4 pr-1 text-small">
-                {m}
-                <button type="button" onClick={() => setTags(tags.filter((x) => x !== m))} aria-label={`Remover ${m}`} className="flex h-11 w-11 items-center justify-center rounded-full text-mute">
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </span>
-            ))}
-            <input
-              value={tag}
-              onChange={(e) => (e.target.value.endsWith(',') ? (setTag(e.target.value), addTag()) : setTag(e.target.value))}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  addTag();
-                }
-              }}
-              onBlur={addTag}
-              placeholder={tags.length ? 'Adicionar…' : 'Moto, carro, trator…'}
-              className="min-h-11 min-w-[110px] flex-1 bg-transparent py-1 text-body focus:outline-none"
-            />
-          </div>
+
+      {stats && (
+        <div className="card mt-5 grid grid-cols-3 divide-x divide-hair py-3 text-center">
+          {[
+            ['Conversas', stats.conversations],
+            ['Arquivos', stats.files],
+            ['Perguntas hoje', stats.questions],
+          ].map(([n, v]) => (
+            <div key={n as string}>
+              <p className="text-heading font-semibold">{v}</p>
+              <p className="text-caption text-sub">{n}</p>
+            </div>
+          ))}
         </div>
-        <button type="submit" disabled={!dirty} className="glass-ink press flex h-[54px] w-full items-center justify-center gap-2 rounded-full text-body font-medium disabled:opacity-45 loop-border">
+      )}
+
+      {onPlans && (
+        <Group title="Assinatura">
+          <Row icon={<Gem className="h-4 w-4" />} label={'Plano ' + (planName ?? 'Grátis')} hint="Limites, preços e pagamento" onClick={onPlans} />
+        </Group>
+      )}
+
+      <form onSubmit={submit} className="pb-2">
+        <Group title="Dados" className="!mt-6">
+          <label className="block px-3.5 py-2.5">
+            <span className="block text-caption text-mute">Seu nome</span>
+            <input value={f.mechanic} onChange={(e) => setF({ ...f, mechanic: e.target.value })} className="mt-0.5 w-full bg-transparent text-body font-medium focus:outline-none" />
+          </label>
+          <label className="block px-3.5 py-2.5">
+            <span className="block text-caption text-mute">Nome da oficina</span>
+            <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="mt-0.5 w-full bg-transparent text-body font-medium focus:outline-none" />
+          </label>
+          <div className="px-3.5 py-2.5">
+            <span className="block text-caption text-mute">Máquinas que você atende</span>
+            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+              {tags.map((m) => (
+                <span key={m} className="flex min-h-10 items-center gap-0.5 rounded-full bg-fill pl-3.5 pr-1 text-small">
+                  {m}
+                  <button type="button" onClick={() => setTags(tags.filter((x) => x !== m))} aria-label={`Remover ${m}`} className="flex h-10 w-10 items-center justify-center rounded-full text-mute">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </span>
+              ))}
+              <input
+                value={tag}
+                onChange={(e) => (e.target.value.endsWith(',') ? (setTag(e.target.value), addTag()) : setTag(e.target.value))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
+                onBlur={addTag}
+                placeholder={tags.length ? 'Adicionar…' : 'Moto, carro, trator…'}
+                className="min-h-10 min-w-[110px] flex-1 bg-transparent text-body focus:outline-none"
+              />
+            </div>
+          </div>
+        </Group>
+        <button type="submit" disabled={!dirty} className="glass-ink loop-border press mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-full text-body font-medium disabled:opacity-45">
           {saved && !dirty ? (
             <>
               <Check className="h-4 w-4" /> Salvo
@@ -161,9 +186,9 @@ export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, o
             'Nenhuma alteração'
           )}
         </button>
-        <button type="button" onClick={askSignOut} className="press mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-full text-body font-medium text-red-500">
-          <LogOut className="h-4 w-4" /> Sair da conta
-        </button>
+        <Group>
+          <Row danger icon={<LogOut className="h-4 w-4" />} label="Sair da conta" onClick={askSignOut} />
+        </Group>
       </form>
     </ScreenPanel>
   );
@@ -265,43 +290,21 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
     { id: 'system', label: 'Sistema', icon: <Monitor className="h-4 w-4" /> },
   ];
 
-  const label = 'mb-1.5 block px-1 text-caption text-mute';
-
   return (
     <>
-    <ScreenPanel title="Configurações" subtitle="Tema, voz e unidades" onClose={onClose}>
-      <form onSubmit={submit} className="space-y-4 pb-2">
-        <div>
-          <span className={label}>Tema</span>
-          <div role="radiogroup" aria-label="Tema" className="glass grid grid-cols-3 gap-1 rounded-2xl p-1">
-            {themes.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                role="radio"
-                aria-checked={theme === t.id}
-                onClick={() => onTheme(t.id)}
-                className={`press flex items-center justify-center gap-1.5 rounded-xl min-h-11 text-small font-medium transition-colors ${
-                  theme === t.id ? 'bg-ink text-paper' : 'text-ink/70'
-                }`}
-              >
-                {t.icon}
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
+      <ScreenPanel title="Configurações" subtitle="Tema, voz e unidades" onClose={onClose}>
+        <form onSubmit={submit} className="pb-2">
+          <Group title="Aparência">
+            <div className="p-3">
+              <Segmented label="Tema" value={theme} onChange={onTheme} options={themes} />
+            </div>
+          </Group>
 
-        <div>
-          <span className={label}>Voz do Void</span>
-          <div className="card space-y-3 p-3.5">
-            <label className="flex items-center justify-between gap-3 text-body">
-              Responder em voz alta
-              <input type="checkbox" checked={prefs.enabled} onChange={(e) => updatePrefs({ enabled: e.target.checked })} className="h-6 w-6 accent-[rgb(var(--ink))]" />
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-caption text-mute">Voz</span>
-              <select value={prefs.voiceURI} onChange={(e) => updatePrefs({ voiceURI: e.target.value })} className="field min-h-11 !py-2.5">
+          <Group title="Voz do Void">
+            <Row icon={<MicIcon className="h-4 w-4" />} label="Responder em voz alta" hint="Lê a resposta depois de pensar" right={<Toggle on={prefs.enabled} onChange={(v) => updatePrefs({ enabled: v })} label="Responder em voz alta" />} />
+            <label className="block px-3.5 py-2.5">
+              <span className="block text-caption text-mute">Voz</span>
+              <select value={prefs.voiceURI} onChange={(e) => updatePrefs({ voiceURI: e.target.value })} className="mt-0.5 min-h-10 w-full bg-transparent text-body font-medium focus:outline-none">
                 <option value="">Automática{auto ? ` · ${auto.name}` : ''}</option>
                 {voices.map((v) => (
                   <option key={v.voiceURI} value={v.voiceURI}>
@@ -309,95 +312,62 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
                   </option>
                 ))}
               </select>
-              {voices.length === 0 && <span className="mt-1 block text-caption text-mute">Este aparelho não tem voz em português instalada; o texto aparece no ritmo da fala.</span>}
+              {voices.length === 0 && <span className="block text-caption text-mute">Este aparelho não tem voz em português instalada; o texto aparece no ritmo da fala.</span>}
             </label>
-            <label className="block">
-              <span className="mb-1 flex justify-between text-caption text-mute">
-                Velocidade <span className="font-mono">{prefs.rate.toFixed(1)}x</span>
+            <label className="block px-3.5 py-2.5">
+              <span className="flex justify-between text-caption text-mute">
+                Velocidade <span className="font-mono text-ink">{prefs.rate.toFixed(1)}x</span>
               </span>
-              <input type="range" min={0.8} max={1.3} step={0.1} value={prefs.rate} onChange={(e) => updatePrefs({ rate: Number(e.target.value) })} className="h-8 w-full accent-[rgb(var(--ink))]" />
+              <input type="range" min={0.8} max={1.3} step={0.1} value={prefs.rate} onChange={(e) => updatePrefs({ rate: Number(e.target.value) })} className="mt-1 h-8 w-full accent-[rgb(var(--ink))]" />
             </label>
-            <button type="button" onClick={preview} className="press flex min-h-11 items-center gap-2 rounded-full border border-hair px-4 text-small font-medium">
-              <Volume2 className="h-4 w-4" /> Ouvir exemplo
-            </button>
-          </div>
-        </div>
+            <Row icon={<Volume2 className="h-4 w-4" />} label="Ouvir exemplo" onClick={preview} />
+          </Group>
 
-        <div>
-          <span className={label}>Unidades padrão</span>
-          <div className="card space-y-3 p-3.5">
+          <Group title="Unidades padrão" footer="Tema e voz mudam na hora. As unidades só valem depois de salvar.">
             {UNIT_GROUPS.map((g) => (
-              <div key={g.key}>
-                <span className="mb-1.5 block text-caption text-mute">{g.label}</span>
-                <div role="radiogroup" aria-label={g.label} className="flex flex-wrap gap-2">
-                  {g.options.map((o) => (
-                    <button
-                      key={o}
-                      type="button"
-                      role="radio"
-                      aria-checked={units[g.key] === o}
-                      onClick={() => {
-                        const next = { ...units, [g.key]: o };
-                        setUnits(next);
-                        setF({ ...f, units: joinUnits(next) });
-                      }}
-                      className={`press min-h-11 rounded-full px-4 text-small font-medium ${units[g.key] === o ? 'bg-ink text-paper' : 'border border-hair'}`}
-                    >
-                      {o}
-                    </button>
-                  ))}
-                </div>
+              <div key={g.key} className="px-3.5 py-3">
+                <span className="mb-2 flex items-center gap-2 text-caption text-mute">
+                  <Ruler className="h-3.5 w-3.5" /> {g.label}
+                </span>
+                <Segmented
+                  label={g.label}
+                  value={units[g.key]}
+                  options={g.options.map((o) => ({ id: o, label: o }))}
+                  onChange={(o) => {
+                    const next = { ...units, [g.key]: o };
+                    setUnits(next);
+                    setF({ ...f, units: joinUnits(next) });
+                  }}
+                />
               </div>
             ))}
-          </div>
-        </div>
+          </Group>
+          <button type="submit" disabled={!dirty} className="glass-ink loop-border press mt-4 flex h-14 w-full items-center justify-center gap-2 rounded-full text-body font-medium disabled:opacity-45">
+            {saved && !dirty ? (
+              <>
+                <Check className="h-4 w-4" /> Salvo
+              </>
+            ) : dirty ? (
+              'Salvar unidades'
+            ) : (
+              'Nenhuma alteração nas unidades'
+            )}
+          </button>
 
+          <Group title="Seus dados">
+            <Row icon={<Download className="h-4 w-4" />} label="Exportar conversas e perfil" hint="Baixa um arquivo com seus dados" onClick={exportData} />
+            <Row danger icon={<Trash2 className="h-4 w-4" />} label="Apagar dados deste aparelho" hint="Não dá para desfazer" onClick={wipe} />
+          </Group>
 
-        <p className="px-1 text-caption text-mute">Tema e voz mudam na hora. As unidades só valem depois de salvar.</p>
-        <button type="submit" disabled={!dirty} className="glass-ink press flex h-[54px] w-full items-center justify-center gap-2 rounded-full text-body font-medium disabled:opacity-45 loop-border">
-          {saved && !dirty ? (
-            <>
-              <Check className="h-4 w-4" /> Salvo
-            </>
-          ) : dirty ? (
-            'Salvar unidades'
-          ) : (
-            'Nenhuma alteração nas unidades'
-          )}
-        </button>
-
-        <div>
-          <span className={label}>Seus dados</span>
-          <div className="card divide-y divide-hair p-1">
-            <button type="button" onClick={exportData} className="press flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-left text-body">
-              <Download className="h-4 w-4" /> Exportar minhas conversas e perfil
-            </button>
-            <button type="button" onClick={wipe} className="press flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-left text-body text-red-500">
-              <Trash2 className="h-4 w-4" /> Apagar os dados deste aparelho
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <span className={label}>Sobre</span>
-          <div className="card mb-2 divide-y divide-hair p-1">
-            <button type="button" onClick={() => setLegal('terms')} className="press flex min-h-12 w-full items-center rounded-2xl px-3 text-left text-body">
-              Termos de uso
-            </button>
-            <button type="button" onClick={() => setLegal('privacy')} className="press flex min-h-12 w-full items-center rounded-2xl px-3 text-left text-body">
-              Política de privacidade
-            </button>
-          </div>
-          <div className="card flex items-start gap-3 p-3.5 text-small leading-snug text-sub">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
-            <p>
-              Void · manual vivo para qualquer máquina. Versão de {new Date(__BUILD__).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}. Seus dados ficam guardados só neste aparelho. Dica: segure o microfone da tela de voz para falar, ou toque uma vez para deixar ligado.
-            </p>
-          </div>
-        </div>
-      </form>
-    </ScreenPanel>
-    {legal && <LegalPanel kind={legal} onClose={() => setLegal(null)} />}
+          <Group title="Sobre">
+            <Row icon={<FileText className="h-4 w-4" />} label="Termos de uso" onClick={() => setLegal('terms')} />
+            <Row icon={<ShieldCheck className="h-4 w-4" />} label="Política de privacidade" onClick={() => setLegal('privacy')} />
+            <Row icon={<Info className="h-4 w-4" />} label="Versão" value={new Date(__BUILD__).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} />
+          </Group>
+          <p className="mt-3 px-1 text-caption text-mute">Seus dados ficam guardados só neste aparelho.</p>
+        </form>
+      </ScreenPanel>
+      {legal && <LegalPanel kind={legal} onClose={() => setLegal(null)} />}
     </>
   );
 };

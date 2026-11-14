@@ -102,3 +102,25 @@ export const monthlyPrice = (p: Plan, annual: boolean): number => (annual ? p.pr
 export const chargeTotal = (p: Plan, annual: boolean): number => (annual ? monthlyPrice(p, true) * BILLING_MONTHS : p.price);
 
 export const money = (v: number): string => 'R$ ' + v.toFixed(2).replace('.', ',');
+
+/** Deixa só os números e aplica a máscara 000.000.000-00. */
+export const maskCpf = (v: string): string => {
+  const d = v.replace(/\D/g, '').slice(0, 11);
+  return d.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1-$2');
+};
+
+/** CPF válido pelos dois dígitos verificadores (rejeita 111.111.111-11 e parecidos). */
+export function isValidCpf(v: string): boolean {
+  const d = v.replace(/\D/g, '');
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+  const dv = (len: number) => {
+    let sum = 0;
+    for (let i = 0; i < len; i++) sum += Number(d[i]) * (len + 1 - i);
+    const r = (sum * 10) % 11;
+    return r === 10 ? 0 : r;
+  };
+  return dv(9) === Number(d[9]) && dv(10) === Number(d[10]);
+}
+
+/** Cupons aceitos: percentual de desconto. Vazio até o backend validar os cupons de verdade. */
+export const COUPONS: Record<string, number> = {};

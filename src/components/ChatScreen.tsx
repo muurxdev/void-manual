@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { VoidMark } from './VoidMark';
-import { ArrowLeft, MoreHorizontal, Plus, Mic, ArrowUp, Square, Copy, Volume2, Check, Trash2, X, Image as ImageIcon, BookOpen, ThumbsUp, ThumbsDown, RotateCcw, Share2, ArrowDown } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal, Plus, Mic, ArrowUp, Square, Copy, Volume2, Check, Trash2, X, Image as ImageIcon, BookOpen, ThumbsUp, ThumbsDown, RotateCcw, Share2, ArrowDown, Wrench, TriangleAlert, Zap, Gauge, ArrowUpRight } from 'lucide-react';
 import type { Message } from '../data/types';
 import { Dropdown, type MenuItem } from './ui';
 import { DustField } from './DustField';
 import { useSmoothWheel } from '../data/useSmoothWheel';
 import { useDictation } from '../data/useDictation';
 import { useFeedback } from './Feedback';
-import { DictationWave } from './DictationWave';
+import { DictationOverlay } from './DictationOverlay';
 
 interface ChatScreenProps {
   title: string;
@@ -40,11 +40,11 @@ const Thinking: React.FC = () => {
   );
 };
 
-const SUGGESTIONS: { q: string; sub: string }[] = [
-  { q: 'Tabela de torque de cabeçote e biela da Honda CB 500F', sub: 'Torque e folgas' },
-  { q: 'Tabela completa de códigos de falha PGM-FI e MIL Honda', sub: 'Códigos de falha' },
-  { q: 'Diagnóstico de vela carbonizada e faísca fraca na Titan 160', sub: 'Motor e ignição' },
-  { q: 'Ajuste de folga de válvulas da Lander 250 (frio)', sub: 'Manutenção' },
+const SUGGESTIONS: { q: string; title: string; sub: string; icon: React.ReactNode }[] = [
+  { q: 'Tabela de torque de cabeçote e biela da Honda CB 500F', title: 'Torque de cabeçote e biela', sub: 'Honda CB 500F', icon: <Wrench className="h-4 w-4" /> },
+  { q: 'Tabela completa de códigos de falha PGM-FI e MIL Honda', title: 'Códigos de falha PGM-FI', sub: 'Luz MIL · Honda', icon: <TriangleAlert className="h-4 w-4" /> },
+  { q: 'Diagnóstico de vela carbonizada e faísca fraca na Titan 160', title: 'Vela carbonizada e faísca fraca', sub: 'Titan 160 · ignição', icon: <Zap className="h-4 w-4" /> },
+  { q: 'Ajuste de folga de válvulas da Lander 250 (frio)', title: 'Folga de válvulas a frio', sub: 'Lander 250 · manutenção', icon: <Gauge className="h-4 w-4" /> },
 ];
 
 // Destaca valores de especificação (torque, folga, pressão...) para leitura rápida.
@@ -326,17 +326,23 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
       <div ref={scrollRef} className="scroll-smooth-area relative z-10 h-full pb-[150px] pt-[84px]" style={{ paddingInline: side }}>
         {messages.length === 0 ? (
           <div className="anim-fade-up flex min-h-full flex-col justify-end">
-            <p className="text-[clamp(24px,3vw+12px,34px)] font-medium leading-tight tracking-[-0.02em]">
+            <h2 className="text-display font-medium">
               <span className="text-sub">Como posso</span>
               <br />
               ajudar hoje?
-            </p>
-            <p className="mt-2 text-small text-sub">Pergunte sobre qualquer máquina ou escolha um atalho.</p>
-            <div className="mt-5 grid gap-2 md:grid-cols-2">
+            </h2>
+            <p className="mt-2 text-small text-sub">Pergunte sobre qualquer máquina ou comece por um destes.</p>
+            <div className="mt-5 grid grid-cols-2 gap-2.5">
               {SUGGESTIONS.map((s, i) => (
-                <button key={s.q} style={{ ['--i' as string]: i }} onClick={() => onSend(s.q, { deepThink: false })} className="card anim-fade-up press px-4 py-3 text-left">
-                  <span className="block text-body leading-snug">{s.q}</span>
-                  <span className="mt-1 block text-caption text-sub">{s.sub}</span>
+                <button key={s.q} style={{ ['--i' as string]: i }} onClick={() => onSend(s.q, { deepThink: false })} className="card anim-fade-up press flex min-h-[132px] flex-col justify-between p-3.5 text-left">
+                  <span className="flex items-start justify-between">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-fill">{s.icon}</span>
+                    <ArrowUpRight className="h-4 w-4 text-mute" />
+                  </span>
+                  <span>
+                    <span className="block text-body font-medium leading-snug">{s.title}</span>
+                    <span className="mt-0.5 block text-caption text-sub">{s.sub}</span>
+                  </span>
                 </button>
               ))}
             </div>
@@ -462,25 +468,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
             </button>
           </div>
         )}
-        {dict.active ? (
-          <div className="anim-fade-up flex items-end gap-2.5">
-            <button onClick={dict.cancel} aria-label="Cancelar ditado" className="glass press flex h-12 w-12 shrink-0 items-center justify-center rounded-full loop-border">
-              <X className="h-5 w-5" />
-            </button>
-            <div className="glass flex min-h-[52px] min-w-0 flex-1 flex-col justify-center rounded-[22px] px-4 py-2" aria-live="polite">
-              <p className="max-h-[64px] overflow-hidden break-words text-body leading-snug text-ink" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
-                {dict.text || <span className="text-mute">Pode falar…</span>}
-              </p>
-              <DictationWave level={dict.level} className="mt-1 h-6 w-full text-ink" />
-            </div>
-            <button onClick={finishDictation} aria-label="Parar e editar o texto" className="glass press flex h-12 w-12 shrink-0 items-center justify-center rounded-full loop-border">
-              <Square className="h-[18px] w-[18px] fill-current" />
-            </button>
-            <button onClick={sendDictation} aria-label="Parar e enviar" className="glass-ink press flex h-12 w-12 shrink-0 items-center justify-center rounded-full loop-border">
-              <ArrowUp className="h-5 w-5 stroke-[2.5]" />
-            </button>
-          </div>
-        ) : (
+        {(
         <div className="flex items-end gap-2.5">
           <div className="relative">
             <button
@@ -528,6 +516,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         )}
         {dict.error && <p className="mt-1.5 px-2 text-center text-caption text-sub">{dict.error}</p>}
       </div>
+      {dict.active && <DictationOverlay text={dict.text} level={dict.level} onCancel={dict.cancel} onFinish={finishDictation} onSend={sendDictation} />}
     </div>
   );
 };

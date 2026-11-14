@@ -352,7 +352,7 @@ select:-webkit-autofill {
 /* borda infinita: um anel completo e um feixe de luz que o percorre sem parar (cor do texto do tema).
    Usa o ::after, o mesmo anel do vidro: em elementos .glass ele substitui o aro especular. */
 @property --loop-a { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
-.loop-border { position: relative; }
+:where(.loop-border) { position: relative; }
 .loop-border::after,
 .glass.loop-border::after,
 .glass-strong.loop-border::after {
