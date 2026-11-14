@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Keyboard, Mic, Square, ArrowUp, MessageSquare, FileText, X, Plus, BookOpen, Image as ImageIcon, MoreHorizontal, Info } from 'lucide-react';
+import { ArrowLeft, Keyboard, Mic, Square, ArrowUp, MessageSquare, FileText, X, BookOpen, Image as ImageIcon, MoreHorizontal, Info } from 'lucide-react';
 import { useFeedback } from './Feedback';
 import { Dropdown, type MenuItem } from './ui';
 import { type VoiceState } from '../data/types';
@@ -56,7 +56,6 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
 }) => {
   const [mode, setMode] = useState<'voice' | 'text'>('voice');
   const [draft, setDraft] = useState('');
-  const [plus, setPlus] = useState(false);
   const [menu, setMenu] = useState(false);
   const fb = useFeedback();
   const [attachment, setAttachment] = useState<string | null>(null);
@@ -89,7 +88,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   const composer = useRef<HTMLDivElement>(null);
   const hasInput = draft.trim() !== '' || attachment !== null;
   const hasInputRef = useRef(false);
-  hasInputRef.current = hasInput || plus;
+  hasInputRef.current = hasInput;
 
   // teclado descendo (ou o campo perdendo o foco) com o campo vazio: volta para o modo de falar
   useEffect(() => {
@@ -160,13 +159,9 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
     r.readAsDataURL(f);
     e.target.value = '';
   };
-  const plusItems: MenuItem[] = [
-    { key: 'lib', label: 'Da biblioteca', hint: 'Responder com um arquivo seu', icon: <BookOpen className="h-4 w-4" />, onSelect: onPickLibrary },
-    { key: 'img', label: 'Foto ou imagem', hint: 'Anexar à mensagem', icon: <ImageIcon className="h-4 w-4" />, onSelect: () => fileRef.current?.click() },
-  ];
-
   const menuItems: MenuItem[] = [
     ...(canOpenChat ? [{ key: 'chat', label: 'Ver no chat', hint: 'Abrir a conversa escrita', icon: <MessageSquare className="h-4 w-4" />, onSelect: onOpenChat }] : []),
+    { key: 'img', label: 'Foto ou imagem', hint: 'Anexar à mensagem', icon: <ImageIcon className="h-4 w-4" />, onSelect: () => fileRef.current?.click() },
     { key: 'lib', label: 'Usar um arquivo', hint: 'Responder com a biblioteca', icon: <BookOpen className="h-4 w-4" />, onSelect: onPickLibrary },
     {
       key: 'how',
@@ -192,7 +187,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         <button onClick={onBack} aria-label="Voltar" className="icon-btn glass loop-border">
           <ArrowLeft className="h-[18px] w-[18px]" />
         </button>
-        <h1 className="text-center text-[13px] font-medium tracking-[0.18em] text-ink/55">VOID VOICE</h1>
+        <h1 className="glass loop-border justify-self-center rounded-full px-4 py-2 text-center text-[12px] font-medium tracking-[0.18em]">VOID VOICE</h1>
         <div className="relative justify-self-end">
           <button onClick={() => setMenu((m) => !m)} aria-label="Ações e informações" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass loop-border">
             <MoreHorizontal className="h-[18px] w-[18px]" />
@@ -296,8 +291,8 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             {status === 'listening' && <span className="anim-ring absolute inset-0 rounded-full border border-ink/50" />}
             {status === 'speaking' ? <Square className="h-6 w-6 fill-current" /> : <Mic className="h-8 w-8" />}
           </button>
-          <button onClick={onBack} aria-label="Fechar" className="glass loop-border press flex h-12 w-12 items-center justify-center rounded-full justify-self-end">
-            <X className="h-5 w-5" />
+          <button onClick={onOpenChat} aria-label="Abrir no chat" className="glass loop-border press flex h-12 w-12 items-center justify-center rounded-full justify-self-end">
+            <MessageSquare className="h-5 w-5" />
           </button>
                 </div>
       </div>
@@ -335,7 +330,6 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             <button
               onClick={() => {
                 taRef.current?.blur();
-                setPlus(false);
                 setMode('voice');
               }}
               aria-label="Voltar para falar"
@@ -344,19 +338,6 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             >
               <X className="h-5 w-5" />
             </button>
-            <div className="relative">
-              <button
-                onClick={() => setPlus((p) => !p)}
-                aria-label="Adicionar"
-                aria-haspopup="menu"
-                aria-expanded={plus}
-                tabIndex={mode === 'text' ? 0 : -1}
-                className="glass press flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full"
-              >
-                <Plus className={`h-5 w-5 transition-transform duration-500 ${plus ? 'rotate-45' : ''}`} />
-              </button>
-              <Dropdown open={plus} onClose={() => setPlus(false)} items={plusItems} placement="top-start" />
-            </div>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
             <div className="glass loop-border flex min-h-[52px] min-w-0 flex-1 items-center rounded-[26px] pl-4 pr-2">
               <label htmlFor="voice-text" className="sr-only">
