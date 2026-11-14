@@ -349,16 +349,79 @@ select:-webkit-autofill {
 @keyframes screenOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(.88); } }
 .screen-fade { animation: fadeIn 260ms var(--ease-out) both; }
 
-/* borda infinita: um traço de luz percorre a borda sem parar, na cor do sistema (texto) */
+/* borda infinita: um anel completo e um feixe de luz que o percorre sem parar (cor do texto do tema).
+   Usa o ::after, o mesmo anel do vidro: em elementos .glass ele substitui o aro especular. */
 @property --loop-a { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
 .loop-border { position: relative; }
-.loop-border::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
-  background: conic-gradient(from var(--loop-a), rgb(var(--ink) / .16) 0deg, rgb(var(--ink) / .16) 120deg, rgb(var(--ink) / 1) 300deg, rgb(var(--ink) / .16) 360deg);
+.loop-border::after,
+.glass.loop-border::after,
+.glass-strong.loop-border::after {
+  content: ''; position: absolute; inset: 0; z-index: 3; border-radius: inherit; padding: 2px; pointer-events: none;
+  background: conic-gradient(from var(--loop-a), rgb(var(--ink) / .2) 0deg, rgb(var(--ink) / .2) 90deg, rgb(var(--ink) / 1) 215deg, rgb(var(--ink) / .2) 340deg, rgb(var(--ink) / .2) 360deg);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  animation: loopSpin 3.2s linear infinite;
+  animation: loopSpin 2.8s linear infinite;
 }
 @keyframes loopSpin { to { --loop-a: 360deg; } }
-@media (prefers-reduced-motion: reduce) { .loop-border::before { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .loop-border::after { animation: none; } }
+
+/* ============ Liquid Glass v2: vidro da Apple, sem depender de filtro SVG (funciona no Android) ============
+   Blur forte + saturação, bisel claro nos cantos opostos (luz entrando pelo canto de cima, saindo por baixo),
+   reflexo de topo, sombra suave. Os valores de luz vêm dos tokens do tema, então vale no claro e no escuro. */
+.glass, .glass-strong {
+  -webkit-backdrop-filter: blur(20px) saturate(190%) brightness(var(--glass-bright));
+  backdrop-filter: blur(20px) saturate(190%) brightness(var(--glass-bright));
+}
+:root[data-lens='1'] .glass,
+:root[data-lens='1'] .glass-strong {
+  -webkit-backdrop-filter: blur(14px) url(#lg-lens) saturate(150%) brightness(var(--glass-bright));
+  backdrop-filter: blur(14px) url(#lg-lens) saturate(150%) brightness(var(--glass-bright));
+}
+.glass {
+  background: linear-gradient(150deg, rgb(var(--glass-tint) / calc(var(--glass-a) + .16)), rgb(var(--glass-tint) / var(--glass-a)) 52%, rgb(var(--glass-tint) / calc(var(--glass-a) + .05)));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / calc(var(--rim-in) * .75)),
+    inset 0 -1px 0 rgb(0 0 0 / .05),
+    inset 4px 4px 10px -5px rgb(255 255 255 / calc(var(--glass-rim-hi) * .85)),
+    inset -4px -4px 10px -5px rgb(255 255 255 / calc(var(--glass-rim-lo) * .7)),
+    0 10px 30px var(--glass-shadow),
+    0 2px 6px rgba(0, 0, 0, .06);
+}
+.glass-strong {
+  background: linear-gradient(150deg, rgb(var(--glass-tint) / calc(var(--glass-strong-a) + .12)), rgb(var(--glass-tint) / var(--glass-strong-a)));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / calc(var(--rim-in) * .75)),
+    inset 4px 4px 12px -6px rgb(255 255 255 / calc(var(--glass-rim-hi) * .8)),
+    inset -4px -4px 12px -6px rgb(255 255 255 / calc(var(--glass-rim-lo) * .6)),
+    0 22px 52px var(--glass-shadow),
+    0 3px 10px rgba(0, 0, 0, .07);
+}
+.glass::before, .glass-strong::before {
+  background:
+    radial-gradient(120% 75% at 14% -14%, rgb(255 255 255 / calc(var(--glass-top) * 1.5)), transparent 56%),
+    radial-gradient(90% 60% at 92% 118%, rgb(255 255 255 / calc(var(--glass-top) * .7)), transparent 62%);
+}
+.glass-ink {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / .34),
+    inset 3px 3px 8px -4px rgb(255 255 255 / .28),
+    inset -3px -3px 8px -4px rgb(255 255 255 / .12),
+    0 12px 30px rgba(0, 0, 0, .35);
+}
+/* menus e cartões: o mesmo bisel, sem blur (blur em lista longa pesa e piscava ao abrir) */
+.menu-surface {
+  background: linear-gradient(150deg, rgb(var(--card) / .96), rgb(var(--card) / .9));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / calc(var(--rim-in) * .8)),
+    inset 4px 4px 12px -6px rgb(255 255 255 / calc(var(--glass-rim-hi) * .7)),
+    0 18px 48px rgba(0, 0, 0, .22),
+    0 2px 8px rgba(0, 0, 0, .08);
+}
+.card {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / calc(var(--rim-in) * .7)),
+    inset 3px 3px 10px -6px rgb(255 255 255 / calc(var(--glass-rim-hi) * .6)),
+    0 1px 2px rgba(0, 0, 0, .03),
+    0 8px 24px rgba(0, 0, 0, .04);
+}
