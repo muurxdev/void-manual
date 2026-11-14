@@ -3,7 +3,8 @@ import { ArrowLeft, Keyboard, Mic, Square, ArrowUp, MessageSquare, FileText, X, 
 import { useFeedback } from './Feedback';
 import { Dropdown, type MenuItem } from './ui';
 import { type VoiceState } from '../data/types';
-import { VoidParticles, stageOf } from './VoidParticles';
+import { stageOf } from './VoidParticles';
+import { VoidOrb } from './VoidOrb';
 
 interface Cite {
   title: string;
@@ -50,7 +51,6 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   pulse,
   citations,
   history,
-  dark,
   canOpenChat,
   onBack,
   onMic,
@@ -192,11 +192,11 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   const replyTail = rw.slice(cut).join(' ');
   const side = 'clamp(16px,5.6vw,40px)';
 
-  const orbH = mode === 'text' ? 'clamp(140px, 22dvh, 210px)' : 'clamp(220px, 38dvh, 360px)';
+  const orbH = mode === 'text' ? 'clamp(170px, 26dvh, 240px)' : 'clamp(260px, 44dvh, 420px)';
   const emptyIdle = !userText && !replyText && history.length === 0 && !error;
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden text-ink" style={{ background: dark ? 'radial-gradient(120% 60% at 50% 22%, #17181c 0%, #08080a 55%, #000 100%)' : 'linear-gradient(180deg, #fafafa 0%, #f1f1f2 100%)' }}>
+    <div className="force-dark relative flex h-full flex-col overflow-hidden text-ink" style={{ background: 'radial-gradient(110% 55% at 50% 30%, #141623 0%, #07080d 60%, #000 100%)' }}>
       <header className="safe-top relative z-20 grid shrink-0 grid-cols-[48px_1fr_48px] items-center" style={{ paddingInline: side }}>
         <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
           <ArrowLeft className="h-[18px] w-[18px]" />
@@ -211,23 +211,30 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       </header>
 
       {/* o orbe: o buraco negro muda de forma a cada estágio */}
-      <div className={"relative z-0 " + (emptyIdle ? "min-h-0 flex-1" : "shrink-0")} style={emptyIdle ? { marginBottom: 112 } : { height: orbH }}>
-        <VoidParticles state={status} stage={stageOf(status, phase)} pulse={pulse} dark={dark} sizeMul={0.95} className="pointer-events-none absolute inset-0 h-full w-full" />
+      <div className={"relative z-0 " + (emptyIdle ? "min-h-0 flex-1" : "shrink-0")} style={emptyIdle ? undefined : { height: orbH }}>
+        <VoidOrb stage={stageOf(status, phase)} pulse={pulse} className="pointer-events-none absolute inset-0 h-full w-full" />
       </div>
 
       {/* estado, sempre visível */}
-      <div className="relative z-10 flex h-10 shrink-0 items-center justify-center" aria-live="polite">
-        {label && (
-          <span key={label} className="glass anim-fade-up flex items-center gap-2 rounded-full px-4 py-1.5 text-[15px] font-medium">
+      <div className="relative z-10 flex min-h-[64px] shrink-0 flex-col items-center justify-start gap-2.5 px-6 text-center" style={{ paddingBottom: emptyIdle ? 132 : 0 }} aria-live="polite">
+        {emptyIdle && status === 'idle' ? (
+          <div className="anim-fade-up">
+            <p className="text-[clamp(26px,5.4vw,34px)] font-medium leading-[1.1] tracking-[-0.02em]">Pode falar</p>
+            <p className="mt-1.5 text-[14px] text-ink/55">Segure o microfone, ou toque uma vez e fale</p>
+          </div>
+        ) : label ? (
+          <span key={label} className="anim-fade-up flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-[15px] font-medium backdrop-blur-md">
+            <span className={'h-2 w-2 rounded-full ' + (status === 'listening' ? 'bg-cyan-300' : status === 'speaking' ? 'bg-white' : 'bg-amber-300')} style={{ boxShadow: '0 0 10px currentColor' }} />
             {label}
-            {(status === 'listening' || status === 'speaking' || status === 'thinking') && (
-              <span className="inline-flex gap-0.5" aria-hidden="true">
-                {[0, 1, 2].map((i) => (
-                  <span key={i} className="anim-orb h-1.5 w-1.5 rounded-full bg-ink/70" style={{ animationDelay: (i * 160) + 'ms' }} />
-                ))}
-              </span>
-            )}
           </span>
+        ) : null}
+        {status === 'thinking' && (
+          <div className="flex items-center gap-1.5" aria-hidden="true">
+            {['Lendo', 'Consultando', 'Diagnosticando'].map((n, i) => {
+              const at = /Consultando/.test(phase) ? 1 : /Diagnostic/.test(phase) ? 2 : 0;
+              return <span key={n} className={'h-1 rounded-full transition-all duration-300 ' + (i === at ? 'w-8 bg-white' : i < at ? 'w-4 bg-white/60' : 'w-4 bg-white/20')} />;
+            })}
+          </div>
         )}
       </div>
 
@@ -316,7 +323,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             disabled={busy}
             aria-label={status === 'listening' ? 'Parar de ouvir' : status === 'speaking' ? 'Interromper' : 'Falar'}
             className={'press relative flex h-[72px] w-[72px] items-center justify-center rounded-full bg-ink text-paper ' + (busy ? 'opacity-60' : '')}
-            style={{ boxShadow: dark ? '0 0 46px rgba(255,255,255,.35)' : '0 12px 36px rgba(0,0,0,.28)' }}
+            style={{ boxShadow: '0 0 46px rgba(120,190,255,.35)' }}
           >
             {status === 'listening' && <span className="anim-ring absolute inset-0 rounded-full border border-ink/50" />}
             {status === 'speaking' ? <Square className="h-6 w-6 fill-current" /> : <Mic className="h-8 w-8" />}
