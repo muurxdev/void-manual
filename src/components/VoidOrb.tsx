@@ -63,6 +63,8 @@ export const VoidOrb: React.FC<Props> = ({ stage, pulse, className }) => {
     let raf = 0;
     let lastT = performance.now();
     const N = 120;
+    let ink: [number, number, number] = [245, 245, 245];
+    let inkAt = 0;
 
     const draw = (now: number) => {
       const dt = Math.min(0.12, (now - lastT) / 1000);
@@ -80,6 +82,13 @@ export const VoidOrb: React.FC<Props> = ({ stage, pulse, className }) => {
       const ap = 1 - Math.pow(1 - appear, 3);
       if (!reduce) t += dt * cur.spd;
 
+      if (now - inkAt > 500) {
+        inkAt = now;
+        const v = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim().split(/\s+/).map(Number);
+        if (v.length === 3 && v.every((n) => !Number.isNaN(n))) ink = [v[0], v[1], v[2]];
+      }
+      const onDark = ink[0] + ink[1] + ink[2] > 380; // texto claro = tema escuro
+      const rgb = ink[0] + ',' + ink[1] + ',' + ink[2];
       ctx.clearRect(0, 0, w, h);
       const cx = w / 2;
       const cy = h / 2;
@@ -89,12 +98,12 @@ export const VoidOrb: React.FC<Props> = ({ stage, pulse, className }) => {
       // luz de fundo
       const gr = Math.min(R * 2.4, Math.min(w, h) * 0.5);
       const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, gr);
-      g.addColorStop(0, 'rgba(34,211,238,' + (0.1 + amp * 0.12) * ap + ')');
-      g.addColorStop(1, 'rgba(34,211,238,0)');
+      g.addColorStop(0, 'rgba(' + rgb + ',' + (0.05 + amp * 0.06) * ap + ')');
+      g.addColorStop(1, 'rgba(' + rgb + ',0)');
       ctx.fillStyle = g;
       ctx.fillRect(cx - gr, cy - gr, gr * 2, gr * 2);
 
-      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalCompositeOperation = onDark ? 'lighter' : 'source-over';
       ctx.lineWidth = 0.9;
       for (let i = 0; i < LINES; i++) {
         const u = i / (LINES - 1); // 0..1 ao longo da fita
@@ -118,7 +127,7 @@ export const VoidOrb: React.FC<Props> = ({ stage, pulse, className }) => {
         }
         ctx.closePath();
         const fade = 0.2 + 0.5 * Math.sin(u * Math.PI);
-        ctx.strokeStyle = 'rgba(' + (40 + u * 40) + ',' + (200 + u * 40) + ',255,' + fade * ap + ')';
+        ctx.strokeStyle = 'rgba(' + rgb + ',' + fade * ap * (onDark ? 0.9 : 0.75) + ')';
         ctx.stroke();
       }
       ctx.globalCompositeOperation = 'source-over';

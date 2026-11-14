@@ -289,7 +289,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="glass mx-3 min-w-0 max-w-[200px] flex-1 truncate rounded-full px-4 py-1.5 text-center text-[14px]">{title}</h1>
+        <h1 className="glass loop-border mx-3 min-w-0 max-w-[200px] flex-1 truncate rounded-full px-4 py-1.5 text-center text-[14px]">{title}</h1>
         <div className="relative">
           <button onClick={() => setMenu((m) => !m)} aria-label="Mais opções" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass">
             <MoreHorizontal className="h-4 w-4" />

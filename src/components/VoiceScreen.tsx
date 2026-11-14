@@ -33,13 +33,6 @@ interface VoiceScreenProps {
   onSendWithAttachment: (text: string, attachment: string) => void;
 }
 
-const LABEL: Record<VoiceState, string> = {
-  idle: '',
-  listening: 'Ouvindo',
-  thinking: '',
-  speaking: 'Falando',
-};
-
 const GL = 'border border-ink/15 bg-ink/10 text-ink backdrop-blur-xl';
 
 export const VoiceScreen: React.FC<VoiceScreenProps> = ({
@@ -185,7 +178,6 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
     },
   ];
 
-  const label = status === 'thinking' ? phase : error ? '' : LABEL[status];
   const rw = replyText.split(' ');
   const cut = status === 'speaking' ? Math.max(0, rw.length - 3) : rw.length;
   const replyHead = rw.slice(0, cut).join(' ') + (cut > 0 && cut < rw.length ? ' ' : '');
@@ -196,14 +188,14 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   const emptyIdle = !userText && !replyText && history.length === 0 && !error;
 
   return (
-    <div className="force-dark relative flex h-full flex-col overflow-hidden text-ink" style={{ background: 'radial-gradient(120% 60% at 50% 34%, #08333b 0%, #03171c 55%, #010b0e 100%)' }}>
+    <div className="relative flex h-full flex-col overflow-hidden bg-paper text-ink">
       <header className="safe-top relative z-20 grid shrink-0 grid-cols-[48px_1fr_48px] items-center" style={{ paddingInline: side }}>
-        <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
+        <button onClick={onBack} aria-label="Voltar" className="icon-btn glass loop-border">
           <ArrowLeft className="h-[18px] w-[18px]" />
         </button>
         <h1 className="text-center text-[13px] font-medium tracking-[0.18em] text-ink/55">VOID VOICE</h1>
         <div className="relative justify-self-end">
-          <button onClick={() => setMenu((m) => !m)} aria-label="Ações e informações" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass">
+          <button onClick={() => setMenu((m) => !m)} aria-label="Ações e informações" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass loop-border">
             <MoreHorizontal className="h-[18px] w-[18px]" />
           </button>
           <Dropdown open={menu} onClose={() => setMenu(false)} items={menuItems} placement="bottom-end" />
@@ -211,31 +203,8 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       </header>
 
       {/* o orbe: o buraco negro muda de forma a cada estágio */}
-      <div className={"relative z-0 " + (emptyIdle ? "min-h-0 flex-1" : "shrink-0")} style={emptyIdle ? undefined : { height: orbH }}>
+      <div className={"relative z-0 " + (emptyIdle ? "min-h-0 flex-1" : "shrink-0")} style={emptyIdle ? { marginBottom: 124 } : { height: orbH }}>
         <VoidOrb stage={stageOf(status, phase)} pulse={pulse} className="pointer-events-none absolute inset-0 h-full w-full" />
-      </div>
-
-      {/* estado, sempre visível */}
-      <div className="relative z-10 flex min-h-[64px] shrink-0 flex-col items-center justify-start gap-2.5 px-6 text-center" style={{ paddingBottom: emptyIdle ? 132 : 0 }} aria-live="polite">
-        {emptyIdle && status === 'idle' ? (
-          <div className="anim-fade-up">
-            <p className="text-[clamp(26px,5.4vw,34px)] font-medium leading-[1.1] tracking-[-0.02em]">Pode falar</p>
-            <p className="mt-1.5 text-[14px] text-ink/55">Segure o microfone, ou toque uma vez e fale</p>
-          </div>
-        ) : label ? (
-          <span key={label} className="anim-fade-up flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-[15px] font-medium backdrop-blur-md">
-            <span className={'h-2 w-2 rounded-full ' + 'bg-cyan-300'} style={{ boxShadow: '0 0 10px currentColor' }} />
-            {label}
-          </span>
-        ) : null}
-        {status === 'thinking' && (
-          <div className="flex items-center gap-1.5" aria-hidden="true">
-            {['Lendo', 'Consultando', 'Diagnosticando'].map((n, i) => {
-              const at = /Consultando/.test(phase) ? 1 : /Diagnostic/.test(phase) ? 2 : 0;
-              return <span key={n} className={'h-1 rounded-full transition-all duration-300 ' + (i === at ? 'w-8 bg-white' : i < at ? 'w-4 bg-white/60' : 'w-4 bg-white/20')} />;
-            })}
-          </div>
-        )}
       </div>
 
       {/* conversa: texto grande, em níveis */}
@@ -312,7 +281,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
           className={'flex items-center justify-center gap-7 transition-opacity duration-300 ' + (mode === 'voice' ? 'pointer-events-auto opacity-100' : 'invisible opacity-0')}
           style={{ touchAction: 'manipulation' }}
         >
-          <button onClick={() => setMode('text')} aria-label="Escrever" className="press flex h-[52px] w-[52px] items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 text-cyan-100 backdrop-blur-md">
+          <button onClick={() => setMode('text')} aria-label="Escrever" className="glass loop-border press flex h-[52px] w-[52px] items-center justify-center rounded-full">
             <Keyboard className="h-5 w-5" />
           </button>
           <button
@@ -322,15 +291,13 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             onClick={(e) => e.detail === 0 && onMic()}
             disabled={busy}
             aria-label={status === 'listening' ? 'Parar de ouvir' : status === 'speaking' ? 'Interromper' : 'Falar'}
-            className={'press relative flex h-[84px] w-[84px] items-center justify-center rounded-full ' + (busy ? 'opacity-60' : '')}
-            style={{ background: 'rgba(34,211,238,.14)', boxShadow: '0 0 0 9px rgba(34,211,238,.1), 0 0 44px rgba(34,211,238,.35)' }}
+            className={'loop-border press relative flex h-[80px] w-[80px] items-center justify-center rounded-full bg-ink text-paper ' + (busy ? 'opacity-60' : '')}
+            style={{ boxShadow: '0 0 0 8px rgb(var(--ink) / .08)' }}
           >
-            {status === 'listening' && <span className="anim-ring absolute inset-0 rounded-full border border-cyan-300/60" />}
-            <span className="flex h-[62px] w-[62px] items-center justify-center rounded-full bg-cyan-300 text-[#03171c]">
-              {status === 'speaking' ? <Square className="h-6 w-6 fill-current" /> : <Mic className="h-7 w-7" />}
-            </span>
+            {status === 'listening' && <span className="anim-ring absolute inset-0 rounded-full border border-ink/50" />}
+            {status === 'speaking' ? <Square className="h-6 w-6 fill-current" /> : <Mic className="h-8 w-8" />}
           </button>
-          <button onClick={onBack} aria-label="Fechar" className="press flex h-[52px] w-[52px] items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 text-cyan-100 backdrop-blur-md">
+          <button onClick={onBack} aria-label="Fechar" className="glass loop-border press flex h-[52px] w-[52px] items-center justify-center rounded-full">
             <X className="h-5 w-5" />
           </button>
                 </div>
@@ -380,7 +347,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
               <Dropdown open={plus} onClose={() => setPlus(false)} items={plusItems} placement="top-start" />
             </div>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
-            <div className="glass flex min-h-[52px] min-w-0 flex-1 items-center rounded-[26px] pl-4 pr-2">
+            <div className="glass loop-border flex min-h-[52px] min-w-0 flex-1 items-center rounded-[26px] pl-4 pr-2">
               <label htmlFor="voice-text" className="sr-only">
                 Escrever para o Void
               </label>

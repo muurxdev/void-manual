@@ -102,7 +102,7 @@ export const Dock: React.FC<DockProps> = ({ onNewChat, onVoice, onLibrary, onAdd
           aria-label="Menu"
           aria-haspopup="menu"
           aria-expanded={open}
-          className="glass-ink press flex h-[60px] w-[60px] items-center justify-center rounded-full"
+          className="glass-ink loop-border press flex h-[60px] w-[60px] items-center justify-center rounded-full"
         >
           <Plus className="h-[26px] w-[26px] stroke-[2.4] transition-transform duration-500" style={{ transform: open ? 'rotate(135deg)' : 'none', transitionTimingFunction: 'var(--spring)' }} />
         </button>
