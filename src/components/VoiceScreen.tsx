@@ -196,7 +196,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   const emptyIdle = !userText && !replyText && history.length === 0 && !error;
 
   return (
-    <div className="force-dark relative flex h-full flex-col overflow-hidden text-ink" style={{ background: 'radial-gradient(110% 55% at 50% 30%, #141623 0%, #07080d 60%, #000 100%)' }}>
+    <div className="force-dark relative flex h-full flex-col overflow-hidden text-ink" style={{ background: 'radial-gradient(120% 60% at 50% 34%, #08333b 0%, #03171c 55%, #010b0e 100%)' }}>
       <header className="safe-top relative z-20 grid shrink-0 grid-cols-[48px_1fr_48px] items-center" style={{ paddingInline: side }}>
         <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
           <ArrowLeft className="h-[18px] w-[18px]" />
@@ -224,7 +224,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
           </div>
         ) : label ? (
           <span key={label} className="anim-fade-up flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-[15px] font-medium backdrop-blur-md">
-            <span className={'h-2 w-2 rounded-full ' + (status === 'listening' ? 'bg-cyan-300' : status === 'speaking' ? 'bg-white' : 'bg-amber-300')} style={{ boxShadow: '0 0 10px currentColor' }} />
+            <span className={'h-2 w-2 rounded-full ' + 'bg-cyan-300'} style={{ boxShadow: '0 0 10px currentColor' }} />
             {label}
           </span>
         ) : null}
@@ -312,7 +312,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
           className={'flex items-center justify-center gap-7 transition-opacity duration-300 ' + (mode === 'voice' ? 'pointer-events-auto opacity-100' : 'invisible opacity-0')}
           style={{ touchAction: 'manipulation' }}
         >
-          <button onClick={() => setMode('text')} aria-label="Escrever" className="glass press flex h-[52px] w-[52px] items-center justify-center rounded-full">
+          <button onClick={() => setMode('text')} aria-label="Escrever" className="press flex h-[52px] w-[52px] items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 text-cyan-100 backdrop-blur-md">
             <Keyboard className="h-5 w-5" />
           </button>
           <button
@@ -322,14 +322,16 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             onClick={(e) => e.detail === 0 && onMic()}
             disabled={busy}
             aria-label={status === 'listening' ? 'Parar de ouvir' : status === 'speaking' ? 'Interromper' : 'Falar'}
-            className={'press relative flex h-[72px] w-[72px] items-center justify-center rounded-full bg-ink text-paper ' + (busy ? 'opacity-60' : '')}
-            style={{ boxShadow: '0 0 46px rgba(120,190,255,.35)' }}
+            className={'press relative flex h-[84px] w-[84px] items-center justify-center rounded-full ' + (busy ? 'opacity-60' : '')}
+            style={{ background: 'rgba(34,211,238,.14)', boxShadow: '0 0 0 9px rgba(34,211,238,.1), 0 0 44px rgba(34,211,238,.35)' }}
           >
-            {status === 'listening' && <span className="anim-ring absolute inset-0 rounded-full border border-ink/50" />}
-            {status === 'speaking' ? <Square className="h-6 w-6 fill-current" /> : <Mic className="h-8 w-8" />}
+            {status === 'listening' && <span className="anim-ring absolute inset-0 rounded-full border border-cyan-300/60" />}
+            <span className="flex h-[62px] w-[62px] items-center justify-center rounded-full bg-cyan-300 text-[#03171c]">
+              {status === 'speaking' ? <Square className="h-6 w-6 fill-current" /> : <Mic className="h-7 w-7" />}
+            </span>
           </button>
-          <button onClick={onPickLibrary} aria-label="Usar um arquivo da biblioteca" className="glass press flex h-[52px] w-[52px] items-center justify-center rounded-full">
-            <BookOpen className="h-5 w-5" />
+          <button onClick={onBack} aria-label="Fechar" className="press flex h-[52px] w-[52px] items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-300/10 text-cyan-100 backdrop-blur-md">
+            <X className="h-5 w-5" />
           </button>
                 </div>
       </div>
