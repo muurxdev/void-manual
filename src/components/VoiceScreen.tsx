@@ -163,7 +163,6 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   const plusItems: MenuItem[] = [
     { key: 'lib', label: 'Da biblioteca', hint: 'Responder com um arquivo seu', icon: <BookOpen className="h-4 w-4" />, onSelect: onPickLibrary },
     { key: 'img', label: 'Foto ou imagem', hint: 'Anexar à mensagem', icon: <ImageIcon className="h-4 w-4" />, onSelect: () => fileRef.current?.click() },
-    { key: 'back', label: 'Voltar', hint: 'Para a tela anterior', icon: <ArrowLeft className="h-4 w-4" />, onSelect: onBack },
   ];
 
   const menuItems: MenuItem[] = [
@@ -333,6 +332,18 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             </div>
           )}
           <div ref={composer} className="flex items-end gap-2">
+            <button
+              onClick={() => {
+                taRef.current?.blur();
+                setPlus(false);
+                setMode('voice');
+              }}
+              aria-label="Voltar para falar"
+              tabIndex={mode === 'text' ? 0 : -1}
+              className="glass loop-border press flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full"
+            >
+              <X className="h-5 w-5" />
+            </button>
             <div className="relative">
               <button
                 onClick={() => setPlus((p) => !p)}
