@@ -92,7 +92,7 @@ export const VoidOrb: React.FC<Props> = ({ stage, pulse, className }) => {
       ctx.clearRect(0, 0, w, h);
       const cx = w / 2;
       const cy = h / 2;
-      const R = Math.min(w, h) * 0.3 * cur.size * (0.45 + 0.55 * ap) * (1 + s.level * 0.07);
+      const R = Math.min(w, h) * 0.26 * cur.size * (0.45 + 0.55 * ap) * (1 + s.level * 0.07);
       const amp = cur.amp + s.level * 0.14;
 
       // luz de fundo

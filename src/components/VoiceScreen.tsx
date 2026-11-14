@@ -178,7 +178,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
   const replyTail = rw.slice(cut).join(' ');
   const side = 'clamp(16px,5.6vw,40px)';
 
-  const orbH = mode === 'text' ? 'clamp(170px, 26dvh, 240px)' : 'clamp(260px, 44dvh, 420px)';
+  const orbH = mode === 'text' ? 'clamp(200px, 30dvh, 280px)' : 'clamp(320px, 48dvh, 480px)';
   const emptyIdle = !userText && !replyText && history.length === 0 && !error;
 
   return (
@@ -285,11 +285,12 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             onClick={(e) => e.detail === 0 && onMic()}
             disabled={busy}
             aria-label={status === 'listening' ? 'Parar de ouvir' : status === 'speaking' ? 'Interromper' : 'Falar'}
-            className={'loop-border press relative flex h-[80px] w-[80px] items-center justify-center rounded-full bg-ink text-paper ' + (busy ? 'opacity-60' : '')}
-            style={{ boxShadow: '0 0 0 8px rgb(var(--ink) / .08)' }}
+            className={'loop-border press relative flex h-[92px] w-[92px] items-center justify-center rounded-full ' + (busy ? 'opacity-60' : '')}
           >
             {status === 'listening' && <span className="anim-ring absolute inset-0 rounded-full border border-ink/50" />}
-            {status === 'speaking' ? <Square className="h-6 w-6 fill-current" /> : <Mic className="h-8 w-8" />}
+            <span className="flex h-[76px] w-[76px] items-center justify-center rounded-full bg-ink text-paper">
+              {status === 'speaking' ? <Square className="h-6 w-6 fill-current" /> : <Mic className="h-8 w-8" />}
+            </span>
           </button>
           <button onClick={onOpenChat} aria-label="Abrir no chat" className="glass loop-border press flex h-12 w-12 items-center justify-center rounded-full justify-self-end">
             <MessageSquare className="h-5 w-5" />
