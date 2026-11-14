@@ -348,3 +348,20 @@ select:-webkit-autofill {
 @keyframes screenIn  { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: none; } }
 @keyframes screenOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(.88); } }
 .screen-fade { animation: fadeIn 260ms var(--ease-out) both; }
+
+/* brilho de borda da Siri: um aro de luz colorida em volta da tela quando o Void está ativo */
+@property --siri-a { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+.siri-glow {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: 0;
+  transition: opacity .6s var(--ease-out, ease);
+  padding: 5px;
+  background: conic-gradient(from var(--siri-a), #0a84ff, #bf5af2, #ff375f, #ff9f0a, #30d158, #0a84ff);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  filter: blur(14px);
+  animation: siriSpin 6s linear infinite;
+}
+.siri-glow[data-on='true'] { opacity: .85; }
+@keyframes siriSpin { to { --siri-a: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .siri-glow { animation: none; } }

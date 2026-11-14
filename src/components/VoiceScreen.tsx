@@ -197,6 +197,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
 
   return (
     <div className="force-dark relative flex h-full flex-col overflow-hidden text-ink" style={{ background: 'radial-gradient(110% 55% at 50% 30%, #141623 0%, #07080d 60%, #000 100%)' }}>
+      <div className="siri-glow" data-on={status !== 'idle'} aria-hidden="true" />
       <header className="safe-top relative z-20 grid shrink-0 grid-cols-[48px_1fr_48px] items-center" style={{ paddingInline: side }}>
         <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
           <ArrowLeft className="h-[18px] w-[18px]" />
