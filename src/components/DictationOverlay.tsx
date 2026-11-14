@@ -1,19 +1,17 @@
 import React, { useEffect, useRef } from 'react';
-import { ArrowLeft, Check, Mic, Trash2 } from 'lucide-react';
+import { ArrowLeft, Mic, Square, Trash2 } from 'lucide-react';
 import { DictationWave } from './DictationWave';
 
 interface Props {
   text: string;
   level: number;
   onCancel: () => void;
-  /** para de ouvir e deixa o texto no campo para editar */
+  /** para de ouvir e devolve o texto ao campo do chat, pronto para enviar */
   onFinish: () => void;
-  /** para de ouvir e envia na hora */
-  onSend: () => void;
 }
 
 /** Tela cheia de ditado: o texto aparece grande enquanto a pessoa fala, com o microfone pulsando e a onda embaixo. */
-export const DictationOverlay: React.FC<Props> = ({ text, level, onCancel, onFinish, onSend }) => {
+export const DictationOverlay: React.FC<Props> = ({ text, level, onCancel, onFinish }) => {
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
     box.current?.scrollTo({ top: box.current.scrollHeight, behavior: 'smooth' });
@@ -25,9 +23,7 @@ export const DictationOverlay: React.FC<Props> = ({ text, level, onCancel, onFin
         <button onClick={onCancel} aria-label="Cancelar ditado" className="icon-btn glass loop-border">
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <button onClick={onSend} disabled={!text.trim()} className="glass loop-border press min-h-11 rounded-full px-4 text-small font-medium disabled:opacity-40">
-          Enviar agora
-        </button>
+        <span aria-hidden="true" />
       </header>
 
       <div
@@ -57,8 +53,8 @@ export const DictationOverlay: React.FC<Props> = ({ text, level, onCancel, onFin
           <Trash2 className="h-5 w-5" />
         </button>
         <DictationWave level={level} className="h-10 min-w-0 flex-1 text-ink" />
-        <button onClick={onFinish} aria-label="Concluir e editar o texto" className="glass-ink loop-border press flex h-12 w-12 shrink-0 items-center justify-center rounded-full">
-          <Check className="h-5 w-5 stroke-[2.5]" />
+        <button onClick={onFinish} aria-label="Parar e ver a transcrição" className="glass-ink loop-border press flex h-12 w-12 shrink-0 items-center justify-center rounded-full">
+          <Square className="h-[18px] w-[18px] fill-current" />
         </button>
       </div>
     </div>

@@ -187,7 +187,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         <button onClick={onBack} aria-label="Voltar" className="icon-btn glass loop-border">
           <ArrowLeft className="h-[18px] w-[18px]" />
         </button>
-        <h1 className="glass loop-border justify-self-center rounded-full px-4 py-2 text-center text-caption font-medium tracking-[0.18em]">VOID VOICE</h1>
+        <h1 className="glass loop-border justify-self-center rounded-full px-4 py-2 text-center text-small font-medium">Void Voice</h1>
         <div className="relative justify-self-end">
           <button onClick={() => setMenu((m) => !m)} aria-label="Ações e informações" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass loop-border">
             <MoreHorizontal className="h-[18px] w-[18px]" />
@@ -226,13 +226,13 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
               {userText && (
                 <section className="anim-fade-up">
                   <h2 className="mb-1 text-caption font-medium uppercase tracking-[0.16em] text-ink/40">Você</h2>
-                  <p className="text-[clamp(19px,1.8vw+12px,25px)] font-medium leading-[1.25] tracking-[-0.01em] text-ink/55">{userText}</p>
+                  <p className="text-title font-medium text-ink/55">{userText}</p>
                 </section>
               )}
               {replyText && (
                 <section className="anim-fade-up mt-6">
                   <h2 className="mb-1.5 text-caption font-medium uppercase tracking-[0.16em] text-ink/40">Void</h2>
-                  <p className="text-[clamp(24px,3vw+12px,32px)] font-medium leading-[1.18] tracking-[-0.02em]">
+                  <p className="text-heading font-medium">
                     {replyHead}
                     <span className="text-ink/50">{replyTail}</span>
                     {status === 'speaking' && <span className="ml-1 inline-block h-[0.9em] w-[3px] animate-blink bg-ink align-[-0.1em]" />}

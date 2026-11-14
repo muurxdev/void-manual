@@ -81,17 +81,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   const finishDictation = () => {
     const t = dict.stop();
     if (t) setInput((p) => (p ? p.trimEnd() + ' ' : '') + t);
-    window.setTimeout(() => taRef.current?.focus(), 50);
   };
-  const sendDictation = () => {
-    const t = dict.stop();
-    const full = ((input ? input.trimEnd() + ' ' : '') + t).trim();
-    if (!full && !attachment) return;
-    onSend(full || 'Analise esta imagem.', { deepThink: false, attachment: attachment || undefined });
-    setInput('');
-    setAttachment(null);
-  };
-
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: isStreaming ? 'auto' : 'smooth' });
@@ -109,7 +99,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   useEffect(() => {
     if (taRef.current) {
       taRef.current.style.height = 'auto';
-      taRef.current.style.height = `${Math.min(taRef.current.scrollHeight, 110)}px`;
+      taRef.current.style.height = `${Math.min(taRef.current.scrollHeight, 190)}px`;
     }
   }, [input]);
 
@@ -500,7 +490,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                 }
               }}
               placeholder="Digite uma mensagem…"
-              className="max-h-[110px] min-w-0 flex-1 resize-none border-0 bg-transparent py-3.5 text-body leading-snug text-ink placeholder:text-mute focus:outline-none"
+              className="max-h-[190px] min-w-0 flex-1 resize-none border-0 bg-transparent py-3.5 text-body leading-snug text-ink placeholder:text-mute focus:outline-none"
             />
           </div>
           {canSend ? (
@@ -516,7 +506,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         )}
         {dict.error && <p className="mt-1.5 px-2 text-center text-caption text-sub">{dict.error}</p>}
       </div>
-      {dict.active && <DictationOverlay text={dict.text} level={dict.level} onCancel={dict.cancel} onFinish={finishDictation} onSend={sendDictation} />}
+      {dict.active && <DictationOverlay text={dict.text} level={dict.level} onCancel={dict.cancel} onFinish={finishDictation} />}
     </div>
   );
 };
