@@ -1,17 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import type { VoiceState } from '../data/types';
 
-/** Estágios da animação: a marca muda de forma conforme o Void ouve, lê, procura, diagnostica e responde. */
+/** Estágios: o buraco negro muda de comportamento conforme o Void ouve, lê, procura, diagnostica e responde. */
 export type Stage = 'idle' | 'listen' | 'read' | 'search' | 'diagnose' | 'speak';
 
-// forma-alvo de cada estágio: encolher/crescer, abrir os pontos, velocidade de giro, varredura, brilho
-const FORMS: Record<Stage, { contract: number; disperse: number; spin: number; scan: number; glow: number }> = {
-  idle: { contract: 1, disperse: 0, spin: 0, scan: 0, glow: 0.06 },
-  listen: { contract: 1.05, disperse: 0.24, spin: 0, scan: 0, glow: 0.22 },
-  read: { contract: 0.95, disperse: 0.08, spin: 0.012, scan: 1, glow: 0.14 },
-  search: { contract: 0.86, disperse: 0.5, spin: 0.03, scan: 0, glow: 0.2 },
-  diagnose: { contract: 0.58, disperse: 0.02, spin: 0.06, scan: 0, glow: 0.42 },
-  speak: { contract: 1.04, disperse: 0.24, spin: 0, scan: 0, glow: 0.26 },
+// open: inclinação do disco · spread: raio extra · spin: velocidade · glow: brilho do anel · pull: puxa para dentro
+const FORMS: Record<Stage, { open: number; spread: number; spin: number; glow: number; pull: number }> = {
+  idle: { open: 0.1, spread: 0, spin: 0.35, glow: 0.35, pull: 0 },
+  listen: { open: 0.16, spread: 0.12, spin: 0.8, glow: 0.7, pull: 0 },
+  read: { open: 0.42, spread: 0.02, spin: 0.9, glow: 0.5, pull: 0 },
+  search: { open: 0.26, spread: 0.34, spin: 1.3, glow: 0.6, pull: 0 },
+  diagnose: { open: 0.12, spread: -0.18, spin: 2.2, glow: 1, pull: 0.5 },
+  speak: { open: 0.14, spread: 0.1, spin: 0.9, glow: 0.8, pull: 0 },
 };
 
 /** Traduz o estado da voz e a fase do "pensando" no estágio da animação. */
@@ -24,81 +24,47 @@ export function stageOf(state: VoiceState, phase = ''): Stage {
 
 interface Props {
   state: VoiceState;
-  /** se informado, manda no formato (senão deriva de state) */
   stage?: Stage;
-  /** a marca se monta a partir da poeira ao aparecer (passar de tela) */
+  /** o disco se monta a partir da poeira ao aparecer */
   intro?: boolean;
-  /** incrementa a cada palavra falada/ouvida: cada incremento é uma batida */
+  /** incrementa a cada palavra: cada incremento solta uma onda */
   pulse: number;
   dark?: boolean;
   className?: string;
-  /** altura do centro da marca, de 0 (topo) a 1 (base) */
   centerY?: number;
-  /** multiplicador de tamanho (a home usa maior) */
   sizeMul?: number;
 }
 
-import { markBody } from './VoidMark';
-
-// mesmo desenho da marca (buraco negro), renderizado e amostrado em pontos
-const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="256" height="256">${markBody('s', '#000')}</svg>`;
-
-interface Pt {
-  x: number;
+interface P {
+  r: number;
+  a: number;
   y: number;
-  z: number;
-  k: number; // posição no degradê 0..1
-  r: number; // fase individual
+  s: number;
+  t: number;
 }
 
-async function sampleLogo(step: number): Promise<Pt[]> {
-  const S = 256;
-  const c = document.createElement('canvas');
-  c.width = c.height = S;
-  const g = c.getContext('2d', { willReadFrequently: true });
-  if (!g) return [];
-  const img = new Image();
-  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(LOGO_SVG);
-  await img.decode();
-  g.drawImage(img, 0, 0, S, S);
-  const data = g.getImageData(0, 0, S, S).data;
-  const pts: Pt[] = [];
-  for (let y = 0; y < S; y += step) {
-    for (let x = 0; x < S; x += step) {
-      if (data[(y * S + x) * 4 + 3] > 140) {
-        const nx = (x - S / 2) / (S / 2);
-        const ny = (y - S / 2) / (S / 2);
-        pts.push({ x: nx + (Math.random() - 0.5) * 0.012, y: ny + (Math.random() - 0.5) * 0.012, z: (Math.random() - 0.5) * 0.34, k: (nx + 1) / 2, r: Math.random() * 6.28 });
-      }
-    }
-  }
-  return pts;
-}
+const BUCKETS = 10;
+const TAU = 6.2832;
 
 /**
- * Nuvem de pontos com o desenho da marca do Void, girando em 3D. Respira parada, sacode ao
- * ouvir, gira ao pensar e bate a cada palavra falada. Fundo transparente, sempre escura/clara
- * por cima de quem a usa (cores próprias).
+ * Buraco negro em partículas: vazio no centro, anel de fótons e disco de acreção que gira mais
+ * rápido por dentro. A luz do lado de trás do disco se curva por cima do vazio (o arco) e uma
+ * imagem fraca aparece por baixo. Cada palavra solta uma onda que se expande.
  */
 export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pulse, dark = true, className, centerY = 0.5, sizeMul = 1 }) => {
   const ref = useRef<HTMLCanvasElement>(null);
-  const live = useRef({ state, stage: stage ?? stageOf(state), beat: 0, lastAt: 0, rate: 2.6, last: pulse, dark, cyf: centerY, intro, mul: sizeMul });
-  live.current.mul = sizeMul;
+  const live = useRef({ stage: stage ?? stageOf(state), state, dark, cyf: centerY, mul: sizeMul, pulses: [] as number[], last: pulse });
   live.current.stage = stage ?? stageOf(state);
-  live.current.cyf = centerY;
   live.current.state = state;
   live.current.dark = dark;
+  live.current.cyf = centerY;
+  live.current.mul = sizeMul;
 
   useEffect(() => {
     if (pulse !== live.current.last) {
       live.current.last = pulse;
-      live.current.beat = 1;
-      const nowMs = performance.now();
-      if (live.current.lastAt) {
-        const gap = (nowMs - live.current.lastAt) / 1000;
-        if (gap > 0.08 && gap < 1.5) live.current.rate += (1 / gap - live.current.rate) * 0.3; // palavras por segundo
-      }
-      live.current.lastAt = nowMs;
+      live.current.pulses.push(performance.now());
+      if (live.current.pulses.length > 6) live.current.pulses.shift();
     }
   }, [pulse]);
 
@@ -107,16 +73,16 @@ export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pul
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     const small = window.innerWidth < 640;
-    let pts: Pt[] = [];
-    void sampleLogo(2).then((p) => {
-      pts = p;
-    });
-    // poeira solta em volta
-    const dust: Pt[] = Array.from({ length: small ? 140 : 260 }, () => {
-      const a = Math.random() * 6.28;
-      const d = 0.9 + Math.random() * 0.9;
-      return { x: Math.cos(a) * d, y: Math.sin(a) * d * 0.85, z: (Math.random() - 0.5) * 1.4, k: Math.random(), r: Math.random() * 6.28 };
-    });
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const N = small ? 900 : 1500;
+    const pts: P[] = Array.from({ length: N }, () => ({
+      r: 1.18 + Math.pow(Math.random(), 1.6) * 1.55,
+      a: Math.random() * TAU,
+      y: (Math.random() - 0.5) * 0.08,
+      s: 0.7 + Math.random() * 0.9,
+      t: Math.random() * TAU,
+    }));
+    const dust = Array.from({ length: small ? 70 : 130 }, () => ({ a: Math.random() * TAU, d: 3.2 + Math.random() * 2.6, t: Math.random() * TAU }));
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
     let w = 0;
@@ -131,143 +97,145 @@ export const VoidParticles: React.FC<Props> = ({ state, stage, intro = true, pul
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(canvas);
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const BUCKETS = 12;
-    const mk = (dk: boolean) =>
+    const pal = (dk: boolean) =>
       Array.from({ length: BUCKETS }, (_, i) => {
-        const t = i / (BUCKETS - 1);
-        const k = 1 - Math.abs(t - 0.5) * 2;
-        return dk ? `hsl(0 0% ${58 + k * 42}%)` : `hsl(0 0% ${42 - k * 34}%)`; // escuro: prata → branco; claro: grafite → preto
+        const k = i / (BUCKETS - 1);
+        return dk ? `hsl(0 0% ${52 + k * 48}%)` : `hsl(0 0% ${46 - k * 42}%)`;
       });
-    const palettes = { dark: mk(true), light: mk(false) };
+    const palettes = { dark: pal(true), light: pal(false) };
     const buckets: number[][] = Array.from({ length: BUCKETS }, () => []);
 
+    const f = { open: 0.1, spread: 0, spin: 0.35, glow: 0.35, pull: 0 };
+    let ang = 0;
+    let assemble = intro && !reduce ? 0 : 1;
     let raf = 0;
-    let energy = 0;
-    let spin = 0;
-    const form = { contract: 1, disperse: 0, spin: 0, scan: 0, glow: 0.06 };
-    let beatS = 0; // batida suavizada
-    let wavePhase = 0; // fase da onda que atravessa a marca
-    let assemble = live.current.intro && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1;
-    const t0 = performance.now();
+    let lastT = performance.now();
+    let skip = 0;
 
-    let last = 0;
     const draw = (now: number) => {
-      // parado: 30 quadros por segundo bastam e poupam a bateria
-      if (live.current.state === 'idle' && now - last < 32) {
+      const s = live.current;
+      const dt = Math.min(0.05, (now - lastT) / 1000);
+      lastT = now;
+      // parado: 30 quadros por segundo bastam
+      if (s.state === 'idle' && (skip ^= 1)) {
         raf = requestAnimationFrame(draw);
         return;
       }
-      last = now;
-      const t = reduce ? 0 : (now - t0) / 1000;
-      const s = live.current;
       const tf = FORMS[s.stage];
-      const k = 0.07; // a forma muda aos poucos, em vez de pular
-      form.contract += (tf.contract - form.contract) * k;
-      form.disperse += (tf.disperse - form.disperse) * k;
-      form.spin += (tf.spin - form.spin) * k;
-      form.scan += (tf.scan - form.scan) * k;
-      form.glow += (tf.glow - form.glow) * k;
-      assemble = Math.min(1, assemble + 0.014);
+      const k = 1 - Math.pow(0.001, dt);
+      f.open += (tf.open - f.open) * k * 0.9;
+      f.spread += (tf.spread - f.spread) * k * 0.9;
+      f.spin += (tf.spin - f.spin) * k * 0.9;
+      f.glow += (tf.glow - f.glow) * k;
+      f.pull += (tf.pull - f.pull) * k;
+      assemble = Math.min(1, assemble + dt * 0.9);
       const ease = 1 - Math.pow(1 - assemble, 3);
-      const energy0 = form.glow * 2.2;
-      energy += (energy0 - energy) * 0.06;
-      s.beat *= 0.965;
-      // intensidade da fala: sobe e desce devagar, proporcional ao ritmo das palavras (sem batida por palavra)
-      const talking = s.stage === 'speak' && performance.now() - s.lastAt < 1100;
-      const target2 = s.stage === 'speak' ? (talking ? Math.min(1, 0.3 + s.rate / 5) : 0.22) : s.stage === 'listen' ? 0.3 : 0;
-      beatS += (target2 - beatS) * 0.035;
-      const speed = s.stage === 'speak' ? 0.5 + s.rate * 0.55 * (0.4 + beatS) : 1.2;
-      wavePhase += speed * 0.016;
-      if (form.spin > 0.004) spin += form.spin;
-      else spin += (Math.round(spin / 6.2832) * 6.2832 - spin) * 0.06; // volta de frente
+      ang += dt * f.spin * (reduce ? 0 : 1);
+      const t = now / 1000;
 
       ctx.clearRect(0, 0, w, h);
-      // brilho suave atrás da marca, que cresce com a energia (ouvindo/falando)
-      {
-        const gr = Math.min(w, h * 0.6) * 0.62;
-        const halo = ctx.createRadialGradient(w / 2, h * live.current.cyf, 0, w / 2, h * live.current.cyf, gr);
-        const a0 = 0.05 + form.glow * 0.5 + beatS * 0.1;
-        halo.addColorStop(0, live.current.dark ? `rgba(255,255,255,${a0})` : `rgba(0,0,0,${a0 * 0.7})`);
-        halo.addColorStop(1, "rgba(128,128,128,0)");
-        ctx.fillStyle = halo;
-        ctx.fillRect(w / 2 - gr, h * live.current.cyf - gr, gr * 2, gr * 2);
-      }
       const cx = w / 2;
-      const cy = h * live.current.cyf;
-      const scale = Math.min(w, h * 0.6) * 0.46 * live.current.mul * form.contract * (1 + Math.sin(t * 1.2) * 0.012);
-      const yaw = Math.sin(t * 0.45) * 0.5 + spin;
-      const pitch = Math.sin(t * 0.33) * 0.12;
-      const cyaw = Math.cos(yaw);
-      const syaw = Math.sin(yaw);
-      const cp = Math.cos(pitch);
-      const sp = Math.sin(pitch);
-      const amp = 0.012 + beatS * 0.045;
+      const cy = h * s.cyf;
+      const R = Math.min(w, h * 0.62) * 0.15 * s.mul * (1 + Math.sin(t * 1.1) * 0.015);
+      const dk = s.dark;
+
+      // brilho de fundo
+      const gr = R * 4.4;
+      const halo = ctx.createRadialGradient(cx, cy, R * 0.8, cx, cy, gr);
+      const a0 = 0.03 + f.glow * 0.11;
+      halo.addColorStop(0, dk ? 'rgba(255,255,255,' + a0 + ')' : 'rgba(0,0,0,' + a0 * 0.7 + ')');
+      halo.addColorStop(1, 'rgba(128,128,128,0)');
+      ctx.fillStyle = halo;
+      ctx.fillRect(cx - gr, cy - gr, gr * 2, gr * 2);
+
+      // partículas do disco
       for (const b of buckets) b.length = 0;
-
-      const scatter = (1 - ease) * 3.2; // montagem: começa espalhado e se junta
-      const place = (p: Pt, extra: number) => {
-        // fluxo: os pontos vêm para a frente e voltam, em ondas lentas que saem do centro
-        const rad = Math.hypot(p.x, p.y);
-        const z0 = p.z + Math.sin(rad * 3.4 - wavePhase * 1.8) * (0.14 + 0.5 * beatS) * (extra > 1 ? 0.6 : 1);
-        // abrir: cada ponto se afasta do centro numa medida própria; busca: orbita em volta
-        const open = 1 + form.disperse * (0.35 + 0.65 * Math.sin((extra > 1 ? p.r * 3.1 : p.x * 2.1 + p.y * 1.7) + wavePhase * 0.7) ** 2) + scatter * (0.5 + 0.5 * Math.sin(p.r * 5.3));
-        const orb = form.disperse * 0.5 * Math.sin(wavePhase * 0.8 + (extra > 1 ? p.r : p.x * 1.2));
-        // onda que sai do centro: amplitude e velocidade acompanham a fala
-        const rip = 1;
-        const bx = p.x * open * rip - p.y * orb * 0.25;
-        const by = p.y * open * rip + p.x * orb * 0.25;
-        const ph = extra > 1 ? p.x * 1.1 + p.y * 0.9 : p.x * 2.2 + p.y * 1.8; // marca: fase espacial (fluido); poeira: aleatória
-        // sem tremor: só a poeira distante se desloca de leve
-        const wob = extra > 1 ? amp * 0.5 * extra : 0;
-        const x0 = bx + Math.sin(ph + wavePhase * 1.3) * wob;
-        const y0 = by + Math.cos(ph + wavePhase * 1.1) * wob;
-        const x1 = x0 * cyaw + z0 * syaw;
-        const z1 = -x0 * syaw + z0 * cyaw;
-        const y2 = y0 * cp - z1 * sp;
-        const z2 = y0 * sp + z1 * cp;
-        const f = 3.6 / (3.6 - z2); // perspectiva forte: quem vem para a frente cresce e se afasta do centro
-        return { sx: cx + x1 * scale * f, sy: cy + y2 * scale * f, f, z: z2 };
-      };
-
-      for (let i = 0; i < pts.length; i++) {
+      const scatter = (1 - ease) * 4;
+      for (let i = 0; i < N; i++) {
         const p = pts[i];
-        const q = place(p, 1);
-        const sz = 1.15 * q.f * (small ? 1.25 : 1);
-        let bi = Math.max(0, Math.min(BUCKETS - 1, Math.floor((p.k * 0.8 + (q.z + 0.4) * 0.35) * BUCKETS)));
-        let sz2 = sz;
-        if (form.scan > 0.05) {
-          const band = Math.sin(t * 2.4) * 0.55;
-          if (Math.abs(p.y - band) < 0.11) {
-            bi = BUCKETS - 1;
-            sz2 = sz * (1 + form.scan * 0.9);
-          }
+        const rr = (p.r + f.spread * (0.4 + 0.6 * Math.sin(p.t + t * 0.7) ** 2)) * (1 - f.pull * 0.25) + scatter * (0.5 + 0.5 * Math.sin(p.t * 3.1));
+        const th = p.a + ang * Math.pow(1 / rr, 1.5) * 2.4;
+        let x = Math.cos(th) * rr;
+        const z = Math.sin(th) * rr;
+        const tilt = f.open * 0.9 + 0.08;
+        let sy = z * tilt + p.y * rr;
+        let bright = 0.5 + 0.5 * Math.cos(th - 0.6);
+        if (z < 0) {
+          // lado de trás: a luz se curva por cima do vazio
+          const rl = 1.12 + (rr - 1.18) * 0.32;
+          x *= rl / rr;
+          sy = -Math.sqrt(Math.max(0, rl * rl - x * x)) * (0.96 - f.open * 0.25);
+          bright = 0.55 + bright * 0.45;
         }
-        buckets[bi].push(q.sx, q.sy, sz2);
+        const sz = (0.9 + p.s * 0.9) * (small ? 1.15 : 1) * (R / 40 + 0.55);
+        const bi = Math.max(0, Math.min(BUCKETS - 1, Math.floor((bright * 0.7 + (1.9 - Math.min(rr, 2.7)) * 0.3) * BUCKETS)));
+        buckets[bi].push(cx + x * R, cy + sy * R, sz);
+        if (z >= 0 && i % 3 === 0) {
+          // imagem fraca por baixo do vazio
+          const rl2 = 1.1 + (rr - 1.18) * 0.2;
+          const x2 = x * (rl2 / rr);
+          buckets[Math.max(0, bi - 3)].push(cx + x2 * R, cy + Math.sqrt(Math.max(0, rl2 * rl2 - x2 * x2)) * 0.8 * R, sz * 0.7);
+        }
       }
       for (let b = 0; b < BUCKETS; b++) {
         const arr = buckets[b];
         if (!arr.length) continue;
-        ctx.fillStyle = (s.dark ? palettes.dark : palettes.light)[b];
-        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = (dk ? palettes.dark : palettes.light)[b];
+        ctx.globalAlpha = 0.92;
         for (let i = 0; i < arr.length; i += 3) ctx.fillRect(arr[i], arr[i + 1], arr[i + 2], arr[i + 2]);
       }
-      ctx.globalAlpha = 0.45;
-      ctx.fillStyle = s.dark ? '#d0d0d0' : '#555555';
-      for (const p of dust) {
-        const q = place(p, 3);
-        const tw = 0.5 + 0.5 * Math.sin(t * 1.5 + p.r * 3);
-        ctx.globalAlpha = 0.15 + 0.4 * tw;
-        ctx.fillRect(q.sx, q.sy, 1.1 * q.f, 1.1 * q.f);
+
+      // ondas: uma por palavra, expandindo e sumindo; ao falar, saem também em ritmo contínuo
+      ctx.lineWidth = 1.2;
+      s.pulses = s.pulses.filter((ts) => now - ts < 1600);
+      for (const ts of s.pulses) {
+        const u = (now - ts) / 1600;
+        ctx.globalAlpha = (1 - u) * 0.5;
+        ctx.strokeStyle = dk ? '#fff' : '#000';
+        ctx.beginPath();
+        ctx.arc(cx, cy, R * (1.3 + u * 3.2), 0, TAU);
+        ctx.stroke();
+      }
+      if (s.stage === 'speak' && !reduce) {
+        const u = (t * 0.7) % 1;
+        ctx.globalAlpha = (1 - u) * 0.22;
+        ctx.strokeStyle = dk ? '#fff' : '#000';
+        ctx.beginPath();
+        ctx.arc(cx, cy, R * (1.3 + u * 2.6), 0, TAU);
+        ctx.stroke();
+      }
+
+      // o vazio e o anel de fótons
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, TAU);
+      ctx.fill();
+      ctx.lineWidth = Math.max(1.4, R * 0.045);
+      ctx.strokeStyle = dk ? 'rgba(255,255,255,' + (0.35 + f.glow * 0.6) + ')' : 'rgba(0,0,0,' + (0.5 + f.glow * 0.45) + ')';
+      ctx.shadowColor = dk ? 'rgba(255,255,255,.8)' : 'rgba(0,0,0,0)';
+      ctx.shadowBlur = dk ? 4 + f.glow * 18 : 0;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R * 1.02, 0, TAU);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // poeira distante
+      ctx.fillStyle = dk ? '#cfcfcf' : '#555';
+      for (const d of dust) {
+        const tw = 0.5 + 0.5 * Math.sin(t * 1.3 + d.t * 3);
+        ctx.globalAlpha = (0.1 + 0.3 * tw) * ease;
+        const dd = d.d + Math.sin(t * 0.2 + d.t) * 0.12;
+        ctx.fillRect(cx + Math.cos(d.a + t * 0.03) * dd * R, cy + Math.sin(d.a + t * 0.03) * dd * R * 0.8, 1.2, 1.2);
       }
       ctx.globalAlpha = 1;
       raf = requestAnimationFrame(draw);
     };
     raf = requestAnimationFrame(draw);
-    // aba escondida ou app em segundo plano: pausa por completo
     const onVis = () => {
       cancelAnimationFrame(raf);
+      lastT = performance.now();
       if (!document.hidden) raf = requestAnimationFrame(draw);
     };
     document.addEventListener('visibilitychange', onVis);

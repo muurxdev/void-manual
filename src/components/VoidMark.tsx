@@ -1,17 +1,16 @@
-import React, { useId } from 'react';
+import React from 'react';
 
 /**
- * Marca do Void: um buraco negro visto de lado. O vazio no centro, o anel de fótons em volta
- * e o disco de acreção cruzando na frente (o lado de trás some atrás do anel). Usa a cor do texto.
+ * Marca do Void (v2): um buraco negro visto de lado, como a luz se curva em volta dele.
+ * O vazio no meio, o anel de fótons, o arco do disco dobrado por cima e por baixo,
+ * e o disco de acreção cruzando reto. Usa a cor do texto.
  */
-export const markBody = (id: string, fill: string) => `<defs>
-<mask id="${id}k" maskUnits="userSpaceOnUse" x="-10" y="-10" width="84" height="84"><rect x="-10" y="-10" width="84" height="84" fill="#fff"/><path d="M4.1 32A27.9 4.5 0 0 0 59.9 32" fill="none" stroke="#000" stroke-width="6.4"/></mask>
-<mask id="${id}b" maskUnits="userSpaceOnUse" x="-10" y="-10" width="84" height="84"><rect x="-10" y="-10" width="84" height="84" fill="#fff"/><path d="M13.3 32A18.7 18.7 0 0 1 50.7 32Z" fill="#000"/></mask></defs>
-<g transform="rotate(-14 32 32)" fill="${fill}">
-<path mask="url(#${id}k)" fill-rule="evenodd" d="M32 14.8a17.2 17.2 0 1 0 0 34.4a17.2 17.2 0 1 0 0-34.4ZM32 19.6a12.4 12.4 0 1 1 0 24.8a12.4 12.4 0 1 1 0-24.8Z"/>
-<path mask="url(#${id}b)" fill-rule="evenodd" d="M3 32a29 5.6 0 1 0 58 0a29 5.6 0 1 0-58 0ZM5.3 32a26.7 3.4 0 1 0 53.4 0a26.7 3.4 0 1 0-53.4 0Z"/></g>`;
+export const markBody = (_id: string, color: string) => `<g fill="none" stroke="${color}" stroke-linecap="round">
+<circle cx="32" cy="32" r="10.5" stroke-width="2.6"/>
+<path d="M14.6 32A17.4 17.4 0 0 1 49.4 32" stroke-width="2.6"/>
+<path d="M21 40.2A13.2 13.2 0 0 0 43 40.2" stroke-width="2" opacity=".7"/>
+<path d="M4 32H60" stroke-width="2.6"/></g>`;
 
-export const VoidMark: React.FC<{ size?: number; className?: string }> = ({ size = 32, className }) => {
-  const id = 'vm' + useId().replace(/[^a-z0-9]/gi, '');
-  return <svg width={size} height={size} viewBox="0 0 64 64" className={className} role="img" aria-label="Void" dangerouslySetInnerHTML={{ __html: markBody(id, 'currentColor') }} />;
-};
+export const VoidMark: React.FC<{ size?: number; className?: string }> = ({ size = 32, className }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" className={className} role="img" aria-label="Void" dangerouslySetInnerHTML={{ __html: markBody('vm', 'currentColor') }} />
+);
