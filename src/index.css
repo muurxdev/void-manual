@@ -354,7 +354,7 @@ select:-webkit-autofill {
 .loop-border { position: relative; }
 .loop-border::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
-  background: conic-gradient(from var(--loop-a), rgb(var(--ink) / 0) 0deg, rgb(var(--ink) / 0) 210deg, rgb(var(--ink) / .95) 330deg, rgb(var(--ink) / 0) 360deg);
+  background: conic-gradient(from var(--loop-a), rgb(var(--ink) / .16) 0deg, rgb(var(--ink) / .16) 120deg, rgb(var(--ink) / 1) 300deg, rgb(var(--ink) / .16) 360deg);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);

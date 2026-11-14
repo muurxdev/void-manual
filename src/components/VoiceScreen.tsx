@@ -278,10 +278,10 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       {/* botões de baixo: ficam acima de qualquer camada para sempre receber o toque */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center pb-[max(env(safe-area-inset-bottom),22px)]">
         <div
-          className={'flex items-center justify-center gap-7 transition-opacity duration-300 ' + (mode === 'voice' ? 'pointer-events-auto opacity-100' : 'invisible opacity-0')}
-          style={{ touchAction: 'manipulation' }}
+          className={'grid w-full grid-cols-[48px_1fr_48px] items-center justify-items-center transition-opacity duration-300 ' + (mode === 'voice' ? 'pointer-events-auto opacity-100' : 'invisible opacity-0')}
+          style={{ touchAction: 'manipulation', paddingInline: side }}
         >
-          <button onClick={() => setMode('text')} aria-label="Escrever" className="glass loop-border press flex h-[52px] w-[52px] items-center justify-center rounded-full">
+          <button onClick={() => setMode('text')} aria-label="Escrever" className="glass loop-border press flex h-12 w-12 items-center justify-center rounded-full justify-self-start">
             <Keyboard className="h-5 w-5" />
           </button>
           <button
@@ -297,7 +297,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
             {status === 'listening' && <span className="anim-ring absolute inset-0 rounded-full border border-ink/50" />}
             {status === 'speaking' ? <Square className="h-6 w-6 fill-current" /> : <Mic className="h-8 w-8" />}
           </button>
-          <button onClick={onBack} aria-label="Fechar" className="glass loop-border press flex h-[52px] w-[52px] items-center justify-center rounded-full">
+          <button onClick={onBack} aria-label="Fechar" className="glass loop-border press flex h-12 w-12 items-center justify-center rounded-full justify-self-end">
             <X className="h-5 w-5" />
           </button>
                 </div>
