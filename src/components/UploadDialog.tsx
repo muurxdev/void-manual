@@ -130,12 +130,12 @@ export const UploadDialog: React.FC<Props> = ({ initial = [], uploads, onSend, o
       <div className={`relative flex max-h-[88dvh] border border-hair bg-paper shadow-2xl w-full max-w-[520px] flex-col rounded-t-[30px] pb-[max(env(safe-area-inset-bottom),16px)] sm:rounded-[30px] ${leaving ? 'anim-sheet-out' : 'anim-sheet-in'}`}>
         <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-5">
           <div className="min-w-0">
-            <h2 className="text-[20px] font-medium tracking-tight">Enviar arquivos</h2>
-            <p className="mt-0.5 text-[13px] text-sub">
+            <h2 className="text-title font-medium tracking-tight">Enviar arquivos</h2>
+            <p className="mt-0.5 text-small text-sub">
               Até {MAX_FILE_MB} MB cada · {MAX_FILES_PER_BATCH} por vez · PDF, Word, Excel, CSV, texto, imagem e áudio
             </p>
           </div>
-          <button onClick={close} aria-label={sending ? 'Continuar em segundo plano' : 'Fechar'} className="icon-btn glass -mr-1 shrink-0">
+          <button onClick={close} aria-label={sending ? 'Continuar em segundo plano' : 'Fechar'} className="icon-btn glass -mr-1 shrink-0 loop-border">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -157,21 +157,21 @@ export const UploadDialog: React.FC<Props> = ({ initial = [], uploads, onSend, o
               setDrag(false);
               add(e.dataTransfer.files);
             }}
-            className={`press flex w-full items-center gap-3 rounded-[20px] border border-dashed p-4 text-left transition-colors ${drag ? 'border-ink bg-ink/5' : 'border-ink/25'}`}
+            className={`press flex w-full items-center gap-3 rounded-[22px] border border-dashed p-4 text-left transition-colors ${drag ? 'border-ink bg-ink/5' : 'border-ink/25'}`}
           >
             <span className="glass-ink flex h-11 w-11 shrink-0 items-center justify-center rounded-full">{rows.length ? <Plus className="h-5 w-5" /> : <UploadCloud className="h-5 w-5" />}</span>
             <span className="min-w-0">
-              <span className="block text-[15px] font-medium">{rows.length ? 'Adicionar mais arquivos' : 'Escolher arquivos'}</span>
-              <span className="block text-[12px] text-mute">Toque aqui ou solte os arquivos</span>
+              <span className="block text-body font-medium">{rows.length ? 'Adicionar mais arquivos' : 'Escolher arquivos'}</span>
+              <span className="block text-caption text-mute">Toque aqui ou solte os arquivos</span>
             </span>
           </button>
 
           {/* progresso geral */}
           {sent.length > 0 && (
             <div className="mt-4" aria-live="polite">
-              <div className="mb-1.5 flex items-baseline justify-between text-[13px]">
+              <div className="mb-1.5 flex items-baseline justify-between text-small">
                 <span className="font-medium">{allDone ? 'Envio concluído' : 'Enviando'}</span>
-                <span className="font-mono text-[12px] text-sub">
+                <span className="font-mono text-caption text-sub">
                   {doneCount} de {sent.length} · {Math.round(overall * 100)}%
                 </span>
               </div>
@@ -193,12 +193,12 @@ export const UploadDialog: React.FC<Props> = ({ initial = [], uploads, onSend, o
                         {s.phase === 'done' ? <Check className="anim-pop h-5 w-5 stroke-[3]" /> : s.phase === 'error' || r.problem ? <AlertCircle className="h-5 w-5" /> : ICON[r.kind]}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[14px] font-medium">{r.file.name}</p>
-                        <p className="truncate text-[12px] text-mute">
+                        <p className="truncate text-body font-medium">{r.file.name}</p>
+                        <p className="truncate text-caption text-mute">
                           {KIND_LABEL[r.kind]} · {fmtSize(r.file.size)}
                           {extOf(r.file.name) ? ` · .${extOf(r.file.name).toLowerCase()}` : ''}
                         </p>
-                        <p className={`truncate text-[12px] ${r.problem || s.phase === 'error' ? 'text-red-500' : 'text-sub'}`}>
+                        <p className={`truncate text-caption ${r.problem || s.phase === 'error' ? 'text-red-500' : 'text-sub'}`}>
                           {r.problem ?? (s.phase === 'staged' ? 'Pronto para enviar' : s.phase === 'error' ? s.error ?? 'Falhou' : s.phase === 'done' ? s.note ?? 'Pronto' : `${STAGES[s.stage].label}… ${s.note ?? ''}`)}
                         </p>
                       </div>
@@ -207,14 +207,14 @@ export const UploadDialog: React.FC<Props> = ({ initial = [], uploads, onSend, o
                           <X className="h-4 w-4" />
                         </button>
                       )}
-                      {s.phase === 'sending' && <span className="font-mono text-[12px] text-sub">{Math.round(s.pct * 100)}%</span>}
+                      {s.phase === 'sending' && <span className="font-mono text-caption text-sub">{Math.round(s.pct * 100)}%</span>}
                     </div>
                     {s.phase === 'sending' && (
                       <div className="mt-3">
                         <div className="h-1 overflow-hidden rounded-full bg-fill">
                           <div className="h-full origin-left rounded-full bg-ink transition-transform duration-300" style={{ transform: `scaleX(${s.pct})` }} />
                         </div>
-                        <div className="mt-1.5 flex justify-between text-[12px] text-mute">
+                        <div className="mt-1.5 flex justify-between text-caption text-mute">
                           {STAGES.map((st, k) => (
                             <span key={st.id} className={k <= s.stage ? 'text-ink' : ''}>
                               {st.label}
@@ -228,18 +228,18 @@ export const UploadDialog: React.FC<Props> = ({ initial = [], uploads, onSend, o
               })}
             </ul>
           )}
-          {problems > 0 && <p className="pb-2 text-[12px] text-mute">{problems} {problems === 1 ? 'arquivo não pode' : 'arquivos não podem'} ser enviado(s). Tire da lista para continuar.</p>}
-          {over && <p className="pb-2 text-[12px] text-mute">Vão {MAX_FILES_PER_BATCH} agora; os outros ficam na fila para o próximo envio.</p>}
+          {problems > 0 && <p className="pb-2 text-caption text-mute">{problems} {problems === 1 ? 'arquivo não pode' : 'arquivos não podem'} ser enviado(s). Tire da lista para continuar.</p>}
+          {over && <p className="pb-2 text-caption text-mute">Vão {MAX_FILES_PER_BATCH} agora; os outros ficam na fila para o próximo envio.</p>}
         </div>
 
         {/* ação principal, com o dado dentro */}
         <div className="px-5 pt-3">
           {allDone ? (
-            <button onClick={close} className="glass-ink press h-[54px] w-full rounded-full text-[15px] font-medium">
+            <button onClick={close} className="glass-ink press h-[54px] w-full rounded-full text-body font-medium loop-border">
               Concluir
             </button>
           ) : (
-            <button onClick={send} disabled={staged.length === 0} className="glass-ink press h-[54px] w-full rounded-full text-[15px] font-medium disabled:opacity-45">
+            <button onClick={send} disabled={staged.length === 0} className="glass-ink press h-[54px] w-full rounded-full text-body font-medium disabled:opacity-45 loop-border">
               {staged.length
                 ? `Enviar ${sendCount} ${sendCount === 1 ? 'arquivo' : 'arquivos'} · ${fmtSize(sendSize)}`
                 : sending

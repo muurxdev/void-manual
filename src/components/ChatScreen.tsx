@@ -34,7 +34,7 @@ const Thinking: React.FC = () => {
     return () => window.clearInterval(id);
   }, []);
   return (
-    <p key={i} className="anim-fade-up flex items-center gap-2 py-0.5 text-[14px]" role="status" aria-live="polite">
+    <p key={i} className="anim-fade-up flex items-center gap-2 py-0.5 text-body" role="status" aria-live="polite">
       <span className="shimmer-text font-medium">{THINK[i]}…</span>
     </p>
   );
@@ -183,10 +183,10 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   const inline = (text: string) =>
     text.split(/(\*\*.*?\*\*|`.*?`)/g).flatMap((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) return [<strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>];
-      if (part.startsWith('`') && part.endsWith('`')) return [<code key={i} className="rounded bg-paper px-1 py-0.5 font-mono text-[12px]">{part.slice(1, -1)}</code>];
+      if (part.startsWith('`') && part.endsWith('`')) return [<code key={i} className="rounded bg-paper px-1 py-0.5 font-mono text-caption">{part.slice(1, -1)}</code>];
       return part.split(SPEC_RE).map((seg, j) =>
         j % 2 === 1 ? (
-          <span key={`${i}-${j}`} className="whitespace-nowrap rounded bg-paper px-1 py-0.5 font-mono text-[12.5px] font-medium">
+          <span key={`${i}-${j}`} className="whitespace-nowrap rounded bg-paper px-1 py-0.5 font-mono text-caption font-medium">
             {seg}
           </span>
         ) : (
@@ -215,7 +215,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
       if (line.startsWith('```')) {
         if (code) {
           out.push(
-            <pre key={`c${i}`} className="my-2 whitespace-pre-wrap break-words rounded-xl bg-paper p-3 font-mono text-[12px] leading-relaxed">
+            <pre key={`c${i}`} className="my-2 whitespace-pre-wrap break-words rounded-xl bg-paper p-3 font-mono text-caption leading-relaxed">
               {buf.join('\n')}
             </pre>
           );
@@ -235,7 +235,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
               <div className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10">
                 <div className="h-full origin-left rounded-full bg-ink transition-transform duration-300" style={{ transform: `scaleX(${total ? doneN / total : 0})` }} />
               </div>
-              <span className="font-mono text-[12px] text-sub">
+              <span className="font-mono text-caption text-sub">
                 {doneN} de {total}
               </span>
             </div>
@@ -248,20 +248,20 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
             <span className={`mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-md border ${on ? 'border-ink bg-ink text-paper' : 'border-ink/25 bg-paper'}`}>
               {on && <Check className="h-3 w-3 stroke-[3]" />}
             </span>
-            <span className={`text-[14px] leading-snug ${on ? 'text-mute line-through' : ''}`}>{inline(chk[2])}</span>
+            <span className={`text-body leading-snug ${on ? 'text-mute line-through' : ''}`}>{inline(chk[2])}</span>
           </button>
         );
         return;
       }
-      if (line.startsWith('### ')) return void out.push(<h3 key={i} className="mb-1 mt-3 text-[15px] font-semibold">{inline(line.slice(4))}</h3>);
-      if (line.startsWith('#### ')) return void out.push(<h4 key={i} className="mb-1 mt-3 text-[12px] font-semibold text-sub">{inline(line.slice(5))}</h4>);
+      if (line.startsWith('### ')) return void out.push(<h3 key={i} className="mb-1 mt-3 text-body font-semibold">{inline(line.slice(4))}</h3>);
+      if (line.startsWith('#### ')) return void out.push(<h4 key={i} className="mb-1 mt-3 text-caption font-semibold text-sub">{inline(line.slice(5))}</h4>);
       if (line.startsWith('> ')) return; // notas técnicas internas ficam ocultas
       if (line.trim()) {
         if (msg.isStreaming && i === lastTextIdx) {
           const ws = line.split(' ');
           const tail = ws.slice(-2);
           out.push(
-            <p key={i} className="my-1 text-[14px] leading-relaxed">
+            <p key={i} className="my-1 text-body leading-relaxed">
               {inline(ws.slice(0, -2).join(' ') + (ws.length > 2 ? ' ' : ''))}
               {tail.map((w, k) => (
                 <span key={ws.length - 2 + k} className="anim-word-in">
@@ -271,7 +271,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
               ))}
             </p>
           );
-        } else out.push(<p key={i} className="my-1 text-[14px] leading-relaxed">{inline(line)}</p>);
+        } else out.push(<p key={i} className="my-1 text-body leading-relaxed">{inline(line)}</p>);
       }
     });
     return out;
@@ -289,7 +289,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         <button onClick={onBack} aria-label="Voltar" className="icon-btn glass">
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="glass loop-border mx-3 min-w-0 max-w-[200px] flex-1 truncate rounded-full px-4 py-1.5 text-center text-[14px]">{title}</h1>
+        <h1 className="glass loop-border mx-3 min-w-0 max-w-[200px] flex-1 truncate rounded-full px-4 py-1.5 text-center text-body">{title}</h1>
         <div className="relative">
           <button onClick={() => setMenu((m) => !m)} aria-label="Mais opções" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass">
             <MoreHorizontal className="h-4 w-4" />
@@ -331,12 +331,12 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
               <br />
               ajudar hoje?
             </p>
-            <p className="mt-2 text-[13px] text-sub">Pergunte sobre qualquer máquina ou escolha um atalho.</p>
+            <p className="mt-2 text-small text-sub">Pergunte sobre qualquer máquina ou escolha um atalho.</p>
             <div className="mt-5 grid gap-2 md:grid-cols-2">
               {SUGGESTIONS.map((s, i) => (
                 <button key={s.q} style={{ ['--i' as string]: i }} onClick={() => onSend(s.q, { deepThink: false })} className="card anim-fade-up press px-4 py-3 text-left">
-                  <span className="block text-[14px] leading-snug">{s.q}</span>
-                  <span className="mt-1 block text-[12px] text-sub">{s.sub}</span>
+                  <span className="block text-body leading-snug">{s.q}</span>
+                  <span className="mt-1 block text-caption text-sub">{s.sub}</span>
                 </button>
               ))}
             </div>
@@ -344,7 +344,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         ) : (
           <>
             <div className="my-2 flex justify-center">
-              <span className="glass rounded-full px-4 py-1.5 text-[12px] text-sub">Hoje</span>
+              <span className="glass rounded-full px-4 py-1.5 text-caption text-sub">Hoje</span>
             </div>
             <div className="space-y-5">
               {messages.map((m) => {
@@ -361,10 +361,10 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                       </span>
                     )}
                     <div className={`flex min-w-0 max-w-[86%] flex-col ${user ? 'items-end' : 'items-start'}`}>
-                      <div className={`rounded-[20px] px-4 py-3 ${user ? 'rounded-br-md bg-bubble text-white' : 'rounded-tl-md bg-assistant text-ink'}`}>
+                      <div className={`rounded-[22px] px-4 py-3 ${user ? 'rounded-br-md bg-bubble text-white' : 'rounded-tl-md bg-assistant text-ink'}`}>
                         {m.attachment && <img src={m.attachment} alt="Anexo" className="mb-2 max-h-48 rounded-xl object-cover" />}
                         {user ? (
-                          <p className="whitespace-pre-wrap text-[14px] leading-relaxed">{m.content}</p>
+                          <p className="whitespace-pre-wrap text-body leading-relaxed">{m.content}</p>
                         ) : (
                           m.isStreaming && !m.content.trim() ? (
                             <Thinking />
@@ -376,8 +376,8 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                           )
                         )}
                       </div>
-                      {!user && !m.isStreaming && sources.length > 0 && <p className="mt-1.5 px-1 text-[12px] text-mute">Baseado em {sources.join(' e ')}</p>}
-                      <div className="anim-fade-in mt-0 flex flex-wrap items-center px-1 text-[12px] text-mute">
+                      {!user && !m.isStreaming && sources.length > 0 && <p className="mt-1.5 px-1 text-caption text-mute">Baseado em {sources.join(' e ')}</p>}
+                      <div className="anim-fade-in mt-0 flex flex-wrap items-center px-1 text-caption text-mute">
                         <span className="mr-1">{time(m.timestamp)}</span>
                         {!user && !m.isStreaming && (
                           <>
@@ -407,7 +407,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                       {!user && m.id === lastAssistantId && !isStreaming && (
                         <div className="mt-2 flex flex-wrap gap-2">
                           {FOLLOW.map((f) => (
-                            <button key={f} onClick={() => onSend(f, { deepThink: false })} className="glass press min-h-11 rounded-full px-4 text-[13px]">
+                            <button key={f} onClick={() => onSend(f, { deepThink: false })} className="glass press min-h-11 rounded-full px-4 text-small loop-border">
                               {f}
                             </button>
                           ))}
@@ -435,7 +435,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
       <div className="safe-bottom absolute inset-x-0 bottom-0 z-20 pb-2" style={{ paddingInline: 'max(16px, calc((100% - 760px) / 2))' }}>
         {isStreaming && (
           <div className="mb-3 flex justify-center">
-            <button onClick={onStop} className="press anim-pop glass-ink flex items-center gap-2 rounded-full px-4 py-2.5 text-[13px] font-medium">
+            <button onClick={onStop} className="press anim-pop glass-ink flex items-center gap-2 rounded-full px-4 py-2.5 text-small font-medium">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white">
                 <Square className="h-3 w-3 fill-black text-black" />
               </span>
@@ -445,7 +445,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         )}
         {contextTitle && (
           <div className="anim-fade-up mb-2 flex">
-            <span className="glass flex max-w-full items-center gap-2 rounded-full py-1.5 pl-3.5 pr-1.5 text-[12px]">
+            <span className="glass flex max-w-full items-center gap-2 rounded-full py-1.5 pl-3.5 pr-1.5 text-caption">
               <BookOpen className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">Usando {contextTitle}</span>
               <button onClick={onClearContext} aria-label="Remover contexto" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink/10">
@@ -464,19 +464,19 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         )}
         {dict.active ? (
           <div className="anim-fade-up flex items-end gap-2.5">
-            <button onClick={dict.cancel} aria-label="Cancelar ditado" className="glass press flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full">
+            <button onClick={dict.cancel} aria-label="Cancelar ditado" className="glass press flex h-12 w-12 shrink-0 items-center justify-center rounded-full loop-border">
               <X className="h-5 w-5" />
             </button>
-            <div className="glass flex min-h-[52px] min-w-0 flex-1 flex-col justify-center rounded-[26px] px-4 py-2" aria-live="polite">
-              <p className="max-h-[64px] overflow-hidden break-words text-[15px] leading-snug text-ink" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+            <div className="glass flex min-h-[52px] min-w-0 flex-1 flex-col justify-center rounded-[22px] px-4 py-2" aria-live="polite">
+              <p className="max-h-[64px] overflow-hidden break-words text-body leading-snug text-ink" style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
                 {dict.text || <span className="text-mute">Pode falar…</span>}
               </p>
               <DictationWave level={dict.level} className="mt-1 h-6 w-full text-ink" />
             </div>
-            <button onClick={finishDictation} aria-label="Parar e editar o texto" className="glass press flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full">
+            <button onClick={finishDictation} aria-label="Parar e editar o texto" className="glass press flex h-12 w-12 shrink-0 items-center justify-center rounded-full loop-border">
               <Square className="h-[18px] w-[18px] fill-current" />
             </button>
-            <button onClick={sendDictation} aria-label="Parar e enviar" className="glass-ink press flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full">
+            <button onClick={sendDictation} aria-label="Parar e enviar" className="glass-ink press flex h-12 w-12 shrink-0 items-center justify-center rounded-full loop-border">
               <ArrowUp className="h-5 w-5 stroke-[2.5]" />
             </button>
           </div>
@@ -488,14 +488,14 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
               aria-label="Adicionar"
               aria-haspopup="menu"
               aria-expanded={plus}
-              className="glass press flex h-[52px] w-[52px] items-center justify-center rounded-full"
+              className="glass press flex h-12 w-12 items-center justify-center rounded-full loop-border"
             >
               <Plus className={`h-5 w-5 transition-transform duration-300 ${plus ? 'rotate-45' : ''}`} />
             </button>
             <Dropdown open={plus} onClose={() => setPlus(false)} items={plusItems} placement="top-start" />
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
-          <div className="glass flex min-h-[52px] min-w-0 flex-1 items-center rounded-[26px] pl-4 pr-2">
+          <div className="glass flex min-h-[52px] min-w-0 flex-1 items-center rounded-[22px] pl-4 pr-2">
             <label htmlFor="msg" className="sr-only">
               Mensagem
             </label>
@@ -512,21 +512,21 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                 }
               }}
               placeholder="Digite uma mensagem…"
-              className="max-h-[110px] min-w-0 flex-1 resize-none border-0 bg-transparent py-3.5 text-[15px] leading-snug text-ink placeholder:text-mute focus:outline-none"
+              className="max-h-[110px] min-w-0 flex-1 resize-none border-0 bg-transparent py-3.5 text-body leading-snug text-ink placeholder:text-mute focus:outline-none"
             />
           </div>
           {canSend ? (
-            <button onClick={submit} aria-label="Enviar" className="glass-ink press flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full">
+            <button onClick={submit} aria-label="Enviar" className="glass-ink press flex h-12 w-12 shrink-0 items-center justify-center rounded-full loop-border">
               <ArrowUp className="h-5 w-5 stroke-[2.5]" />
             </button>
           ) : (
-            <button onClick={dict.start} aria-label="Ditar" className="glass-ink press flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full">
+            <button onClick={dict.start} aria-label="Ditar" className="glass-ink press flex h-12 w-12 shrink-0 items-center justify-center rounded-full loop-border">
               <Mic className="h-5 w-5" />
             </button>
           )}
         </div>
         )}
-        {dict.error && <p className="mt-1.5 px-2 text-center text-[12px] text-sub">{dict.error}</p>}
+        {dict.error && <p className="mt-1.5 px-2 text-center text-caption text-sub">{dict.error}</p>}
       </div>
     </div>
   );

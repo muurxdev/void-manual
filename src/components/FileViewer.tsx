@@ -81,23 +81,23 @@ export const FileViewer: React.FC<{ item: ViewItem; onClose: () => void }> = ({ 
       aria-label={item.title}
     >
       <header className="safe-top flex items-center gap-3 px-4 pb-3">
-        <button onClick={close} aria-label="Voltar" className="icon-btn glass shrink-0">
+        <button onClick={close} aria-label="Voltar" className="icon-btn glass shrink-0 loop-border">
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-[16px] font-medium leading-tight">{item.title}</h2>
-          <p className="truncate text-[12px] text-mute">
+          <h2 className="truncate text-body font-medium leading-tight">{item.title}</h2>
+          <p className="truncate text-caption text-mute">
             {KIND_LABEL[item.kind]} · {item.builtin ? 'incluído no Void' : fmtSize(item.size)}
           </p>
         </div>
-        <button onClick={download} aria-label="Baixar" className="icon-btn glass shrink-0">
+        <button onClick={download} aria-label="Baixar" className="icon-btn glass shrink-0 loop-border">
           <Download className="h-4 w-4" />
         </button>
       </header>
 
       {hasOriginal && (
         <div className="px-4 pb-3">
-          <div className="glass inline-flex rounded-full p-1 text-[13px]">
+          <div className="glass inline-flex rounded-full p-1 text-small">
             {(['orig', 'text'] as const).map((t) => (
               <button key={t} onClick={() => setTab(t)} className={`min-h-10 rounded-full px-4 transition-colors ${tab === t ? 'bg-ink text-paper' : 'text-sub'}`}>
                 {t === 'orig' ? 'Original' : 'Texto lido'}
@@ -111,7 +111,7 @@ export const FileViewer: React.FC<{ item: ViewItem; onClose: () => void }> = ({ 
         {item.topics.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-1.5">
             {item.topics.map((t) => (
-              <span key={t} className="rounded-full bg-fill px-2.5 py-1 text-[12px] text-sub">
+              <span key={t} className="rounded-full bg-fill px-2.5 py-1 text-caption text-sub">
                 {t}
               </span>
             ))}
@@ -121,13 +121,13 @@ export const FileViewer: React.FC<{ item: ViewItem; onClose: () => void }> = ({ 
         {showOrig && item.kind === 'image' && (
           <div>
             <div className="mb-2 flex items-center justify-end gap-1">
-              <button onClick={() => setZoom((z) => Math.max(1, +(z - 0.5).toFixed(1)))} aria-label="Diminuir" disabled={zoom <= 1} className="icon-btn glass disabled:opacity-40">
+              <button onClick={() => setZoom((z) => Math.max(1, +(z - 0.5).toFixed(1)))} aria-label="Diminuir" disabled={zoom <= 1} className="icon-btn glass disabled:opacity-40 loop-border">
                 <Minus className="h-4 w-4" />
               </button>
-              <button onClick={() => setZoom(1)} className="min-h-11 min-w-12 rounded-full px-2 font-mono text-[12px] text-sub" aria-label="Zoom 100%">
+              <button onClick={() => setZoom(1)} className="min-h-11 min-w-12 rounded-full px-2 font-mono text-caption text-sub" aria-label="Zoom 100%">
                 {Math.round(zoom * 100)}%
               </button>
-              <button onClick={() => setZoom((z) => Math.min(4, +(z + 0.5).toFixed(1)))} aria-label="Aumentar" disabled={zoom >= 4} className="icon-btn glass disabled:opacity-40">
+              <button onClick={() => setZoom((z) => Math.min(4, +(z + 0.5).toFixed(1)))} aria-label="Aumentar" disabled={zoom >= 4} className="icon-btn glass disabled:opacity-40 loop-border">
                 <Plus className="h-4 w-4" />
               </button>
             </div>
@@ -150,7 +150,7 @@ export const FileViewer: React.FC<{ item: ViewItem; onClose: () => void }> = ({ 
         {showOrig && item.kind === 'pdf' && (
           <div className="space-y-3">
             <iframe src={url} title={item.title} className="h-[68dvh] w-full rounded-2xl border border-hair bg-white" />
-            <a href={url} target="_blank" rel="noreferrer" className="glass press flex h-11 items-center justify-center gap-2 rounded-full text-[14px]">
+            <a href={url} target="_blank" rel="noreferrer" className="glass press flex h-11 items-center justify-center gap-2 rounded-full text-body loop-border">
               <ExternalLink className="h-4 w-4" /> Abrir em tela cheia
             </a>
           </div>
@@ -164,8 +164,8 @@ export const FileViewer: React.FC<{ item: ViewItem; onClose: () => void }> = ({ 
                 <input value={find} onChange={(e) => setFind(e.target.value)} placeholder="Buscar no texto" aria-label="Buscar no texto" className="field pl-10 pr-24" />
                 {find && (
                   <span className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center">
-                    <span className="font-mono text-[12px] text-mute">{hits} {hits === 1 ? 'achado' : 'achados'}</span>
-                    <button onClick={() => setFind('')} aria-label="Limpar busca" className="flex h-10 w-10 items-center justify-center rounded-full text-mute">
+                    <span className="font-mono text-caption text-mute">{hits} {hits === 1 ? 'achado' : 'achados'}</span>
+                    <button onClick={() => setFind('')} aria-label="Limpar busca" className="flex h-11 w-11 items-center justify-center rounded-full text-mute">
                       <X className="h-4 w-4" />
                     </button>
                   </span>
@@ -173,15 +173,15 @@ export const FileViewer: React.FC<{ item: ViewItem; onClose: () => void }> = ({ 
               </div>
             )}
             {item.text.trim() ? (
-              <p className="whitespace-pre-wrap break-words font-mono text-[12.5px] leading-relaxed text-ink">{highlighted}</p>
+              <p className="whitespace-pre-wrap break-words font-mono text-caption leading-relaxed text-ink">{highlighted}</p>
             ) : (
-              <p className="flex items-center gap-2 text-[13px] text-mute">
+              <p className="flex items-center gap-2 text-small text-mute">
                 <FileText className="h-4 w-4" /> Nenhum texto foi lido deste arquivo.
               </p>
             )}
           </article>
         )}
-        {item.note && <p className="mt-3 px-1 text-[12px] text-mute">{item.note}</p>}
+        {item.note && <p className="mt-3 px-1 text-caption text-mute">{item.note}</p>}
       </div>
     </div>
   );

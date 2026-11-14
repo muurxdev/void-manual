@@ -187,7 +187,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
         <button onClick={onBack} aria-label="Voltar" className="icon-btn glass loop-border">
           <ArrowLeft className="h-[18px] w-[18px]" />
         </button>
-        <h1 className="glass loop-border justify-self-center rounded-full px-4 py-2 text-center text-[12px] font-medium tracking-[0.18em]">VOID VOICE</h1>
+        <h1 className="glass loop-border justify-self-center rounded-full px-4 py-2 text-center text-caption font-medium tracking-[0.18em]">VOID VOICE</h1>
         <div className="relative justify-self-end">
           <button onClick={() => setMenu((m) => !m)} aria-label="Ações e informações" aria-haspopup="menu" aria-expanded={menu} className="icon-btn glass loop-border">
             <MoreHorizontal className="h-[18px] w-[18px]" />
@@ -210,28 +210,28 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       >
         <div className="mx-auto w-full max-w-[640px] pt-2 text-center">
           {error ? (
-            <p className="anim-fade-in text-[17px] leading-snug text-ink/60">{error}</p>
+            <p className="anim-fade-in text-body leading-snug text-ink/60">{error}</p>
           ) : emptyIdle ? null : (
             <>
               {history.length > 0 && (
                 <div className="mb-6 space-y-3">
                   {history.map((h, i) => (
                     <div key={i} className="opacity-70">
-                      <p className="text-[15px] leading-snug text-ink/50">{h.q}</p>
-                      <p className="mt-0.5 text-[14px] leading-snug text-ink/35">{h.a}</p>
+                      <p className="text-body leading-snug text-ink/50">{h.q}</p>
+                      <p className="mt-0.5 text-body leading-snug text-ink/35">{h.a}</p>
                     </div>
                   ))}
                 </div>
               )}
               {userText && (
                 <section className="anim-fade-up">
-                  <h2 className="mb-1 text-[12px] font-medium uppercase tracking-[0.16em] text-ink/40">Você</h2>
+                  <h2 className="mb-1 text-caption font-medium uppercase tracking-[0.16em] text-ink/40">Você</h2>
                   <p className="text-[clamp(19px,1.8vw+12px,25px)] font-medium leading-[1.25] tracking-[-0.01em] text-ink/55">{userText}</p>
                 </section>
               )}
               {replyText && (
                 <section className="anim-fade-up mt-6">
-                  <h2 className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.16em] text-ink/40">Void</h2>
+                  <h2 className="mb-1.5 text-caption font-medium uppercase tracking-[0.16em] text-ink/40">Void</h2>
                   <p className="text-[clamp(24px,3vw+12px,32px)] font-medium leading-[1.18] tracking-[-0.02em]">
                     {replyHead}
                     <span className="text-ink/50">{replyTail}</span>
@@ -241,10 +241,10 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
               )}
               {replyText && status !== 'speaking' && citations.length > 0 && (
                 <section className="anim-fade-up mt-5">
-                  <h2 className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.16em] text-ink/40">Fontes</h2>
+                  <h2 className="mb-1.5 text-caption font-medium uppercase tracking-[0.16em] text-ink/40">Fontes</h2>
                   <div className="flex flex-wrap justify-center gap-1.5">
                     {citations.slice(0, 3).map((c, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-ink/10 px-2.5 py-1 text-[12px] text-ink/70">
+                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-ink/10 px-2.5 py-1 text-caption text-ink/70">
                         <FileText className="h-3 w-3" />
                         {c.title.length > 26 ? c.title.slice(0, 26) + '…' : c.title}
                       </span>
@@ -254,11 +254,11 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
               )}
               {(replyText || history.length > 0) && status !== 'speaking' && status !== 'thinking' && (
                 <div className="anim-fade-up mt-5 flex flex-wrap justify-center gap-2">
-                  <button onClick={onMic} className="glass-ink press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
+                  <button onClick={onMic} className="glass-ink press flex min-h-11 items-center gap-2 rounded-full px-4 text-small font-medium loop-border">
                     <Mic className="h-4 w-4" /> Continuar falando
                   </button>
                   {canOpenChat && (
-                    <button onClick={onOpenChat} className="glass press flex min-h-11 items-center gap-2 rounded-full px-4 text-[13px] font-medium">
+                    <button onClick={onOpenChat} className="glass press flex min-h-11 items-center gap-2 rounded-full px-4 text-small font-medium loop-border">
                       <MessageSquare className="h-4 w-4" /> Abrir no chat
                     </button>
                   )}
@@ -301,7 +301,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
       {/* campo de texto (modo teclado) */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[116px]">
         <div
-          className={`absolute bottom-[max(env(safe-area-inset-bottom),16px)] left-1/2 flex w-full max-w-[640px] -translate-x-1/2 flex-col gap-2 transition-all duration-[380ms] ${
+          className={`absolute bottom-[max(env(safe-area-inset-bottom),16px)] left-1/2 flex w-full max-w-[640px] -translate-x-1/2 flex-col gap-2 transition-all duration-300 ${
             mode === 'text' ? 'pointer-events-auto opacity-100' : 'pointer-events-none translate-y-8 opacity-0'
           }`}
           style={{ transitionTimingFunction: 'var(--spring)', paddingInline: side }}
@@ -309,7 +309,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
           {(contextTitle || attachment) && (
             <div className="flex flex-wrap items-center gap-2">
               {contextTitle && (
-                <span className={`flex max-w-full items-center gap-2 rounded-full py-1.5 pl-3.5 pr-1.5 text-[12px] ${GL}`}>
+                <span className={`flex max-w-full items-center gap-2 rounded-full py-1.5 pl-3.5 pr-1.5 text-caption ${GL}`}>
                   <BookOpen className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">Usando {contextTitle}</span>
                   <button onClick={onClearContext} aria-label="Remover contexto" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink/15">
@@ -335,12 +335,12 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
               }}
               aria-label="Voltar para falar"
               tabIndex={mode === 'text' ? 0 : -1}
-              className="glass loop-border press flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full"
+              className="glass loop-border press flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
             >
               <X className="h-5 w-5" />
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
-            <div className="glass loop-border flex min-h-[52px] min-w-0 flex-1 items-center rounded-[26px] pl-4 pr-2">
+            <div className="glass loop-border flex min-h-[52px] min-w-0 flex-1 items-center rounded-[22px] pl-4 pr-2">
               <label htmlFor="voice-text" className="sr-only">
                 Escrever para o Void
               </label>
@@ -358,7 +358,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
                   }
                 }}
                 placeholder="Escreva aqui…"
-                className="max-h-[120px] min-w-0 flex-1 resize-none border-0 bg-transparent py-3.5 text-[15px] leading-snug text-ink placeholder:text-ink/40 focus:outline-none"
+                className="max-h-[120px] min-w-0 flex-1 resize-none border-0 bg-transparent py-3.5 text-body leading-snug text-ink placeholder:text-ink/40 focus:outline-none"
               />
             </div>
             <button
@@ -366,7 +366,7 @@ export const VoiceScreen: React.FC<VoiceScreenProps> = ({
               disabled={!canSend}
               aria-label="Enviar"
               tabIndex={mode === 'text' ? 0 : -1}
-              className="glass-ink press flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full disabled:opacity-40"
+              className="glass-ink press flex h-12 w-12 shrink-0 items-center justify-center rounded-full disabled:opacity-40 loop-border"
              
             >
               <ArrowUp className="h-5 w-5 stroke-[2.5]" />

@@ -1,5 +1,5 @@
 /* Void — uso offline do app. Tela e código ficam guardados; o resto passa direto pela rede. */
-const CACHE = 'void-v17';
+const CACHE = 'void-v18';
 const ROOT = self.registration.scope;
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll([ROOT, ROOT + 'favicon.svg', ROOT + 'icon-192.png'])).then(() => self.skipWaiting()));

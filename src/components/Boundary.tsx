@@ -16,9 +16,9 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
     return (
       <div role="alert" className="flex h-[100dvh] flex-col items-center justify-center gap-4 bg-paper px-8 text-center text-ink">
         <VoidMark size={56} />
-        <h1 className="text-[22px] font-medium">Algo deu errado</h1>
-        <p className="max-w-[320px] text-[14px] leading-relaxed text-sub">O Void encontrou um problema. Suas conversas e arquivos continuam guardados.</p>
-        <button onClick={() => window.location.reload()} className="glass-ink press h-12 rounded-full px-8 text-[15px] font-medium">
+        <h1 className="text-heading font-medium">Algo deu errado</h1>
+        <p className="max-w-[320px] text-body leading-relaxed text-sub">O Void encontrou um problema. Suas conversas e arquivos continuam guardados.</p>
+        <button onClick={() => window.location.reload()} className="glass-ink press h-12 rounded-full px-8 text-body font-medium loop-border">
           Recarregar
         </button>
       </div>
@@ -42,7 +42,7 @@ export const OfflineBanner: React.FC = () => {
   if (online) return null;
   return (
     <div role="status" className="pointer-events-none fixed inset-x-0 top-0 z-[95] flex justify-center px-4 pt-[max(env(safe-area-inset-top),8px)]">
-      <span className="glass-strong anim-fade-up flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium">
+      <span className="glass-strong anim-fade-up flex items-center gap-2 rounded-full px-4 py-2 text-small font-medium">
         <WifiOff className="h-4 w-4" /> Sem conexão. O Void usa o que está no aparelho.
       </span>
     </div>

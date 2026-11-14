@@ -137,9 +137,9 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
       onClose={onClose}
     >
       {/* explicação (!) */}
-      <div className={`grid transition-all duration-500 ${info ? 'mb-3 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`} style={{ transitionTimingFunction: 'var(--sheet-ease)' }}>
+      <div className={`grid transition-all duration-300 ${info ? 'mb-3 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`} style={{ transitionTimingFunction: 'var(--sheet-ease)' }}>
         <div className="overflow-hidden">
-          <div className="card space-y-2 p-4 text-[13px] leading-relaxed">
+          <div className="card space-y-2 p-4 text-small leading-relaxed">
             <p className="font-medium text-ink">Envie o que você tiver</p>
             <p className="text-sub">
               Até <b className="text-ink">{MAX_FILE_MB} MB por arquivo</b> e {MAX_FILES_PER_BATCH} por vez. Aceitamos PDF, Word (.docx), Excel (.xlsx), CSV, texto, imagens e áudio.
@@ -163,12 +163,12 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
                     {done ? <Check className="anim-pop h-4 w-4" /> : err ? <AlertCircle className="h-4 w-4 text-red-500" /> : ICON[u.kind]}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] font-medium">{u.name}</p>
-                    <p className="truncate text-[12px] text-mute">
+                    <p className="truncate text-body font-medium">{u.name}</p>
+                    <p className="truncate text-caption text-mute">
                       {err ? u.error : done ? 'Pronto' : `${STAGES[Math.max(0, idx)].label}… ${u.note ?? ''}`}
                     </p>
                   </div>
-                  <span className="font-mono text-[12px] text-mute">{fmtSize(u.size)}</span>
+                  <span className="font-mono text-caption text-mute">{fmtSize(u.size)}</span>
                 </div>
                 {!err && (
                   <div className="mt-3">
@@ -178,7 +178,7 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
                         style={{ transform: `scaleX(${done ? 1 : (Math.max(0, idx) + u.pct / 100) / STAGES.length})` }}
                       />
                     </div>
-                    <div className="mt-1.5 flex justify-between text-[12px] text-mute">
+                    <div className="mt-1.5 flex justify-between text-caption text-mute">
                       {STAGES.map((s, i) => (
                         <span key={s.id} className={i <= idx || done ? 'text-ink' : ''}>
                           {s.label}
@@ -199,13 +199,13 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-mute" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar na biblioteca" className="field pl-10 pr-11" aria-label="Buscar na biblioteca" />
           {q && (
-            <button onClick={() => setQ('')} aria-label="Limpar busca" className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-mute">
+            <button onClick={() => setQ('')} aria-label="Limpar busca" className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full text-mute">
               <X className="h-4 w-4" />
             </button>
           )}
         </div>
         {items.length > 0 && !onPick && (
-          <button onClick={() => setUploadOpen(true)} aria-label="Adicionar arquivos" className="glass-ink press flex h-12 shrink-0 items-center gap-2 rounded-full px-4 text-[14px] font-medium">
+          <button onClick={() => setUploadOpen(true)} aria-label="Adicionar arquivos" className="glass-ink press flex h-12 shrink-0 items-center gap-2 rounded-full px-4 text-body font-medium loop-border">
             <UploadCloud className="h-4 w-4" /> Enviar
           </button>
         )}
@@ -228,7 +228,7 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
             setUploadOpen(true);
           }
         }}
-        className={`press flex w-full items-center gap-3 rounded-[20px] border border-dashed p-4 text-left transition-colors ${
+        className={`press flex w-full items-center gap-3 rounded-[22px] border border-dashed p-4 text-left transition-colors ${
           drag ? 'border-ink bg-ink/5' : 'border-ink/25 hover:border-ink/50'
         }`}
       >
@@ -236,24 +236,24 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
           <UploadCloud className="h-5 w-5" />
         </span>
         <span className="min-w-0">
-          <span className="block text-[15px] font-medium">Adicionar arquivos</span>
-          <span className="block text-[12px] text-mute">PDF, Word, Excel, imagem, áudio e mais</span>
+          <span className="block text-body font-medium">Adicionar arquivos</span>
+          <span className="block text-caption text-mute">PDF, Word, Excel, imagem, áudio e mais</span>
         </span>
       </button>
 
       </div>}
 
       <div data-nodrag className="-mx-[22px] mt-3 flex gap-2 overflow-x-auto px-[22px] pb-1">
-        <button onClick={nextSort} aria-label={`Ordenar: ${SORT_LABEL[sort]}. Toque para trocar`} className="press flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-fill px-3.5 text-[13px]">
+        <button onClick={nextSort} aria-label={`Ordenar: ${SORT_LABEL[sort]}. Toque para trocar`} className="press flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-fill px-3.5 text-small">
           <ArrowUpDown className="h-3.5 w-3.5" /> {SORT_LABEL[sort]}
         </button>
         {FILTERS.filter((f) => f.id === 'all' || counts[f.id]).map((f) => (
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
-            className={`press min-h-11 shrink-0 rounded-full px-3.5 text-[13px] transition-colors ${filter === f.id ? 'bg-ink text-paper' : 'border border-hair text-ink/70'}`}
+            className={`press min-h-11 shrink-0 rounded-full px-3.5 text-small transition-colors ${filter === f.id ? 'bg-ink text-paper' : 'border border-hair text-ink/70'}`}
           >
-            {f.label} <span className="font-mono text-[12px] opacity-60">{counts[f.id] || 0}</span>
+            {f.label} <span className="font-mono text-caption opacity-60">{counts[f.id] || 0}</span>
           </button>
         ))}
       </div>
@@ -264,7 +264,7 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
             <button
               key={t}
               onClick={() => setTopic(topic === t ? '' : t)}
-              className={`press min-h-11 shrink-0 rounded-full px-3.5 text-[12px] transition-colors ${topic === t ? 'bg-ink text-paper' : 'bg-fill text-sub'}`}
+              className={`press min-h-11 shrink-0 rounded-full px-3.5 text-caption transition-colors ${topic === t ? 'bg-ink text-paper' : 'bg-fill text-sub'}`}
             >
               {t} · {n}
             </button>
@@ -273,7 +273,7 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
       )}
 
       <ul className="mt-3 space-y-2">
-        {list.length === 0 && <li className="py-10 text-center text-[13px] text-mute">{all.length ? 'Nada com esse filtro.' : 'Sua biblioteca está vazia. Envie o primeiro arquivo.'}</li>}
+        {list.length === 0 && <li className="py-10 text-center text-small text-mute">{all.length ? 'Nada com esse filtro.' : 'Sua biblioteca está vazia. Envie o primeiro arquivo.'}</li>}
         {sorted.map((r, i) => (
           <li key={r.id} style={{ ['--i' as string]: Math.min(i, 8) }} className="card anim-fade-up flex items-center gap-3 p-3">
             <button
@@ -284,22 +284,22 @@ export const LibrarySheet: React.FC<LibraryProps> = ({ items, included, uploads,
                 {r.thumb ? <img src={r.thumb} alt="" className="h-full w-full object-cover" /> : ICON[r.kind]}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[14px] font-medium leading-tight">{r.title}</span>
-                <span className="mt-0.5 block truncate text-[12px] text-mute">
+                <span className="block truncate text-body font-medium leading-tight">{r.title}</span>
+                <span className="mt-0.5 block truncate text-caption text-mute">
                   {KIND_LABEL[r.kind]} · {r.builtin ? 'incluído no Void' : `${fmtSize(r.size)} · ${fmtDate(r.createdAt)}`}
                 </span>
                 <span className="mt-1.5 flex gap-1 overflow-hidden">
                   {r.topics.slice(0, 3).map((t) => (
-                    <span key={t} className="shrink-0 rounded-full bg-fill px-2 py-0.5 text-[12px] text-sub">
+                    <span key={t} className="shrink-0 rounded-full bg-fill px-2 py-0.5 text-caption text-sub">
                       {t}
                     </span>
                   ))}
                 </span>
-                {r.note && <span className="mt-1 block truncate text-[12px] text-mute">{r.note}</span>}
+                {r.note && <span className="mt-1 block truncate text-caption text-mute">{r.note}</span>}
               </span>
             </button>
             {onPick ? (
-              <span className="shrink-0 rounded-full bg-ink px-3 py-1.5 text-[12px] font-medium text-paper">Usar</span>
+              <span className="shrink-0 rounded-full bg-ink px-3 py-1.5 text-caption font-medium text-paper">Usar</span>
             ) : (
               !r.builtin && (
                 <button data-nodrag onClick={() => askRemove(r.id, r.title)} aria-label={`Remover ${r.title}`} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-mute active:bg-fill active:text-red-500">

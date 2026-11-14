@@ -26,10 +26,10 @@ const Radio: React.FC<{ on: boolean }> = ({ on }) => (
 /** Faixa fixa embaixo: o dado (preço) vai dentro do botão, uma ação só. */
 const Cta: React.FC<{ onClick: () => void; children: React.ReactNode; note?: string; disabled?: boolean }> = ({ onClick, children, note, disabled }) => (
   <div>
-    <button onClick={onClick} disabled={disabled} className="glass-ink press h-[56px] w-full rounded-full text-[16px] font-medium disabled:opacity-50">
+    <button onClick={onClick} disabled={disabled} className="glass-ink press h-[56px] w-full rounded-full text-body font-medium disabled:opacity-50 loop-border">
       {children}
     </button>
-    {note && <p className="mt-2 text-center text-[12px] text-mute">{note}</p>}
+    {note && <p className="mt-2 text-center text-caption text-mute">{note}</p>}
   </div>
 );
 
@@ -71,8 +71,8 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
           <span className="glass-ink anim-pop flex h-20 w-20 items-center justify-center rounded-full">
             <Check className="h-9 w-9 stroke-[3]" />
           </span>
-          <h2 className="mt-6 text-[24px] font-medium tracking-tight">{PAYMENTS_LIVE ? 'Assinatura confirmada' : 'Você está na lista'}</h2>
-          <p className="mt-2 max-w-[300px] text-[15px] leading-relaxed text-sub">
+          <h2 className="mt-6 text-heading font-medium tracking-tight">{PAYMENTS_LIVE ? 'Assinatura confirmada' : 'Você está na lista'}</h2>
+          <p className="mt-2 max-w-[300px] text-body leading-relaxed text-sub">
             {PAYMENTS_LIVE ? 'Seu plano ' + chosen.name + ' já está valendo.' : 'Assim que o pagamento abrir, avisamos você para ativar o plano ' + chosen.name + '.'}
           </p>
         </div>
@@ -101,12 +101,12 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
         </div>
 
         <section className="card p-4">
-          <h2 className="mb-3 text-[13px] font-medium uppercase tracking-[0.12em] text-mute">Resumo</h2>
-          <dl className="space-y-2.5 text-[15px]">
+          <h2 className="mb-3 text-small font-medium uppercase tracking-[0.12em] text-mute">Resumo</h2>
+          <dl className="space-y-2.5 text-body">
             <div className="flex justify-between gap-3">
               <dt>
                 Plano {chosen.name}
-                <span className="block text-[12px] text-mute">{annual ? 'Cobrança anual' : 'Cobrança mensal'}</span>
+                <span className="block text-caption text-mute">{annual ? 'Cobrança anual' : 'Cobrança mensal'}</span>
               </dt>
               <dd className="font-medium">{money(chosen.price * (annual ? 12 : 1))}</dd>
             </div>
@@ -118,13 +118,13 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
             )}
             <div className="flex items-baseline justify-between gap-3 border-t border-hair pt-3">
               <dt className="font-medium">Total hoje</dt>
-              <dd className="text-[26px] font-semibold tracking-tight">{money(total)}</dd>
+              <dd className="text-heading font-semibold tracking-tight">{money(total)}</dd>
             </div>
           </dl>
         </section>
 
         <section className="mt-5">
-          <h2 className="mb-2 px-1 text-[13px] font-medium uppercase tracking-[0.12em] text-mute">Como pagar</h2>
+          <h2 className="mb-2 px-1 text-small font-medium uppercase tracking-[0.12em] text-mute">Como pagar</h2>
           <div role="radiogroup" aria-label="Forma de pagamento" className="space-y-2">
             {(
               [
@@ -141,11 +141,11 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-fill">{m.icon}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2 text-[15px] font-medium">
+                  <span className="flex items-center gap-2 text-body font-medium">
                     {m.t}
-                    {m.tag && <span className="rounded-full bg-fill px-2 py-0.5 text-[12px] font-medium text-sub">{m.tag}</span>}
+                    {m.tag && <span className="rounded-full bg-fill px-2 py-0.5 text-caption font-medium text-sub">{m.tag}</span>}
                   </span>
-                  <span className="block text-[12.5px] text-sub">{m.s}</span>
+                  <span className="block text-caption text-sub">{m.s}</span>
                 </span>
                 <Radio on={method === m.id} />
               </button>
@@ -153,7 +153,7 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
           </div>
         </section>
 
-        <p className="mt-4 px-1 text-[12.5px] leading-relaxed text-mute">
+        <p className="mt-4 px-1 text-caption leading-relaxed text-mute">
           {annual ? 'Renova uma vez por ano.' : 'Renova todo mês.'} Cancele quando quiser em Configurações. Seus dados de pagamento não passam pelo Void.
         </p>
 
@@ -175,25 +175,25 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
     >
       <section className="card p-4">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[13px] text-sub">Seu plano agora</p>
-          <p className="text-[15px] font-medium">{plan.name}</p>
+          <p className="text-small text-sub">Seu plano agora</p>
+          <p className="text-body font-medium">{plan.name}</p>
         </div>
         <div className="mt-3 space-y-2.5">
           {qMax !== null && (
             <div>
-              <div className="mb-1 flex justify-between text-[12.5px] text-sub">
+              <div className="mb-1 flex justify-between text-caption text-sub">
                 <span>Perguntas hoje</span>
                 <span className="font-mono text-ink">
                   {usage.questions} de {qMax}
                 </span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-fill" role="progressbar" aria-valuemin={0} aria-valuemax={qMax} aria-valuenow={Math.min(usage.questions, qMax)}>
-                <div className="h-full origin-left rounded-full bg-ink transition-transform duration-500" style={{ transform: 'scaleX(' + Math.min(1, usage.questions / qMax) + ')' }} />
+                <div className="h-full origin-left rounded-full bg-ink transition-transform duration-300" style={{ transform: 'scaleX(' + Math.min(1, usage.questions / qMax) + ')' }} />
               </div>
-              {left === 0 && <p className="mt-1.5 text-[12.5px] text-sub">Acabaram por hoje. Voltam à meia-noite ou com um plano maior.</p>}
+              {left === 0 && <p className="mt-1.5 text-caption text-sub">Acabaram por hoje. Voltam à meia-noite ou com um plano maior.</p>}
             </div>
           )}
-          <div className="flex justify-between text-[12.5px] text-sub">
+          <div className="flex justify-between text-caption text-sub">
             <span>Arquivos seus</span>
             <span className="font-mono text-ink">{plan.limits.files === null ? filesCount + ' · sem limite' : filesCount + ' de ' + plan.limits.files}</span>
           </div>
@@ -207,7 +207,7 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
             role="radio"
             aria-checked={annual === a}
             onClick={() => setAnnual(a)}
-            className={'press min-h-11 rounded-full text-[14px] font-medium transition-colors ' + (annual === a ? 'bg-ink text-paper' : 'text-ink/70')}
+            className={'press min-h-11 rounded-full text-body font-medium transition-colors ' + (annual === a ? 'bg-ink text-paper' : 'text-ink/70')}
           >
             {a ? 'Anual · ' + Math.round(ANNUAL_DISCOUNT * 100) + '% off' : 'Mensal'}
           </button>
@@ -232,25 +232,25 @@ export const PlansPanel: React.FC<Props> = ({ plan, plans, usage, filesCount, wa
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
-                    <span className="text-[18px] font-medium">{p.name}</span>
-                    {p.highlight && <span className="rounded-full bg-ink px-2.5 py-0.5 text-[12px] font-medium text-paper">Mais escolhido</span>}
-                    {inList && <span className="rounded-full bg-fill px-2.5 py-0.5 text-[12px] font-medium text-sub">Na lista</span>}
+                    <span className="text-title font-medium">{p.name}</span>
+                    {p.highlight && <span className="rounded-full bg-ink px-2.5 py-0.5 text-caption font-medium text-paper">Mais escolhido</span>}
+                    {inList && <span className="rounded-full bg-fill px-2.5 py-0.5 text-caption font-medium text-sub">Na lista</span>}
                   </span>
-                  <span className="block text-[13px] text-sub">{p.tagline}</span>
+                  <span className="block text-small text-sub">{p.tagline}</span>
                 </span>
                 <span className="text-right">
-                  <span className="block text-[22px] font-semibold leading-none tracking-tight">{money(monthlyPrice(p, annual))}</span>
-                  <span className="mt-1 block text-[12px] text-mute">por mês</span>
+                  <span className="block text-heading font-semibold leading-none tracking-tight">{money(monthlyPrice(p, annual))}</span>
+                  <span className="mt-1 block text-caption text-mute">por mês</span>
                 </span>
               </span>
               <ul className="mt-3.5 space-y-1.5 border-t border-hair pt-3.5">
                 {p.features.slice(0, 4).map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-[14px] leading-snug">
+                  <li key={f} className="flex items-start gap-2 text-body leading-snug">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 stroke-[2.5]" /> {f}
                   </li>
                 ))}
               </ul>
-              {annual && <p className="mt-3 text-[12px] text-mute">Cobrado {money(chargeTotal(p, true))} uma vez por ano</p>}
+              {annual && <p className="mt-3 text-caption text-mute">Cobrado {money(chargeTotal(p, true))} uma vez por ano</p>}
             </button>
           );
         })}

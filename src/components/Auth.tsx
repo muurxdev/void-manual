@@ -31,7 +31,7 @@ const Field: React.FC<{
   invalid?: boolean;
 }> = ({ icon, label, type = 'text', value, onChange, autoComplete, trailing, invalid }) => (
   <label className="block">
-    <span className="mb-1.5 flex items-center gap-1.5 px-1 text-[12px] text-mute">
+    <span className="mb-1.5 flex items-center gap-1.5 px-1 text-caption text-mute">
       {icon}
       {label}
     </span>
@@ -43,7 +43,7 @@ const Field: React.FC<{
         autoComplete={autoComplete}
         aria-invalid={invalid || undefined}
         required
-        className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-[15px] text-ink placeholder:text-mute focus:outline-none"
+        className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-body text-ink placeholder:text-mute focus:outline-none"
       />
       {trailing}
     </span>
@@ -100,7 +100,7 @@ const Welcome: React.FC<{ dark: boolean; onStart: () => void; onSignin: () => vo
           <br />
           <span className="text-sub">{SLIDES[i].t2}</span>
         </h1>
-        <p key={'s' + i} className="anim-fade-up mx-auto mt-3 min-h-[44px] max-w-[330px] text-[15px] leading-relaxed text-sub" style={{ ['--i' as string]: 1 }}>
+        <p key={'s' + i} className="anim-fade-up mx-auto mt-3 min-h-[44px] max-w-[330px] text-body leading-relaxed text-sub" style={{ ['--i' as string]: 1 }}>
           {SLIDES[i].s}
         </p>
         <div className="mt-2 flex justify-center" role="tablist" aria-label="Mensagens">
@@ -113,10 +113,10 @@ const Welcome: React.FC<{ dark: boolean; onStart: () => void; onSignin: () => vo
       </div>
 
       <div className="flex flex-col gap-2 pb-4 pt-1">
-        <button onClick={onStart} className="glass-ink press h-[56px] rounded-full text-[16px] font-medium">
+        <button onClick={onStart} className="glass-ink press h-[56px] rounded-full text-body font-medium loop-border">
           Começar
         </button>
-        <button onClick={onSignin} className="press min-h-12 rounded-full text-[15px] text-sub">
+        <button onClick={onSignin} className="press min-h-12 rounded-full text-body text-sub">
           Já tenho conta · <span className="font-medium text-ink underline underline-offset-4">Entrar</span>
         </button>
       </div>
@@ -205,8 +205,8 @@ export const AuthFlow: React.FC<AuthProps> = ({ dark, onDone, initial = 'welcome
         <button onClick={() => go(isCode ? from : 'welcome', 'back')} aria-label="Voltar" className="icon-btn glass">
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="anim-fade-up mt-8 text-[34px] font-medium tracking-[-0.02em]">{isCode ? 'Digite o código' : signup ? 'Criar conta' : 'Entrar'}</h1>
-        <p className="anim-fade-up mt-1 text-[14px] text-sub" style={{ ['--i' as string]: 1 }}>
+        <h1 className="anim-fade-up mt-8 text-display font-medium tracking-[-0.02em]">{isCode ? 'Digite o código' : signup ? 'Criar conta' : 'Entrar'}</h1>
+        <p className="anim-fade-up mt-1 text-body text-sub" style={{ ['--i' as string]: 1 }}>
           {isCode ? 'Enviamos 6 números para ' + email.trim() + '. Vale por 10 minutos.' : signup ? 'Sem senha: você entra com um código no e-mail.' : 'Vamos mandar um código para o seu e-mail.'}
         </p>
 
@@ -215,7 +215,7 @@ export const AuthFlow: React.FC<AuthProps> = ({ dark, onDone, initial = 'welcome
           {!isCode && <Field icon={<Mail className="h-3.5 w-3.5" />} label="E-mail" type="email" value={email} onChange={setEmail} autoComplete="email" />}
           {isCode && (
             <label className="block">
-              <span className="mb-1.5 flex items-center gap-1.5 px-1 text-[12px] text-mute">
+              <span className="mb-1.5 flex items-center gap-1.5 px-1 text-caption text-mute">
                 <KeyRound className="h-3.5 w-3.5" /> Código
               </span>
               <span className="glass flex items-center overflow-hidden rounded-2xl px-2">
@@ -228,38 +228,38 @@ export const AuthFlow: React.FC<AuthProps> = ({ dark, onDone, initial = 'welcome
                   maxLength={6}
                   placeholder="000000"
                   aria-label="Código de 6 números"
-                  className="min-w-0 flex-1 bg-transparent px-3 py-4 text-center font-mono text-[28px] tracking-[0.5em] text-ink placeholder:text-mute focus:outline-none"
+                  className="min-w-0 flex-1 bg-transparent px-3 py-4 text-center font-mono text-heading tracking-[0.5em] text-ink placeholder:text-mute focus:outline-none"
                 />
               </span>
             </label>
           )}
 
           {!isCode && signup && (
-            <label className="flex items-start gap-2.5 px-1 text-[13px] leading-snug text-sub">
+            <label className="flex items-start gap-2.5 px-1 text-small leading-snug text-sub">
               <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} className="mt-0.5 h-[22px] w-[22px] shrink-0 accent-[rgb(var(--ink))]" />
               Concordo com os termos de uso e a política de privacidade.
             </label>
           )}
 
           {error && (
-            <p role="alert" className="anim-fade-in rounded-2xl bg-red-500/10 px-4 py-3 text-[13px] text-red-500">
+            <p role="alert" className="anim-fade-in rounded-2xl bg-red-500/10 px-4 py-3 text-small text-red-500">
               {error}
             </p>
           )}
 
-          <button type="submit" disabled={busy || !ready} className="glass-ink press h-[54px] w-full rounded-full text-[15px] font-medium disabled:opacity-50">
+          <button type="submit" disabled={busy || !ready} className="glass-ink press h-[54px] w-full rounded-full text-body font-medium disabled:opacity-50 loop-border">
             {busy ? 'Aguarde…' : isCode ? 'Entrar' : 'Enviar código'}
           </button>
 
           {isCode && (
-            <button type="button" onClick={() => askCode()} disabled={busy || wait > 0} className="press min-h-12 w-full rounded-full text-[14px] text-sub disabled:opacity-60">
+            <button type="button" onClick={() => askCode()} disabled={busy || wait > 0} className="press min-h-12 w-full rounded-full text-body text-sub disabled:opacity-60">
               {wait > 0 ? 'Pedir outro código em ' + wait + ' s' : 'Não chegou? Pedir outro código'}
             </button>
           )}
         </form>
 
         {!isCode && (
-          <p className="mt-auto pt-8 text-center text-[13px] text-sub">
+          <p className="mt-auto pt-8 text-center text-small text-sub">
             {signup ? 'Já tem conta? ' : 'Ainda não tem conta? '}
             <button
               onClick={() => {

@@ -76,7 +76,7 @@ export const Dropdown: React.FC<DropdownProps> = ({ open, onClose, items, placem
           transition: shown && !closing ? 'opacity 200ms var(--ease-out), transform 280ms var(--ease-out)' : 'opacity 160ms var(--ease-in), transform 200ms var(--ease-in)',
         }}
       >
-        {title && <p className="px-3 pb-1 pt-2 text-[12px] uppercase tracking-wider text-mute">{title}</p>}
+        {title && <p className="px-3 pb-1 pt-2 text-caption uppercase tracking-wider text-mute">{title}</p>}
         {items.map((it, i) => (
           <button
             key={it.key}
@@ -86,14 +86,14 @@ export const Dropdown: React.FC<DropdownProps> = ({ open, onClose, items, placem
               onClose();
               it.onSelect();
             }}
-            className={`menu-item press flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-[14px] transition-colors active:bg-ink/5 ${
+            className={`menu-item press flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-body transition-colors active:bg-ink/5 ${
               it.danger ? 'text-red-600' : 'text-ink'
             }`}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink/5">{it.icon}</span>
             <span className="min-w-0 flex-1">
               <span className="block truncate font-medium">{it.label}</span>
-              {it.hint && <span className="block truncate text-[12px] text-mute">{it.hint}</span>}
+              {it.hint && <span className="block truncate text-caption text-mute">{it.hint}</span>}
             </span>
             {it.selected && <Check className="h-4 w-4 shrink-0" />}
           </button>

@@ -63,9 +63,9 @@ export const LegalPanel: React.FC<{ kind: LegalKind; onClose: () => void }> = ({
       <div className="space-y-5 pb-4">
         {d.sections.map((s) => (
           <section key={s.h}>
-            <h2 className="mb-1.5 text-[15px] font-medium">{s.h}</h2>
+            <h2 className="mb-1.5 text-body font-medium">{s.h}</h2>
             {s.p.map((t) => (
-              <p key={t} className="mb-2 text-[14px] leading-relaxed text-sub">
+              <p key={t} className="mb-2 text-body leading-relaxed text-sub">
                 {t}
               </p>
             ))}

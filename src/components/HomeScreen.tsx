@@ -49,24 +49,24 @@ const RecentList: React.FC<{ recent: Conversation[]; onOpenChat: (id: string) =>
 }) => (
   <section className={className} aria-label="Conversas recentes">
     <div className="flex items-baseline justify-between">
-      <h2 className="text-[16px] font-medium">Conversas recentes</h2>
+      <h2 className="text-body font-medium">Conversas recentes</h2>
       {recent.length > 0 && (
-        <button onClick={onViewAll} className="-my-3 min-h-11 px-2 text-[13px] text-sub">
+        <button onClick={onViewAll} className="-my-3 min-h-11 px-2 text-small text-sub">
           Ver todas
         </button>
       )}
     </div>
     <div className="card anim-fade-up mt-3 divide-y divide-hair overflow-hidden rounded-[22px]">
       {recent.length === 0 ? (
-        <p className="px-4 py-6 text-center text-[13px] text-mute">Nenhuma conversa ainda.</p>
+        <p className="px-4 py-6 text-center text-small text-mute">Nenhuma conversa ainda.</p>
       ) : (
         recent.map((c) => {
           const answer = c.messages.find((m) => m.role === 'assistant');
           return (
             <button key={c.id} onClick={() => onOpenChat(c.id)} className="press flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors active:bg-fill">
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[14.5px] font-medium leading-snug text-ink">{c.title}</span>
-                <span className="mt-1 block truncate text-[12.5px] leading-snug text-sub">{answer ? stripMd(answer.content) || '…' : 'Sem resposta'}</span>
+                <span className="block truncate text-body font-medium leading-snug text-ink">{c.title}</span>
+                <span className="mt-1 block truncate text-caption leading-snug text-sub">{answer ? stripMd(answer.content) || '…' : 'Sem resposta'}</span>
               </span>
               <ArrowUpRight className="h-4 w-4 shrink-0 text-mute" />
             </button>
@@ -167,17 +167,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
                 aria-label="Menu do perfil"
                 aria-haspopup="menu"
                 aria-expanded={menu === 'profile'}
-                className="glass press flex h-11 items-center gap-2.5 rounded-full py-1 pl-1 pr-4"
+                className="glass press flex h-11 items-center gap-2.5 rounded-full py-1 pl-1 pr-4 loop-border"
               >
-                <span className="glass-ink flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-[14px] font-semibold">
+                <span className="glass-ink flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-body font-semibold">
                   {profile.photo ? <img src={profile.photo} alt="" className="h-full w-full object-cover" /> : first.slice(0, 1).toUpperCase()}
                 </span>
-                <span className="whitespace-nowrap text-[13px] font-medium">Olá, {first}</span>
+                <span className="whitespace-nowrap text-small font-medium">Olá, {first}</span>
               </button>
               <Dropdown open={menu === 'profile'} onClose={() => setMenu(null)} items={profileItems} placement="bottom-start" />
             </div>
 
-            <button onClick={onPlans} aria-label={'Planos. Seu plano: ' + planName + ', ' + planNote} className="glass press flex h-11 items-center gap-2 rounded-full px-3.5 text-[13px]">
+            <button onClick={onPlans} aria-label={'Planos. Seu plano: ' + planName + ', ' + planNote} className="glass press flex h-11 items-center gap-2 rounded-full px-3.5 text-small loop-border">
               <span className="font-medium">{planName}</span>
               <span className="max-w-[26vw] truncate text-mute md:max-w-[220px]">{planNote}</span>
             </button>
@@ -193,8 +193,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
                 <MessageSquare className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[12px] text-mute">Continuar de onde parou</span>
-                <span className="block truncate text-[15px] font-medium">{recent[0].title}</span>
+                <span className="block text-caption text-mute">Continuar de onde parou</span>
+                <span className="block truncate text-body font-medium">{recent[0].title}</span>
               </span>
               <ArrowUpRight className="h-4 w-4 shrink-0 text-mute" />
             </button>
@@ -206,9 +206,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
                 Conversar
                 <br />
                 com o Void
-                <span className="mt-1 block text-[12.5px] font-normal leading-snug text-sub">Pergunte sobre qualquer máquina</span>
+                <span className="mt-1 block text-caption font-normal leading-snug text-sub">Pergunte sobre qualquer máquina</span>
               </span>
-              <button onClick={onNewChat} className="glass-ink press h-11 w-full rounded-full text-[14px] font-medium">
+              <button onClick={onNewChat} className="glass-ink press h-11 w-full rounded-full text-body font-medium loop-border">
                 Começar
               </button>
             </div>
@@ -221,8 +221,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
                 <ArrowUpRight className="h-4 w-4 text-mute" />
               </span>
               <span>
-                <span className="block text-[15px] font-medium leading-tight">Voz</span>
-                <span className="block text-[12px] leading-tight text-sub">Fale e ouça a resposta</span>
+                <span className="block text-body font-medium leading-tight">Voz</span>
+                <span className="block text-caption leading-tight text-sub">Fale e ouça a resposta</span>
               </span>
             </button>
 
@@ -234,8 +234,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
                 <ArrowUpRight className="h-4 w-4 text-mute" />
               </span>
               <span>
-                <span className="block text-[15px] font-medium leading-tight">Biblioteca</span>
-                <span className="block text-[12px] leading-tight text-sub">{libraryCount} itens seus e do Void</span>
+                <span className="block text-body font-medium leading-tight">Biblioteca</span>
+                <span className="block text-caption leading-tight text-sub">{libraryCount} itens seus e do Void</span>
               </span>
             </button>
 
@@ -245,8 +245,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
           <RecentList recent={recent} onOpenChat={onOpenChat} onViewAll={onViewAll} className="mt-8 md:hidden" />
           <section className="mt-8" aria-label="Tópicos">
             <div className="flex items-baseline justify-between">
-              <h2 className="text-[16px] font-medium">Tópicos</h2>
-              <button onClick={onLibrary} className="-my-3 min-h-11 px-2 text-[13px] text-sub">
+              <h2 className="text-body font-medium">Tópicos</h2>
+              <button onClick={onLibrary} className="-my-3 min-h-11 px-2 text-small text-sub">
                 Ver todos
               </button>
             </div>
@@ -255,7 +255,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
                 <button
                   key={t}
                   onClick={() => setTopic(t)}
-                  className={`press shrink-0 rounded-full min-h-11 px-4 text-[13px] transition-colors ${active === t ? 'bg-ink text-paper' : 'border border-hair bg-paper text-ink/75'}`}
+                  className={`press shrink-0 rounded-full min-h-11 px-4 text-small transition-colors ${active === t ? 'bg-ink text-paper' : 'border border-hair bg-paper text-ink/75'}`}
                 >
                   {t}
                 </button>
@@ -265,10 +265,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = React.memo(function HomeScr
               {questionsFor(active).map((q, i) => (
                 <div key={q} style={{ ['--i' as string]: i }} className="card anim-fade-up flex min-h-[148px] flex-col justify-between p-4">
                   <div>
-                    <p className="text-[14.5px] font-medium leading-snug">{q}</p>
-                    <p className="mt-1.5 text-[12px] leading-snug text-sub">Nos seus manuais e arquivos</p>
+                    <p className="text-body font-medium leading-snug">{q}</p>
+                    <p className="mt-1.5 text-caption leading-snug text-sub">Nos seus manuais e arquivos</p>
                   </div>
-                  <button onClick={() => onAsk(q)} className="press mt-3 h-11 rounded-full border border-hair text-[13px] font-medium">
+                  <button onClick={() => onAsk(q)} className="press mt-3 h-11 rounded-full border border-hair text-small font-medium">
                     Descobrir
                   </button>
                 </div>

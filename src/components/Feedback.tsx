@@ -118,16 +118,16 @@ export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             <span className={`mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full ${dialog.danger ? 'bg-red-500/15 text-red-500' : 'bg-ink/10 text-ink'}`}>
               {dialog.danger ? <AlertTriangle className="h-5 w-5" /> : <Info className="h-5 w-5" />}
             </span>
-            <h2 className="text-[18px] font-medium tracking-tight">{dialog.title}</h2>
-            {dialog.message && <p className="mt-1.5 text-[14px] leading-snug text-sub">{dialog.message}</p>}
+            <h2 className="text-title font-medium tracking-tight">{dialog.title}</h2>
+            {dialog.message && <p className="mt-1.5 text-body leading-snug text-sub">{dialog.message}</p>}
             <div className="mt-5 grid grid-cols-2 gap-2.5">
-              <button onClick={() => finish(false)} className="glass press h-12 rounded-full text-[14px] font-medium">
+              <button onClick={() => finish(false)} className="glass press h-12 rounded-full text-body font-medium loop-border">
                 {dialog.cancelLabel ?? 'Cancelar'}
               </button>
               <button
                 onClick={() => finish(true)}
                 autoFocus
-                className={`press h-12 rounded-full text-[14px] font-medium ${dialog.danger ? 'bg-red-500 text-white' : 'glass-ink'}`}
+                className={`press h-12 rounded-full text-body font-medium ${dialog.danger ? 'bg-red-500 text-white' : 'glass-ink'}`}
               >
                 {dialog.confirmLabel ?? 'Confirmar'}
               </button>
@@ -140,7 +140,7 @@ export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="glass-strong pointer-events-auto flex max-w-[360px] items-center gap-2.5 rounded-full py-2 pl-2.5 pr-4 text-[13.5px] font-medium"
+            className="glass-strong pointer-events-auto flex max-w-[360px] items-center gap-2.5 rounded-full py-2 pl-2.5 pr-4 text-small font-medium"
             style={{
               animation: t.leaving ? 'toastOut 380ms var(--ease-out) both' : 'toastIn 620ms var(--spring-soft) both',
             }}
@@ -157,7 +157,7 @@ export const FeedbackProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                   t.action!.onClick();
                   dismiss(t.id);
                 }}
-                className="press -my-1 -mr-2 ml-1 min-h-10 shrink-0 rounded-full px-3.5 text-[13.5px] font-semibold underline underline-offset-2"
+                className="press -my-1 -mr-2 ml-1 min-h-10 shrink-0 rounded-full px-3.5 text-small font-semibold underline underline-offset-2"
               >
                 {t.action.label}
               </button>

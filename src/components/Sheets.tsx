@@ -94,7 +94,7 @@ export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, o
 
   const row = (label: string, key: keyof WorkshopProfile) => (
     <label className="block">
-      <span className="mb-1.5 block px-1 text-[12px] text-mute">{label}</span>
+      <span className="mb-1.5 block px-1 text-caption text-mute">{label}</span>
       <input value={f[key]} onChange={(e) => setF({ ...f, [key]: e.target.value })} className="field" />
     </label>
   );
@@ -103,7 +103,7 @@ export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, o
     <ScreenPanel title="Perfil" onClose={onClose}>
       <div className="mb-4 flex items-center gap-3">
         <button type="button" onClick={() => photoRef.current?.click()} aria-label="Trocar foto" className="press relative h-16 w-16 shrink-0">
-          <span className="glass-ink flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-[24px] font-semibold">
+          <span className="glass-ink flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-heading font-semibold">
             {f.photo ? <img src={f.photo} alt="" className="h-full w-full object-cover" /> : f.mechanic.slice(0, 1).toUpperCase() || '?'}
           </span>
           <span className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-hair bg-paper">
@@ -112,10 +112,10 @@ export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, o
         </button>
         <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={pickPhoto} />
         <div className="min-w-0">
-          <p className="truncate text-[17px] font-medium">{f.mechanic || 'Seu nome'}</p>
-          <p className="truncate text-[13px] text-mute">{email || f.name}</p>
+          <p className="truncate text-body font-medium">{f.mechanic || 'Seu nome'}</p>
+          <p className="truncate text-small text-mute">{email || f.name}</p>
           {f.photo && (
-            <button type="button" onClick={() => setF({ ...f, photo: undefined })} className="mt-0.5 min-h-8 text-[12px] text-sub underline underline-offset-4">
+            <button type="button" onClick={() => setF({ ...f, photo: undefined })} className="mt-0.5 min-h-8 text-caption text-sub underline underline-offset-4">
               Remover foto
             </button>
           )}
@@ -125,10 +125,10 @@ export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, o
         {row('Seu nome', 'mechanic')}
         {row('Nome da oficina', 'name')}
         <div>
-          <span className="mb-1.5 block px-1 text-[12px] text-mute">Máquinas que você atende</span>
+          <span className="mb-1.5 block px-1 text-caption text-mute">Máquinas que você atende</span>
           <div className="field flex flex-wrap items-center gap-2 !py-2.5">
             {tags.map((m) => (
-              <span key={m} className="flex min-h-11 items-center gap-0.5 rounded-full bg-fill pl-4 pr-1 text-[13px]">
+              <span key={m} className="flex min-h-11 items-center gap-0.5 rounded-full bg-fill pl-4 pr-1 text-small">
                 {m}
                 <button type="button" onClick={() => setTags(tags.filter((x) => x !== m))} aria-label={`Remover ${m}`} className="flex h-11 w-11 items-center justify-center rounded-full text-mute">
                   <X className="h-3.5 w-3.5" />
@@ -146,11 +146,11 @@ export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, o
               }}
               onBlur={addTag}
               placeholder={tags.length ? 'Adicionar…' : 'Moto, carro, trator…'}
-              className="min-h-11 min-w-[110px] flex-1 bg-transparent py-1 text-[14px] focus:outline-none"
+              className="min-h-11 min-w-[110px] flex-1 bg-transparent py-1 text-body focus:outline-none"
             />
           </div>
         </div>
-        <button type="submit" disabled={!dirty} className="glass-ink press flex h-[54px] w-full items-center justify-center gap-2 rounded-full text-[15px] font-medium disabled:opacity-45">
+        <button type="submit" disabled={!dirty} className="glass-ink press flex h-[54px] w-full items-center justify-center gap-2 rounded-full text-body font-medium disabled:opacity-45 loop-border">
           {saved && !dirty ? (
             <>
               <Check className="h-4 w-4" /> Salvo
@@ -161,7 +161,7 @@ export const ProfilePanel: React.FC<ProfileProps> = ({ email, profile, onSave, o
             'Nenhuma alteração'
           )}
         </button>
-        <button type="button" onClick={askSignOut} className="press mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-full text-[14px] font-medium text-red-500">
+        <button type="button" onClick={askSignOut} className="press mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-full text-body font-medium text-red-500">
           <LogOut className="h-4 w-4" /> Sair da conta
         </button>
       </form>
@@ -265,7 +265,7 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
     { id: 'system', label: 'Sistema', icon: <Monitor className="h-4 w-4" /> },
   ];
 
-  const label = 'mb-1.5 block px-1 text-[12px] text-mute';
+  const label = 'mb-1.5 block px-1 text-caption text-mute';
 
   return (
     <>
@@ -281,7 +281,7 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
                 role="radio"
                 aria-checked={theme === t.id}
                 onClick={() => onTheme(t.id)}
-                className={`press flex items-center justify-center gap-1.5 rounded-xl min-h-11 text-[13px] font-medium transition-colors ${
+                className={`press flex items-center justify-center gap-1.5 rounded-xl min-h-11 text-small font-medium transition-colors ${
                   theme === t.id ? 'bg-ink text-paper' : 'text-ink/70'
                 }`}
               >
@@ -295,12 +295,12 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
         <div>
           <span className={label}>Voz do Void</span>
           <div className="card space-y-3 p-3.5">
-            <label className="flex items-center justify-between gap-3 text-[14px]">
+            <label className="flex items-center justify-between gap-3 text-body">
               Responder em voz alta
               <input type="checkbox" checked={prefs.enabled} onChange={(e) => updatePrefs({ enabled: e.target.checked })} className="h-6 w-6 accent-[rgb(var(--ink))]" />
             </label>
             <label className="block">
-              <span className="mb-1 block text-[12px] text-mute">Voz</span>
+              <span className="mb-1 block text-caption text-mute">Voz</span>
               <select value={prefs.voiceURI} onChange={(e) => updatePrefs({ voiceURI: e.target.value })} className="field min-h-11 !py-2.5">
                 <option value="">Automática{auto ? ` · ${auto.name}` : ''}</option>
                 {voices.map((v) => (
@@ -309,15 +309,15 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
                   </option>
                 ))}
               </select>
-              {voices.length === 0 && <span className="mt-1 block text-[12px] text-mute">Este aparelho não tem voz em português instalada; o texto aparece no ritmo da fala.</span>}
+              {voices.length === 0 && <span className="mt-1 block text-caption text-mute">Este aparelho não tem voz em português instalada; o texto aparece no ritmo da fala.</span>}
             </label>
             <label className="block">
-              <span className="mb-1 flex justify-between text-[12px] text-mute">
+              <span className="mb-1 flex justify-between text-caption text-mute">
                 Velocidade <span className="font-mono">{prefs.rate.toFixed(1)}x</span>
               </span>
               <input type="range" min={0.8} max={1.3} step={0.1} value={prefs.rate} onChange={(e) => updatePrefs({ rate: Number(e.target.value) })} className="h-8 w-full accent-[rgb(var(--ink))]" />
             </label>
-            <button type="button" onClick={preview} className="press flex min-h-11 items-center gap-2 rounded-full border border-hair px-4 text-[13px] font-medium">
+            <button type="button" onClick={preview} className="press flex min-h-11 items-center gap-2 rounded-full border border-hair px-4 text-small font-medium">
               <Volume2 className="h-4 w-4" /> Ouvir exemplo
             </button>
           </div>
@@ -328,7 +328,7 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
           <div className="card space-y-3 p-3.5">
             {UNIT_GROUPS.map((g) => (
               <div key={g.key}>
-                <span className="mb-1.5 block text-[12px] text-mute">{g.label}</span>
+                <span className="mb-1.5 block text-caption text-mute">{g.label}</span>
                 <div role="radiogroup" aria-label={g.label} className="flex flex-wrap gap-2">
                   {g.options.map((o) => (
                     <button
@@ -341,7 +341,7 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
                         setUnits(next);
                         setF({ ...f, units: joinUnits(next) });
                       }}
-                      className={`press min-h-11 rounded-full px-4 text-[13px] font-medium ${units[g.key] === o ? 'bg-ink text-paper' : 'border border-hair'}`}
+                      className={`press min-h-11 rounded-full px-4 text-small font-medium ${units[g.key] === o ? 'bg-ink text-paper' : 'border border-hair'}`}
                     >
                       {o}
                     </button>
@@ -353,8 +353,8 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
         </div>
 
 
-        <p className="px-1 text-[12px] text-mute">Tema e voz mudam na hora. As unidades só valem depois de salvar.</p>
-        <button type="submit" disabled={!dirty} className="glass-ink press flex h-[54px] w-full items-center justify-center gap-2 rounded-full text-[15px] font-medium disabled:opacity-45">
+        <p className="px-1 text-caption text-mute">Tema e voz mudam na hora. As unidades só valem depois de salvar.</p>
+        <button type="submit" disabled={!dirty} className="glass-ink press flex h-[54px] w-full items-center justify-center gap-2 rounded-full text-body font-medium disabled:opacity-45 loop-border">
           {saved && !dirty ? (
             <>
               <Check className="h-4 w-4" /> Salvo
@@ -369,10 +369,10 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
         <div>
           <span className={label}>Seus dados</span>
           <div className="card divide-y divide-hair p-1">
-            <button type="button" onClick={exportData} className="press flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-left text-[14px]">
+            <button type="button" onClick={exportData} className="press flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-left text-body">
               <Download className="h-4 w-4" /> Exportar minhas conversas e perfil
             </button>
-            <button type="button" onClick={wipe} className="press flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-left text-[14px] text-red-500">
+            <button type="button" onClick={wipe} className="press flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-left text-body text-red-500">
               <Trash2 className="h-4 w-4" /> Apagar os dados deste aparelho
             </button>
           </div>
@@ -381,14 +381,14 @@ export const SettingsPanel: React.FC<SettingsProps> = ({ profile, theme, onTheme
         <div>
           <span className={label}>Sobre</span>
           <div className="card mb-2 divide-y divide-hair p-1">
-            <button type="button" onClick={() => setLegal('terms')} className="press flex min-h-12 w-full items-center rounded-2xl px-3 text-left text-[14px]">
+            <button type="button" onClick={() => setLegal('terms')} className="press flex min-h-12 w-full items-center rounded-2xl px-3 text-left text-body">
               Termos de uso
             </button>
-            <button type="button" onClick={() => setLegal('privacy')} className="press flex min-h-12 w-full items-center rounded-2xl px-3 text-left text-[14px]">
+            <button type="button" onClick={() => setLegal('privacy')} className="press flex min-h-12 w-full items-center rounded-2xl px-3 text-left text-body">
               Política de privacidade
             </button>
           </div>
-          <div className="card flex items-start gap-3 p-3.5 text-[13px] leading-snug text-sub">
+          <div className="card flex items-start gap-3 p-3.5 text-small leading-snug text-sub">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
             <p>
               Void · manual vivo para qualquer máquina. Versão de {new Date(__BUILD__).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}. Seus dados ficam guardados só neste aparelho. Dica: segure o microfone da tela de voz para falar, ou toque uma vez para deixar ligado.
@@ -458,7 +458,7 @@ export const HistorySheet: React.FC<HistoryProps> = ({ conversations, onClose, o
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar nas conversas"
-          className="min-w-0 flex-1 bg-transparent py-3 text-[15px] text-ink placeholder:text-mute focus:outline-none"
+          className="min-w-0 flex-1 bg-transparent py-3 text-body text-ink placeholder:text-mute focus:outline-none"
         />
         {q && (
           <button onClick={() => setQ('')} aria-label="Limpar busca" className="flex h-9 w-9 items-center justify-center rounded-full text-mute">
@@ -468,13 +468,13 @@ export const HistorySheet: React.FC<HistoryProps> = ({ conversations, onClose, o
       </div>
       {list.length === 0 && (
         <div className="py-12 text-center">
-          <p className="text-[15px] font-medium">{q ? 'Nada encontrado' : 'Nenhuma conversa ainda'}</p>
-          <p className="mt-1 text-[13px] text-mute">{q ? 'Tente outra palavra.' : 'Pergunte algo no chat ou por voz e ela aparece aqui.'}</p>
+          <p className="text-body font-medium">{q ? 'Nada encontrado' : 'Nenhuma conversa ainda'}</p>
+          <p className="mt-1 text-small text-mute">{q ? 'Tente outra palavra.' : 'Pergunte algo no chat ou por voz e ela aparece aqui.'}</p>
         </div>
       )}
       {groups.map((g) => (
         <section key={g.label} className="mb-5">
-          <h2 className="mb-2 px-1 text-[12px] font-medium uppercase tracking-wide text-mute">{g.label}</h2>
+          <h2 className="mb-2 px-1 text-caption font-medium uppercase tracking-wide text-mute">{g.label}</h2>
           <ul className="space-y-2">
             {g.items.map((c, i) => (
               <li key={c.id} style={{ ['--i' as string]: Math.min(i, 8) }} className="card anim-fade-up flex items-center gap-1 p-1.5 pl-4">
@@ -502,8 +502,8 @@ export const HistorySheet: React.FC<HistoryProps> = ({ conversations, onClose, o
                 ) : (
                   <>
                     <button onClick={() => onOpen(c.id)} className="min-w-0 flex-1 py-2.5 text-left">
-                      <span className="block truncate text-[14px]">{c.title}</span>
-                      <span className="block text-[12px] text-mute">
+                      <span className="block truncate text-body">{c.title}</span>
+                      <span className="block text-caption text-mute">
                         {new Date(c.updatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} · {c.messages.length} mensagens
                       </span>
                     </button>

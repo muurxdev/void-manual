@@ -104,7 +104,7 @@ export const Dock: React.FC<DockProps> = ({ onNewChat, onVoice, onLibrary, onAdd
           aria-expanded={open}
           className="glass-ink loop-border press flex h-[60px] w-[60px] items-center justify-center rounded-full"
         >
-          <Plus className="h-[26px] w-[26px] stroke-[2.4] transition-transform duration-500" style={{ transform: open ? 'rotate(135deg)' : 'none', transitionTimingFunction: 'var(--spring)' }} />
+          <Plus className="h-[26px] w-[26px] stroke-[2.4] transition-transform duration-300" style={{ transform: open ? 'rotate(135deg)' : 'none', transitionTimingFunction: 'var(--spring)' }} />
         </button>
         <div className="absolute left-1/2 top-0 h-0 w-[232px] -translate-x-1/2">
           <Dropdown open={open} onClose={() => setOpen(false)} items={items} placement="top-start" title="Menu" />
